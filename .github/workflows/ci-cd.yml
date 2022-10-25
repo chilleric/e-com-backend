@@ -1,0 +1,47 @@
+name: template-api CI/CD work-flow
+
+env:
+  POSTGRES_DATABASE_URL: ${{ secrets.POSTGRES_DATABASE_URL_GITFORUM }}
+  POSTGRES_DATABASE_USERNAME: ${{ secrets.POSTGRES_DATABASE_USERNAME_GITFORUM }}
+  POSTGRES_DATABASE_PASSWORD: ${{ secrets.POSTGRES_DATABASE_PASSWORD_GITFORUM }}
+  POSTGRES_DATABASE_DRIVER: ${{ secrets.POSTGRES_DATABASE_DRIVER_GITFORUM }}
+  HIKARI_MAXIMUM_POOL_SIZE: ${{ secrets.HIKARI_MAXIMUM_POOL_SIZE_GITFORUM }}
+  MONGO_DATABASE_URI: ${{ secrets.MONGO_DATABASE_URI_GITFORUM }}
+  EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME_GITFORUM }}
+  EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD_GITFORUM }}
+  KEY_JWT: ${{ secrets.KEY_JWT_GITFORUM }}
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Test with Maven
+        run: mvn test
+
+  build:
+    if: ${{ always() }}
+    needs: [test]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Build with Maven
+        run: mvn --batch-mode --update-snapshots verify
