@@ -28,18 +28,19 @@ public class UserRequest {
     @NotEmpty(message = "Password is required!")
     @NotBlank(message = "Password is required!")
     @NotNull(message = "Password is required!")
-    // @Pattern(regexp = TypeValidation.PASSWORD, message = "Password is invalid!")
+    @Pattern(regexp = TypeValidation.PASSWORD, message = "Password is invalid!")
     private String password;
 
     @NotNull(message = "Gender is required!")
     @Max(1)
     @Min(0)
+    @Pattern(regexp = TypeValidation.GENDER, message = "Gender is invalid!")
     private int gender;
 
     @NotEmpty(message = "Date of birth is required!")
     @NotBlank(message = "Date of birth is required!")
     @NotNull(message = "Date of birth is required!")
-    @Pattern(regexp = TypeValidation.DATE, message = "Email is invalid!")
+    @Pattern(regexp = TypeValidation.DATE, message = "Date of birth is invalid!")
     private String dob;
 
     @NotEmpty(message = "Address is required!")
@@ -60,16 +61,18 @@ public class UserRequest {
     @NotEmpty(message = "Email is required!")
     @NotBlank(message = "Email is required!")
     @NotNull(message = "Email is required!")
+    @Pattern(regexp = TypeValidation.EMAIL, message = "Email is invalid!")
     private String email;
 
     @NotEmpty(message = "Phone is required!")
     @NotBlank(message = "Phone is required!")
     @NotNull(message = "Phone is required!")
+    @Pattern(regexp = TypeValidation.PHONE, message = "Phone is invalid!")
     private String phone;
 
     @Min(value = 0)
     @Max(value = 1)
     @NotNull(message = "Deleted is required!")
-    @Schema(type = "int", example = "0")
+    @Pattern(regexp = TypeValidation.GENDER, message = "Deleted is invalid!")
     private int deleted;
 }

@@ -25,7 +25,7 @@ public class User {
     private String lastName;
     private String email;
     private String phone;
-    private Map<String, Long> tokens;
+    private Map<String, Date> tokens;
     private Date created;
     private Date modified;
     private boolean verified;

@@ -1,5 +1,6 @@
 package com.example.ecom.dto.userDTO;
 
+import java.util.Date;
 import java.util.Map;
 
 import lombok.AllArgsConstructor;
@@ -20,7 +21,7 @@ public class UserResponse {
     private String lastName;
     private String email;
     private String phone;
-    private Map<String, Long> tokens;
+    private Map<String, Date> tokens;
     private String created;
     private String modified;
     private boolean verified;

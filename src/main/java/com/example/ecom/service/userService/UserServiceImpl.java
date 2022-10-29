@@ -32,13 +32,13 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
 
     @Override
     public void createNewUser(UserRequest userRequest) {
+        validate(userRequest);
         List<User> users = repository
                 .getUsers(Map.ofEntries(entry("username", userRequest.getUsername())), "", 0, 0, "")
                 .get();
         if (users.size() != 0) {
             throw new InvalidRequestException("username existed");
         }
-        // validate(userRequest);
         String passwordEncode = bCryptPasswordEncoder().encode(userRequest.getPassword());
         Date currentTime = DateFormat.getCurrentTime();
         userRequest.setPassword(passwordEncode);
@@ -60,6 +60,7 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
 
     @Override
     public void updateUserById(String userId, UserRequest userRequest) {
+        validate(userRequest);
         List<User> users = repository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
         if (users.size() == 0) {
             throw new ResourceNotFoundException("Not found user!");
@@ -93,7 +94,7 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
     @Override
     public Optional<ListWrapperResponse<UserResponse>> getUsers(Map<String, String> allParams, String keySort, int page,
             int pageSize, String sortField) {
-        List<User> users = repository.getUsers(new HashMap<>(), "", page, pageSize, sortField).get();
+        List<User> users = repository.getUsers(allParams, "", page, pageSize, sortField).get();
 
         return Optional.of(new ListWrapperResponse<UserResponse>(
                 users.stream().map(user -> userUtils.generateUserResponse(user, "")).collect(Collectors.toList()), page,

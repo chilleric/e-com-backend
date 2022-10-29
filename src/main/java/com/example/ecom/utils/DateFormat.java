@@ -3,7 +3,7 @@ package com.example.ecom.utils;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.example.ecom.exception.InvalidDateFormat;
+import com.example.ecom.exception.InvalidRequestException;
 
 public class DateFormat {
     public static Date getCurrentTime() {
@@ -19,7 +19,7 @@ public class DateFormat {
         try {
             result = sdf.format(date);
         } catch (Exception e) {
-            throw new InvalidDateFormat("Wrong date format. Date format must be " + format);
+            throw new InvalidRequestException("Wrong date format. Date format must be " + format);
         }
         return result;
     }
