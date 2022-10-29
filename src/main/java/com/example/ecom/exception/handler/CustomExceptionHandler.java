@@ -46,7 +46,7 @@ public class CustomExceptionHandler {
     public ResponseEntity<CommonResponse<String>> handleResourceNotFoundException(ResourceNotFoundException e) {
         APP_LOGGER.error(e.getMessage());
         return new ResponseEntity<>(
-                new CommonResponse<String>(false, null, e.getMessage(), HttpStatus.BAD_REQUEST.value()), null,
+                new CommonResponse<String>(false, null, e.getMessage(), HttpStatus.NOT_FOUND.value()), null,
                 HttpStatus.OK.value());
     }
 }
