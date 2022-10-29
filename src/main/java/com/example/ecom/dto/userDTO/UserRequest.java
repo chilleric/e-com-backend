@@ -19,8 +19,6 @@ import lombok.NoArgsConstructor;
 @Data
 @Schema
 public class UserRequest {
-    @NotEmpty(message = "Username is required!")
-    @NotBlank(message = "Username is required!")
     @NotNull(message = "Username is required!")
     @Pattern(regexp = TypeValidation.USERNAME, message = "Username is invalid!")
     private String username;
@@ -32,13 +30,10 @@ public class UserRequest {
     private String password;
 
     @NotNull(message = "Gender is required!")
-    @Max(1)
-    @Min(0)
-    @Pattern(regexp = TypeValidation.GENDER, message = "Gender is invalid!")
+    @Min(value = 0, message = "Gender must be 0 or 1!")
+    @Max(value = 1, message = "Gender must be 0 or 1!")
     private int gender;
 
-    @NotEmpty(message = "Date of birth is required!")
-    @NotBlank(message = "Date of birth is required!")
     @NotNull(message = "Date of birth is required!")
     @Pattern(regexp = TypeValidation.DATE, message = "Date of birth is invalid!")
     private String dob;
@@ -58,21 +53,16 @@ public class UserRequest {
     @NotNull(message = "Last name is required!")
     private String lastName;
     
-    @NotEmpty(message = "Email is required!")
-    @NotBlank(message = "Email is required!")
     @NotNull(message = "Email is required!")
     @Pattern(regexp = TypeValidation.EMAIL, message = "Email is invalid!")
     private String email;
 
-    @NotEmpty(message = "Phone is required!")
-    @NotBlank(message = "Phone is required!")
     @NotNull(message = "Phone is required!")
     @Pattern(regexp = TypeValidation.PHONE, message = "Phone is invalid!")
     private String phone;
 
-    @Min(value = 0)
-    @Max(value = 1)
     @NotNull(message = "Deleted is required!")
-    @Pattern(regexp = TypeValidation.GENDER, message = "Deleted is invalid!")
+    @Min(value = 0, message = "Deleted must be 0 or 1!")
+    @Max(value = 1, message = "Deleted must be 0 or 1!")
     private int deleted;
 }
