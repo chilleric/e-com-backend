@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.ecom.constant.ResponseType;
 import com.example.ecom.dto.common.ListWrapperResponse;
 import com.example.ecom.dto.user.UserRequest;
 import com.example.ecom.dto.user.UserResponse;
@@ -21,13 +21,9 @@ import com.example.ecom.repository.user.User;
 import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
 import com.example.ecom.utils.DateFormat;
-import com.example.ecom.utils.UserUtils;
 
 @Service
 public class UserServiceImpl extends AbstractService<UserRepository> implements UserService {
-
-    @Autowired
-    private UserUtils userUtils;
 
     @Override
     public void createNewUser(UserRequest userRequest) {
@@ -54,7 +50,7 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
             throw new ResourceNotFoundException("Not found user!");
         }
         User user = users.get(0);
-        return Optional.of(userUtils.generateUserResponse(user, ""));
+        return Optional.of(new UserResponse(user, ResponseType.PUBLIC));
     }
 
     @Override
@@ -96,7 +92,8 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
         List<User> users = repository.getUsers(allParams, "", page, pageSize, sortField).get();
 
         return Optional.of(new ListWrapperResponse<UserResponse>(
-                users.stream().map(user -> userUtils.generateUserResponse(user, "")).collect(Collectors.toList()), page,
+                users.stream().map(user -> new UserResponse(user, ResponseType.PRIVATE)).collect(Collectors.toList()),
+                page,
                 pageSize,
                 repository.getTotalPage(allParams)));
     }
