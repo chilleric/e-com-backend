@@ -1,6 +1,6 @@
 package com.example.ecom.repository.code;
 
-import java.sql.Date;
+import java.util.Date;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 public class Code {
     private ObjectId _id;
     private ObjectId userId;
-    private String type;
+    private TypeCode type;
     private String code;
     private Date expiredDate;
 }
