@@ -45,13 +45,13 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
         repository.insertAndUpdate(user);
     }
 
-    public Optional<UserResponse> findOneUserById(String userId) {
+    public Optional<UserResponse> findOneUserById(String userId, ResponseType type) {
         List<User> users = repository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
         if (users.size() == 0) {
             throw new ResourceNotFoundException("Not found user!");
         }
         User user = users.get(0);
-        return Optional.of(new UserResponse(user, ResponseType.PUBLIC));
+        return Optional.of(new UserResponse(user, type));
     }
 
     @Override
@@ -90,11 +90,13 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
 
     @Override
     public Optional<ListWrapperResponse<UserResponse>> getUsers(Map<String, String> allParams, String keySort, int page,
-            int pageSize, String sortField) {
+            int pageSize, String sortField, ResponseType type) {
+        if (type.compareTo(ResponseType.PUBLIC) == 0) {
+            allParams.put("deleted", "0");
+        }
         List<User> users = repository.getUsers(allParams, "", page, pageSize, sortField).get();
-
         return Optional.of(new ListWrapperResponse<UserResponse>(
-                users.stream().map(user -> new UserResponse(user, ResponseType.PRIVATE)).collect(Collectors.toList()),
+                users.stream().map(user -> new UserResponse(user, type)).collect(Collectors.toList()),
                 page,
                 pageSize,
                 repository.getTotalPage(allParams)));

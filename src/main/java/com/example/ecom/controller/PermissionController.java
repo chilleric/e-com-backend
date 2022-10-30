@@ -25,48 +25,52 @@ import com.example.ecom.service.permission.PermissionService;
 @RequestMapping(value = "permission")
 public class PermissionController extends AbstractController<PermissionService> {
 
-    @GetMapping(value = "get-list-permissions")
-    public ResponseEntity<CommonResponse<ListWrapperResponse<PermissionResponse>>> getFeatures(
-            @RequestParam(required = false, defaultValue = "1") int page,
-            @RequestParam(required = false, defaultValue = "10") int pageSize,
-            @RequestParam Map<String, String> allParams,
-            @RequestParam(defaultValue = "asc") String keySort,
-            @RequestParam(defaultValue = "modified") String sortField, HttpServletRequest request) {
-        return response(service.getPermissions(allParams, keySort, page, pageSize, sortField),
-                "Get list of permissions successfully!");
-    }
+        @GetMapping(value = "get-list-permissions")
+        public ResponseEntity<CommonResponse<ListWrapperResponse<PermissionResponse>>> getFeatures(
+                        @RequestParam(required = false, defaultValue = "1") int page,
+                        @RequestParam(required = false, defaultValue = "10") int pageSize,
+                        @RequestParam Map<String, String> allParams,
+                        @RequestParam(defaultValue = "asc") String keySort,
+                        @RequestParam(defaultValue = "modified") String sortField, HttpServletRequest request) {
+                validateToken(request, false);
+                return response(service.getPermissions(allParams, keySort, page, pageSize, sortField),
+                                "Get list of permissions successfully!");
+        }
 
-    @PostMapping(value = "add-new-permission")
-    public ResponseEntity<CommonResponse<String>> addNewFeature(
-            @RequestBody PermissionRequest permissionRequest, HttpServletRequest request) {
-        service.addNewPermissions(permissionRequest);
-        return new ResponseEntity<CommonResponse<String>>(
-                new CommonResponse<String>(true, null, "Add permission successfully!",
-                        HttpStatus.OK.value()),
-                null,
-                HttpStatus.OK.value());
-    }
+        @PostMapping(value = "add-new-permission")
+        public ResponseEntity<CommonResponse<String>> addNewFeature(
+                        @RequestBody PermissionRequest permissionRequest, HttpServletRequest request) {
+                validateToken(request, false);
+                service.addNewPermissions(permissionRequest);
+                return new ResponseEntity<CommonResponse<String>>(
+                                new CommonResponse<String>(true, null, "Add permission successfully!",
+                                                HttpStatus.OK.value()),
+                                null,
+                                HttpStatus.OK.value());
+        }
 
-    @PutMapping(value = "update-permission")
-    public ResponseEntity<CommonResponse<String>> updateFeature(
-            @RequestBody PermissionRequest permissionRequest, @RequestParam(required = true) String id,
-            HttpServletRequest request) {
-        service.editPermission(permissionRequest, id);
-        return new ResponseEntity<CommonResponse<String>>(
-                new CommonResponse<String>(true, null, "Update permission successfully!",
-                        HttpStatus.OK.value()),
-                null,
-                HttpStatus.OK.value());
-    }
+        @PutMapping(value = "update-permission")
+        public ResponseEntity<CommonResponse<String>> updateFeature(
+                        @RequestBody PermissionRequest permissionRequest, @RequestParam(required = true) String id,
+                        HttpServletRequest request) {
+                validateToken(request, false);
+                service.editPermission(permissionRequest, id);
+                return new ResponseEntity<CommonResponse<String>>(
+                                new CommonResponse<String>(true, null, "Update permission successfully!",
+                                                HttpStatus.OK.value()),
+                                null,
+                                HttpStatus.OK.value());
+        }
 
-    @DeleteMapping(value = "delete-permission")
-    public ResponseEntity<CommonResponse<String>> updateFeature(
-            @RequestParam(required = true) String id, HttpServletRequest request) {
-        service.deletePermission(id);
-        return new ResponseEntity<CommonResponse<String>>(
-                new CommonResponse<String>(true, null, "Delete permission successfully!",
-                        HttpStatus.OK.value()),
-                null,
-                HttpStatus.OK.value());
-    }
+        @DeleteMapping(value = "delete-permission")
+        public ResponseEntity<CommonResponse<String>> updateFeature(
+                        @RequestParam(required = true) String id, HttpServletRequest request) {
+                validateToken(request, false);
+                service.deletePermission(id);
+                return new ResponseEntity<CommonResponse<String>>(
+                                new CommonResponse<String>(true, null, "Delete permission successfully!",
+                                                HttpStatus.OK.value()),
+                                null,
+                                HttpStatus.OK.value());
+        }
 }

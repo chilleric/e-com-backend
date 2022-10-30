@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import com.example.ecom.constant.ResponseType;
 import com.example.ecom.dto.common.CommonResponse;
 import com.example.ecom.dto.common.ValidationResult;
 import com.example.ecom.exception.ForbiddenException;
@@ -89,8 +90,25 @@ public abstract class AbstractController<s> {
         }
     }
 
+    protected ResponseType getResponseType(String ownerId, String loginId, boolean skipAccessability) {
+        if (skipAccessability)
+            return ResponseType.PRIVATE;
+        if (ownerId.compareTo(loginId) == 0) {
+            return ResponseType.PRIVATE;
+        } else
+            return ResponseType.PUBLIC;
+    }
+
     protected <T> ResponseEntity<CommonResponse<T>> response(Optional<T> response, String successMessage) {
         return new ResponseEntity<>(new CommonResponse<>(true, response.get(), successMessage, HttpStatus.OK.value()),
                 HttpStatus.OK);
+    }
+
+    protected void checkUserId(String userId, String loginId, boolean skipAccessability) {
+        if (!skipAccessability) {
+            if (userId.compareTo(userId) != 0) {
+                throw new ForbiddenException("Access denied!");
+            }
+        }
     }
 }

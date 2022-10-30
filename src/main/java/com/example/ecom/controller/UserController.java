@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.ecom.dto.common.CommonResponse;
 import com.example.ecom.dto.common.ListWrapperResponse;
+import com.example.ecom.dto.common.ValidationResult;
 import com.example.ecom.dto.user.UserRequest;
 import com.example.ecom.dto.user.UserResponse;
 import com.example.ecom.service.user.UserService;
@@ -26,6 +27,7 @@ public class UserController extends AbstractController<UserService> {
         @PostMapping(value = "add-new-user")
         public ResponseEntity<CommonResponse<String>> addNewUser(@RequestBody UserRequest userRequest,
                         HttpServletRequest request) {
+                validateToken(request, false);
                 service.createNewUser(userRequest);
                 return new ResponseEntity<CommonResponse<String>>(
                                 new CommonResponse<String>(true, null, "Create user successfully!",
@@ -35,8 +37,11 @@ public class UserController extends AbstractController<UserService> {
         }
 
         @GetMapping(value = "get-detail-user")
-        public ResponseEntity<CommonResponse<UserResponse>> getUserById(@RequestParam(required = true) String id) {
-                return response(service.findOneUserById(id), "Success");
+        public ResponseEntity<CommonResponse<UserResponse>> getUserById(@RequestParam(required = true) String id,
+                        HttpServletRequest request) {
+                ValidationResult result = validateToken(request, false);
+                return response(service.findOneUserById(id,
+                                getResponseType(id, result.getLoginId(), result.isSkipAccessability())), "Success");
         }
 
         @GetMapping(value = "get-list-users")
@@ -46,12 +51,16 @@ public class UserController extends AbstractController<UserService> {
                         @RequestParam Map<String, String> allParams,
                         @RequestParam(defaultValue = "asc") String keySort,
                         @RequestParam(defaultValue = "modified") String sortField, HttpServletRequest request) {
-                return response(service.getUsers(allParams, keySort, page, pageSize, ""), "Success");
+                ValidationResult result = validateToken(request, false);
+                return response(service.getUsers(allParams, keySort, page, pageSize, "",
+                                getResponseType("", result.getLoginId(), result.isSkipAccessability())), "Success");
         }
 
         @PostMapping(value = "update-user")
         public ResponseEntity<CommonResponse<String>> updateUser(@RequestBody UserRequest userRequest,
-                        @RequestParam(required = true) String userId) {
+                        @RequestParam(required = true) String userId, HttpServletRequest request) {
+                ValidationResult result = validateToken(request, false);
+                checkUserId(userId, result.getLoginId(), result.isSkipAccessability());
                 service.updateUserById(userId, userRequest);
                 return new ResponseEntity<CommonResponse<String>>(
                                 new CommonResponse<String>(true, null, "Update user successfully!",
@@ -61,7 +70,10 @@ public class UserController extends AbstractController<UserService> {
         }
 
         @DeleteMapping(value = "delete-user")
-        public ResponseEntity<CommonResponse<String>> deleteUser(@RequestParam String userId) {
+        public ResponseEntity<CommonResponse<String>> deleteUser(@RequestParam String userId,
+                        HttpServletRequest request) {
+                ValidationResult result = validateToken(request, false);
+                checkUserId(userId, result.getLoginId(), result.isSkipAccessability());
                 service.deleteUserById(userId);
                 return new ResponseEntity<CommonResponse<String>>(
                                 new CommonResponse<String>(true, null, "Delete user successfully!",

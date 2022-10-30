@@ -67,4 +67,13 @@ public abstract class AbstractService<r> {
             throw new InvalidRequestException(message);
         }
     }
+
+    protected String isPublic(String ownerId, String loginId, boolean skipAccessability) {
+        if (skipAccessability)
+            return "";
+        if (ownerId.compareTo(loginId) == 0) {
+            return "";
+        } else
+            return "public";
+    }
 }
