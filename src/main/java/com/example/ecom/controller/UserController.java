@@ -21,9 +21,13 @@ import com.example.ecom.dto.user.UserRequest;
 import com.example.ecom.dto.user.UserResponse;
 import com.example.ecom.service.user.UserService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 @RestController
 @RequestMapping(value = "user")
 public class UserController extends AbstractController<UserService> {
+
+        @SecurityRequirement(name = "Bearer Authentication")
         @PostMapping(value = "add-new-user")
         public ResponseEntity<CommonResponse<String>> addNewUser(@RequestBody UserRequest userRequest,
                         HttpServletRequest request) {
@@ -36,6 +40,7 @@ public class UserController extends AbstractController<UserService> {
                                 HttpStatus.OK.value());
         }
 
+        @SecurityRequirement(name = "Bearer Authentication")
         @GetMapping(value = "get-detail-user")
         public ResponseEntity<CommonResponse<UserResponse>> getUserById(@RequestParam(required = true) String id,
                         HttpServletRequest request) {
@@ -44,6 +49,7 @@ public class UserController extends AbstractController<UserService> {
                                 getResponseType(id, result.getLoginId(), result.isSkipAccessability())), "Success");
         }
 
+        @SecurityRequirement(name = "Bearer Authentication")
         @GetMapping(value = "get-list-users")
         public ResponseEntity<CommonResponse<ListWrapperResponse<UserResponse>>> getUsers(
                         @RequestParam(required = false, defaultValue = "1") int page,
@@ -56,6 +62,7 @@ public class UserController extends AbstractController<UserService> {
                                 getResponseType("", result.getLoginId(), result.isSkipAccessability())), "Success");
         }
 
+        @SecurityRequirement(name = "Bearer Authentication")
         @PostMapping(value = "update-user")
         public ResponseEntity<CommonResponse<String>> updateUser(@RequestBody UserRequest userRequest,
                         @RequestParam(required = true) String userId, HttpServletRequest request) {
@@ -69,6 +76,7 @@ public class UserController extends AbstractController<UserService> {
                                 HttpStatus.OK.value());
         }
 
+        @SecurityRequirement(name = "Bearer Authentication")
         @DeleteMapping(value = "delete-user")
         public ResponseEntity<CommonResponse<String>> deleteUser(@RequestParam String userId,
                         HttpServletRequest request) {

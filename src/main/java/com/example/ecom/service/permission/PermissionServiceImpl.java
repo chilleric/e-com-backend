@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.ecom.constant.DateTime;
+import com.example.ecom.constant.ResponseType;
 import com.example.ecom.dto.common.ListWrapperResponse;
 import com.example.ecom.dto.feature.FeatureResponse;
 import com.example.ecom.dto.permission.PermissionRequest;
@@ -136,7 +137,8 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
 
     private List<UserResponse> generateUserList(List<String> users) {
         String result = generateParamsValue(users);
-        return userService.getUsers(Map.ofEntries(entry("_id", result.toString())), "", 0, 0, "").get()
+        return userService.getUsers(Map.ofEntries(entry("_id", result.toString())), "", 0, 0, "", ResponseType.PRIVATE)
+                .get()
                 .getData();
     }
 }
