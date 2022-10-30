@@ -2,10 +2,10 @@ package com.example.ecom.controller;
 
 import static java.util.Map.entry;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -27,7 +27,6 @@ import com.example.ecom.repository.permission.Permission;
 import com.example.ecom.repository.permission.PermissionRepository;
 import com.example.ecom.repository.user.User;
 import com.example.ecom.repository.user.UserRepository;
-import com.example.ecom.utils.DateFormat;
 
 public abstract class AbstractController<s> {
     @Autowired
@@ -57,10 +56,12 @@ public abstract class AbstractController<s> {
             if (user.size() == 0) {
                 throw new UnauthorizedException("User are deactivated or deleted!");
             }
-            if (user.get(0).getTokens().entrySet().stream()
-                    .filter(item -> item.getValue().compareTo(DateFormat.getCurrentTime()) <= 0)
-                    .collect(Collectors.toSet()).size() == 0) {
-                throw new UnauthorizedException("Unauthorized");
+            if (!user.get(0).getTokens().containsKey(info.getDeviceId())) {
+                throw new UnauthorizedException("Unauthorized!");
+            }
+            Date now = new Date();
+            if (user.get(0).getTokens().get(info.getDeviceId()).compareTo(now) <= 0) {
+                throw new UnauthorizedException("Unauthorized!");
             }
             List<Feature> feature = featureRepository
                     .getFeatures(Map.ofEntries(entry("path", request.getRequestURI())), "", 0, 0, "").get();

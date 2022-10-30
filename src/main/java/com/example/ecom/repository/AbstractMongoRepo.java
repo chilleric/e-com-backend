@@ -33,13 +33,13 @@ public abstract class AbstractMongoRepo {
             String sortField, int page, int pageSize) {
         Query query = new Query();
         Field[] fields = clazz.getDeclaredFields();
-        Criteria criteria = new Criteria();
+        List<Criteria> allCriteria = new ArrayList<>();
         for (Map.Entry<String, String> items : allParams.entrySet()) {
             for (Field field : fields) {
                 if (field.getName().compareTo(items.getKey()) == 0) {
                     String[] values = items.getValue().split(",");
+                    List<Criteria> multipleCriteria = new ArrayList<>();
                     if (field.getType() == ObjectId.class) {
-                        List<Criteria> multipleCriteria = new ArrayList<>();
                         for (int i = 0; i < values.length; i++) {
                             try {
                                 multipleCriteria.add(Criteria.where(items.getKey()).is(new ObjectId(values[i])));
@@ -48,10 +48,8 @@ public abstract class AbstractMongoRepo {
                                 throw new BadSqlException("id must be objectId format!");
                             }
                         }
-                        criteria.orOperator(multipleCriteria);
                     }
                     if (field.getType() == Boolean.class) {
-                        List<Criteria> multipleCriteria = new ArrayList<>();
                         for (int i = 0; i < values.length; i++) {
                             try {
                                 boolean value = Boolean.parseBoolean(values[i]);
@@ -60,10 +58,8 @@ public abstract class AbstractMongoRepo {
                                 APP_LOGGER.error("error parsing value boolean");
                             }
                         }
-                        criteria.orOperator(multipleCriteria);
                     }
                     if (field.getType() == int.class) {
-                        List<Criteria> multipleCriteria = new ArrayList<>();
                         for (int i = 0; i < values.length; i++) {
                             try {
                                 int value = Integer.parseInt(values[i]);
@@ -72,19 +68,19 @@ public abstract class AbstractMongoRepo {
                                 APP_LOGGER.error("error parsing value int");
                             }
                         }
-                        criteria.orOperator(multipleCriteria);
                     }
                     if (field.getType() == String.class) {
-                        List<Criteria> multipleCriteria = new ArrayList<>();
                         for (int i = 0; i < values.length; i++) {
                             multipleCriteria.add(Criteria.where(items.getKey()).is(values[i]));
                         }
-                        criteria.orOperator(multipleCriteria);
                     }
+                    allCriteria.add(new Criteria().orOperator(multipleCriteria));
                 }
             }
         }
-        query.addCriteria(criteria);
+        if (allCriteria.size() > 0) {
+            query.addCriteria(new Criteria().andOperator(allCriteria));
+        }
         if (keySort.trim().compareTo("") != 0 && sortField.trim().compareTo("ASC") != 0) {
             query.with(Sort.by(Sort.Direction.ASC, sortField));
         }
