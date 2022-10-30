@@ -22,6 +22,7 @@ import com.example.ecom.exception.ResourceNotFoundException;
 import com.example.ecom.exception.UnauthorizedException;
 import com.example.ecom.jwt.JwtValidation;
 import com.example.ecom.jwt.TokenContent;
+import com.example.ecom.repository.accessability.AccessabilityRepository;
 import com.example.ecom.repository.feature.Feature;
 import com.example.ecom.repository.feature.FeatureRepository;
 import com.example.ecom.repository.permission.Permission;
@@ -44,6 +45,9 @@ public abstract class AbstractController<s> {
 
     @Autowired
     protected UserRepository userRepository;
+
+    @Autowired
+    private AccessabilityRepository accessabilityRepository;
 
     @Value("${spring.key.jwt}")
     protected String JWT_SECRET;
@@ -109,6 +113,13 @@ public abstract class AbstractController<s> {
             if (userId.compareTo(userId) != 0) {
                 throw new ForbiddenException("Access denied!");
             }
+        }
+    }
+
+    protected void checkAccessability(String loginId, String targetId, boolean skipAccessability) {
+        if (!skipAccessability) {
+            accessabilityRepository.getAccessability(loginId, targetId)
+                    .orElseThrow(() -> new ForbiddenException("Access denied!"));
         }
     }
 }
