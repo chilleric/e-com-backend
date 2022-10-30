@@ -29,6 +29,7 @@ public class FeatureController extends AbstractController<FeatureService> {
             @RequestParam Map<String, String> allParams,
             @RequestParam(defaultValue = "asc") String keySort,
             @RequestParam(defaultValue = "modified") String sortField, HttpServletRequest request) {
+        validateToken(request, false);
         return response(service.getFeatures(allParams, keySort, page, pageSize, sortField),
                 "Get list of features successfully!");
     }

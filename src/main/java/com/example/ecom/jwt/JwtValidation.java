@@ -1,5 +1,7 @@
 package com.example.ecom.jwt;
 
+import java.util.Date;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +16,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
 
@@ -25,6 +28,19 @@ public class JwtValidation {
 
     protected AppLogger APP_LOGGER = LoggerFactory.getLogger(LoggerType.APPLICATION);;
 
+    public String generateToken(String userId, String deviceId) {
+        Date now = new Date();
+        long JWT_EXPIRATION = 7 * 24 * 60 * 60 * 1000L; // expired in 7 days since login
+        Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION);
+        return Jwts.builder()
+                .claim("userId", userId)
+                .claim("deviceId", deviceId)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(SignatureAlgorithm.HS512, JWT_SECRET)
+                .compact();
+    }
+
     public String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         // Kiểm tra xem header Authorization có chứa thông tin jwt không
@@ -34,11 +50,11 @@ public class JwtValidation {
         return null;
     }
 
-    public String getUserIdFromJwt(String token) {
+    public TokenContent getUserIdFromJwt(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(JWT_SECRET)
                 .parseClaimsJws(token).getBody();
-        return claims.getSubject();
+        return new TokenContent(claims.get("userId", String.class), claims.get("deviceId", String.class));
     }
 
     public boolean validateToken(HttpServletRequest request) {
