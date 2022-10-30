@@ -1,11 +1,11 @@
-package com.example.ecom.service.userService;
+package com.example.ecom.service.user;
 
 import java.util.Map;
 import java.util.Optional;
 
 import com.example.ecom.dto.common.ListWrapperResponse;
-import com.example.ecom.dto.userDTO.UserRequest;
-import com.example.ecom.dto.userDTO.UserResponse;
+import com.example.ecom.dto.user.UserRequest;
+import com.example.ecom.dto.user.UserResponse;
 
 public interface UserService {
     void createNewUser(UserRequest userRequest);

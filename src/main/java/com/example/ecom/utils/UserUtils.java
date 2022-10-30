@@ -7,8 +7,8 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 import com.example.ecom.constant.DateTime;
-import com.example.ecom.dto.userDTO.UserResponse;
-import com.example.ecom.repository.userRepository.User;
+import com.example.ecom.dto.user.UserResponse;
+import com.example.ecom.repository.user.User;
 
 @Component
 public class UserUtils {

@@ -1,25 +1,24 @@
-package com.example.ecom.service.userService;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+package com.example.ecom.service.user;
 
 import static java.util.Map.entry;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.ecom.dto.common.ListWrapperResponse;
-import com.example.ecom.dto.userDTO.UserRequest;
-import com.example.ecom.dto.userDTO.UserResponse;
+import com.example.ecom.dto.user.UserRequest;
+import com.example.ecom.dto.user.UserResponse;
 import com.example.ecom.exception.InvalidRequestException;
 import com.example.ecom.exception.ResourceNotFoundException;
-import com.example.ecom.repository.userRepository.User;
-import com.example.ecom.repository.userRepository.UserRepository;
+import com.example.ecom.repository.user.User;
+import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
 import com.example.ecom.utils.DateFormat;
 import com.example.ecom.utils.UserUtils;

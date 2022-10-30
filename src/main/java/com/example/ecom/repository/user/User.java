@@ -1,4 +1,4 @@
-package com.example.ecom.repository.userRepository;
+package com.example.ecom.repository.user;
 
 import java.util.Date;
 import java.util.Map;

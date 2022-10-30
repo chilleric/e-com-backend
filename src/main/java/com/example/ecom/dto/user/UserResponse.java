@@ -1,4 +1,4 @@
-package com.example.ecom.dto.userDTO;
+package com.example.ecom.dto.user;
 
 import java.util.Date;
 import java.util.Map;
