@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.example.ecom.dto.common.CommonResponse;
 import com.example.ecom.exception.BadSqlException;
 import com.example.ecom.exception.InvalidRequestException;
+import com.example.ecom.exception.ResourceNotFoundException;
 import com.example.ecom.exception.UnauthorizedException;
 import com.example.ecom.log.AppLogger;
 import com.example.ecom.log.LoggerFactory;
@@ -38,6 +39,14 @@ public class CustomExceptionHandler {
         APP_LOGGER.error(e.getMessage());
         return new ResponseEntity<CommonResponse<String>>(
                 new CommonResponse<String>(false, null, e.getMessage(), HttpStatus.UNAUTHORIZED.value()), null,
+                HttpStatus.OK.value());
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<CommonResponse<String>> handleResourceNotFoundException(ResourceNotFoundException e) {
+        APP_LOGGER.error(e.getMessage());
+        return new ResponseEntity<>(
+                new CommonResponse<String>(false, null, e.getMessage(), HttpStatus.NOT_FOUND.value()), null,
                 HttpStatus.OK.value());
     }
 }
