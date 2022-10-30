@@ -3,10 +3,12 @@ package com.example.ecom.service;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.example.ecom.constant.TypeValidation;
 import com.example.ecom.exception.InvalidRequestException;
 import com.example.ecom.log.AppLogger;
 import com.example.ecom.log.LoggerFactory;
@@ -33,6 +35,26 @@ public abstract class AbstractService<r> {
     public void init() {
         objectMapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    protected void validatePassword(String password, boolean isNew) {
+        if (!Base64.isBase64(password)) {
+            throw new InvalidRequestException("Password must be encoded!");
+        } else {
+            try {
+                String decodedNewPassword = new String(Base64.decodeBase64(password));
+                if (!decodedNewPassword.matches(TypeValidation.BASE64_REGEX)) {
+                    throw new InvalidRequestException("Password must be encoded!");
+                }
+                if (isNew && !decodedNewPassword.matches(TypeValidation.PASSWORD)) {
+                    throw new InvalidRequestException("Password must be valid!");
+                }
+            } catch (IllegalArgumentException e) {
+                throw new InvalidRequestException("Password must be encoded!");
+            } catch (IllegalStateException e) {
+                throw new InvalidRequestException("Password must be encoded!");
+            }
+        }
     }
 
     protected BCryptPasswordEncoder bCryptPasswordEncoder() {

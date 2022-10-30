@@ -28,6 +28,7 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
     @Override
     public void createNewUser(UserRequest userRequest) {
         validate(userRequest);
+        validatePassword(userRequest.getPassword(), true);
         List<User> users = repository
                 .getUsers(Map.ofEntries(entry("username", userRequest.getUsername())), "", 0, 0, "")
                 .get();
@@ -56,6 +57,7 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
     @Override
     public void updateUserById(String userId, UserRequest userRequest) {
         validate(userRequest);
+        validatePassword(userRequest.getPassword(), true);
         List<User> users = repository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
         if (users.size() == 0) {
             throw new ResourceNotFoundException("Not found user!");

@@ -26,7 +26,6 @@ public class UserRequest {
     @NotEmpty(message = "Password is required!")
     @NotBlank(message = "Password is required!")
     @NotNull(message = "Password is required!")
-    @Pattern(regexp = TypeValidation.PASSWORD, message = "Password is invalid!")
     private String password;
 
     @NotNull(message = "Gender is required!")
