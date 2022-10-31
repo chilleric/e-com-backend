@@ -1,7 +1,6 @@
 package com.example.ecom.utils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.validation.ConstraintViolation;
@@ -17,14 +16,11 @@ public class ObjectValidator {
     @Qualifier("validator")
     LocalValidatorFactoryBean validatorFactory;
 
-    public <T> String validateRequestThenReturnMessage(T t) {
+    public <T> Map<String, String> validateRequestThenReturnMessage(Map<String, String> errorResult, T t) {
         Set<ConstraintViolation<T>> violations = validatorFactory.getValidator().validate(t);
-        List<String> messages = new ArrayList<>();
         for (ConstraintViolation<T> violation : violations) {
-            messages.add(violation.getMessage());
+            errorResult.put(violation.getPropertyPath().toString(), violation.getMessage());
         }
-        if (!messages.isEmpty())
-            return messages.get(0);
-        return "";
+        return errorResult;
     }
 }

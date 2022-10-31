@@ -1,4 +1,4 @@
-package com.example.ecom.dto.userDTO;
+package com.example.ecom.dto.user;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -26,7 +26,6 @@ public class UserRequest {
     @NotEmpty(message = "Password is required!")
     @NotBlank(message = "Password is required!")
     @NotNull(message = "Password is required!")
-    @Pattern(regexp = TypeValidation.PASSWORD, message = "Password is invalid!")
     private String password;
 
     @NotNull(message = "Gender is required!")
@@ -42,17 +41,17 @@ public class UserRequest {
     @NotBlank(message = "Address is required!")
     @NotNull(message = "Address is required!")
     private String address;
-    
+
     @NotEmpty(message = "First name is required!")
     @NotBlank(message = "First name is required!")
     @NotNull(message = "First name is required!")
     private String firstName;
-    
+
     @NotEmpty(message = "Last name is required!")
     @NotBlank(message = "Last name is required!")
     @NotNull(message = "Last name is required!")
     private String lastName;
-    
+
     @NotNull(message = "Email is required!")
     @Pattern(regexp = TypeValidation.EMAIL, message = "Email is invalid!")
     private String email;

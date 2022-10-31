@@ -1,8 +1,11 @@
 package com.example.ecom.service;
 
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -40,9 +43,35 @@ public abstract class AbstractService<r> {
     }
 
     protected <T> void validate(T request) {
-        String message = objectValidator.validateRequestThenReturnMessage(request);
-        if (!ObjectUtils.isEmpty(message)) {
-            throw new InvalidRequestException(message);
+        boolean isError = false;
+        Map<String, String> errors = objectValidator.validateRequestThenReturnMessage(generateError(request.getClass()),
+                request);
+        for (Map.Entry<String, String> items : errors.entrySet()) {
+            if (items.getValue().length() > 0) {
+                isError = true;
+                break;
+            }
         }
+        if (isError) {
+            throw new InvalidRequestException(errors, "Invalid request");
+        }
+    }
+
+    protected Map<String, String> generateError(Class<?> clazz) {
+        Field[] fields = clazz.getDeclaredFields();
+        Map<String, String> result = new HashMap<>();
+        for (Field field : fields) {
+            result.put(field.getName(), "");
+        }
+        return result;
+    }
+
+    protected String isPublic(String ownerId, String loginId, boolean skipAccessability) {
+        if (skipAccessability)
+            return "";
+        if (ownerId.compareTo(loginId) == 0) {
+            return "";
+        } else
+            return "public";
     }
 }

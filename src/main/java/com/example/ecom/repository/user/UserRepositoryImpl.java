@@ -1,4 +1,4 @@
-package com.example.ecom.repository.userRepository;
+package com.example.ecom.repository.user;
 
 import java.util.List;
 import java.util.Map;

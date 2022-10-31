@@ -1,43 +1,42 @@
-package com.example.ecom.service.userService;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+package com.example.ecom.service.user;
 
 import static java.util.Map.entry;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.ecom.constant.ResponseType;
 import com.example.ecom.dto.common.ListWrapperResponse;
-import com.example.ecom.dto.userDTO.UserRequest;
-import com.example.ecom.dto.userDTO.UserResponse;
+import com.example.ecom.dto.user.UserRequest;
+import com.example.ecom.dto.user.UserResponse;
 import com.example.ecom.exception.InvalidRequestException;
 import com.example.ecom.exception.ResourceNotFoundException;
-import com.example.ecom.repository.userRepository.User;
-import com.example.ecom.repository.userRepository.UserRepository;
+import com.example.ecom.repository.user.User;
+import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
 import com.example.ecom.utils.DateFormat;
-import com.example.ecom.utils.UserUtils;
+import com.example.ecom.utils.PasswordValidator;
 
 @Service
 public class UserServiceImpl extends AbstractService<UserRepository> implements UserService {
 
-    @Autowired
-    private UserUtils userUtils;
-
     @Override
     public void createNewUser(UserRequest userRequest) {
         validate(userRequest);
+        PasswordValidator.validateNewPassword(generateError(UserRequest.class), userRequest.getPassword());
         List<User> users = repository
                 .getUsers(Map.ofEntries(entry("username", userRequest.getUsername())), "", 0, 0, "")
                 .get();
         if (users.size() != 0) {
-            throw new InvalidRequestException("username existed");
+            Map<String, String> error = generateError(UserRequest.class);
+            error.put("username", "username existed");
+            throw new InvalidRequestException(error, "username existed");
         }
         String passwordEncode = bCryptPasswordEncoder().encode(userRequest.getPassword());
         Date currentTime = DateFormat.getCurrentTime();
@@ -49,18 +48,19 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
         repository.insertAndUpdate(user);
     }
 
-    public Optional<UserResponse> findOneUserById(String userId) {
+    public Optional<UserResponse> findOneUserById(String userId, ResponseType type) {
         List<User> users = repository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
         if (users.size() == 0) {
             throw new ResourceNotFoundException("Not found user!");
         }
         User user = users.get(0);
-        return Optional.of(userUtils.generateUserResponse(user, ""));
+        return Optional.of(new UserResponse(user, type));
     }
 
     @Override
     public void updateUserById(String userId, UserRequest userRequest) {
         validate(userRequest);
+        PasswordValidator.validateNewPassword(generateError(UserRequest.class), userRequest.getPassword());
         List<User> users = repository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
         if (users.size() == 0) {
             throw new ResourceNotFoundException("Not found user!");
@@ -93,11 +93,14 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
 
     @Override
     public Optional<ListWrapperResponse<UserResponse>> getUsers(Map<String, String> allParams, String keySort, int page,
-            int pageSize, String sortField) {
+            int pageSize, String sortField, ResponseType type) {
+        if (type.compareTo(ResponseType.PUBLIC) == 0) {
+            allParams.put("deleted", "0");
+        }
         List<User> users = repository.getUsers(allParams, "", page, pageSize, sortField).get();
-
         return Optional.of(new ListWrapperResponse<UserResponse>(
-                users.stream().map(user -> userUtils.generateUserResponse(user, "")).collect(Collectors.toList()), page,
+                users.stream().map(user -> new UserResponse(user, type)).collect(Collectors.toList()),
+                page,
                 pageSize,
                 repository.getTotalPage(allParams)));
     }

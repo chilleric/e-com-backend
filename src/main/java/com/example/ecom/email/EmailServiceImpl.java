@@ -1,5 +1,7 @@
 package com.example.ecom.email;
 
+import java.util.HashMap;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -37,7 +39,7 @@ public class EmailServiceImpl implements EmailService {
 
         catch (Exception e) {
             APP_LOGGER.error(e.getMessage());
-            throw new InvalidRequestException("Error while Sending Mail");
+            throw new InvalidRequestException(new HashMap<>(), "Error while Sending Mail");
         }
     }
 
