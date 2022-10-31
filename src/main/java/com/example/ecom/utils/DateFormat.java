@@ -2,6 +2,7 @@ package com.example.ecom.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 
 import com.example.ecom.exception.InvalidRequestException;
 
@@ -19,7 +20,7 @@ public class DateFormat {
         try {
             result = sdf.format(date);
         } catch (Exception e) {
-            throw new InvalidRequestException("Wrong date format. Date format must be " + format);
+            throw new InvalidRequestException(new HashMap<>(), "Wrong date format. Date format must be " + format);
         }
         return result;
     }

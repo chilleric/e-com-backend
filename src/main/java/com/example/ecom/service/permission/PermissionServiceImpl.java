@@ -60,7 +60,9 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
         List<Permission> permissions = repository
                 .getPermissions(Map.ofEntries(entry("name", permissionRequest.getName())), "", 0, 0, "").get();
         if (permissions.size() != 0) {
-            throw new InvalidRequestException("This name is unavailable!");
+            Map<String, String> error = generateError(PermissionRequest.class);
+            error.put("name", "This name is unavailable!");
+            throw new InvalidRequestException(error, "This name is unavailable!");
         }
         Permission permission = new Permission();
         permission.setName(permissionRequest.getName());

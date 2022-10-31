@@ -1,5 +1,7 @@
 package com.example.ecom.exception.handler;
 
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -28,10 +30,13 @@ public class CustomExceptionHandler {
     }
 
     @ExceptionHandler(InvalidRequestException.class)
-    public ResponseEntity<CommonResponse<String>> handleInvalidRequestException(InvalidRequestException e) {
+    public ResponseEntity<CommonResponse<Map<String, String>>> handleInvalidRequestException(
+            InvalidRequestException e) {
         APP_LOGGER.error(e.getMessage());
         return new ResponseEntity<>(
-                new CommonResponse<String>(false, null, e.getMessage(), HttpStatus.BAD_REQUEST.value()), null,
+                new CommonResponse<Map<String, String>>(false, e.getResult(), e.getMessage(),
+                        HttpStatus.BAD_REQUEST.value()),
+                null,
                 HttpStatus.OK.value());
     }
 

@@ -21,6 +21,7 @@ import com.example.ecom.repository.user.User;
 import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
 import com.example.ecom.utils.DateFormat;
+import com.example.ecom.utils.PasswordValidator;
 
 @Service
 public class UserServiceImpl extends AbstractService<UserRepository> implements UserService {
@@ -28,12 +29,14 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
     @Override
     public void createNewUser(UserRequest userRequest) {
         validate(userRequest);
-        validatePassword(userRequest.getPassword(), true);
+        PasswordValidator.validateNewPassword(generateError(UserRequest.class), userRequest.getPassword());
         List<User> users = repository
                 .getUsers(Map.ofEntries(entry("username", userRequest.getUsername())), "", 0, 0, "")
                 .get();
         if (users.size() != 0) {
-            throw new InvalidRequestException("username existed");
+            Map<String, String> error = generateError(UserRequest.class);
+            error.put("username", "username existed");
+            throw new InvalidRequestException(error, "username existed");
         }
         String passwordEncode = bCryptPasswordEncoder().encode(userRequest.getPassword());
         Date currentTime = DateFormat.getCurrentTime();
@@ -57,7 +60,7 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
     @Override
     public void updateUserById(String userId, UserRequest userRequest) {
         validate(userRequest);
-        validatePassword(userRequest.getPassword(), true);
+        PasswordValidator.validateNewPassword(generateError(UserRequest.class), userRequest.getPassword());
         List<User> users = repository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
         if (users.size() == 0) {
             throw new ResourceNotFoundException("Not found user!");

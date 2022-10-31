@@ -4,6 +4,7 @@ import static java.util.Map.entry;
 
 import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -70,11 +71,14 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             }
             user = users.get(0);
         }
+        PasswordValidator.validatePassword(generateError(LoginRequest.class), loginRequest.getPassword());
         if (!user.isVerified())
-            throw new InvalidRequestException("This account is not verified!");
+            throw new InvalidRequestException(generateError(LoginRequest.class), "This account is not verified!");
         if (!bCryptPasswordEncoder().matches(loginRequest.getPassword(),
                 user.getPassword())) {
-            throw new InvalidRequestException("password does not match");
+            Map<String, String> error = generateError(LoginRequest.class);
+            error.put("password", "password does not match");
+            throw new InvalidRequestException(error, "password does not match");
         }
         Date now = new Date();
         if (user.isVerify2FA()) {
@@ -124,24 +128,32 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         List<User> users = repository
                 .getUsers(Map.ofEntries(entry("username", registerRequest.getUsername())), "", 0, 0, "").get();
         if (users.size() != 0) {
-            throw new InvalidRequestException("username existed");
+            Map<String, String> error = generateError(RegisterRequest.class);
+            error.put("username", "username existed");
+            throw new InvalidRequestException(error, "username existed");
         }
         List<User> usersEmail = repository
                 .getUsers(Map.ofEntries(entry("email", registerRequest.getUsername())), "", 0, 0, "").get();
         if (usersEmail.size() == 0) {
+            Map<String, String> error = generateError(RegisterRequest.class);
             if (usersEmail.get(0).isVerified()) {
-                throw new InvalidRequestException("This email is taken!");
+                error.put("email", "This email is taken!");
+                throw new InvalidRequestException(error, "This email is taken!");
             } else {
-                throw new InvalidRequestException("Please verify your email!");
+                error.put("email", "Please verify your email!");
+                throw new InvalidRequestException(error, "Please verify your email!");
 
             }
         } else {
             if (repository
-                    .getUsers(Map.ofEntries(entry("email", registerRequest.getUsername())), "", 0, 0, "").get()
+                    .getUsers(Map.ofEntries(entry("phone", registerRequest.getUsername())), "", 0, 0, "").get()
                     .size() > 0) {
-                throw new InvalidRequestException("Phone number is taken!");
+                Map<String, String> error = generateError(RegisterRequest.class);
+                error.put("phone", "Phone number is taken!");
+                throw new InvalidRequestException(error, "Phone number is taken!");
             }
-            PasswordValidator.validateNewPassword(registerRequest.getPassword());
+            Map<String, String> error = generateError(RegisterRequest.class);
+            PasswordValidator.validateNewPassword(error, registerRequest.getPassword());
             String passwordEncode = bCryptPasswordEncoder().encode(registerRequest.getPassword());
             User user = objectMapper.convertValue(registerRequest, User.class);
             user.setPassword(passwordEncode);
@@ -180,12 +192,12 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         if (codes.isPresent()) {
             Code code = codes.get().get(0);
             if (code.getCode().compareTo(inputCode) != 0)
-                throw new InvalidRequestException("This code is invalid");
+                throw new InvalidRequestException(new HashMap<>(), "This code is invalid");
             else if (code.getExpiredDate().compareTo(now) < 0) {
-                throw new InvalidRequestException("Code is expired");
+                throw new InvalidRequestException(new HashMap<>(), "Code is expired");
             }
         } else {
-            throw new InvalidRequestException("This code is invalid");
+            throw new InvalidRequestException(new HashMap<>(), "This code is invalid");
         }
         user.setVerified(true);
         repository.insertAndUpdate(user);
@@ -258,12 +270,12 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         if (codes.isPresent()) {
             Code code = codes.get().get(0);
             if (code.getCode().compareTo(inputCode) != 0)
-                throw new InvalidRequestException("This code is invalid");
+                throw new InvalidRequestException(new HashMap<>(), "This code is invalid");
             else if (code.getExpiredDate().compareTo(now) < 0) {
-                throw new InvalidRequestException("Code is expired");
+                throw new InvalidRequestException(new HashMap<>(), "Code is expired");
             }
         } else {
-            throw new InvalidRequestException("This code is invalid");
+            throw new InvalidRequestException(new HashMap<>(), "This code is invalid");
         }
         String deviceId = UUID.randomUUID().toString();
         return Optional.of(new LoginResponse(user.get_id().toString(), deviceId, false));
