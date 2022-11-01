@@ -10,7 +10,6 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -49,49 +48,47 @@ public abstract class AbstractController<s> {
     @Autowired
     private AccessabilityRepository accessabilityRepository;
 
-    @Value("${spring.key.jwt}")
-    protected String JWT_SECRET;
-
     protected ValidationResult validateToken(HttpServletRequest request, boolean hasPublic) {
-        if (jwtValidation.validateToken(request)) {
-            String token = jwtValidation.getJwtFromRequest(request);
-            TokenContent info = jwtValidation.getUserIdFromJwt(token);
-            List<User> user = userRepository
-                    .getUsers(Map.ofEntries(entry("_id", info.getUserId()), entry("deleted", "0")), "", 0, 0, "").get();
-            if (user.size() == 0) {
-                throw new UnauthorizedException("User are deactivated or deleted!");
-            }
-            if (!user.get(0).getTokens().containsKey(info.getDeviceId())) {
-                throw new UnauthorizedException("Unauthorized!");
-            }
-            Date now = new Date();
-            if (user.get(0).getTokens().get(info.getDeviceId()).compareTo(now) <= 0) {
-                throw new UnauthorizedException("Unauthorized!");
-            }
-            List<Feature> feature = featureRepository
-                    .getFeatures(Map.ofEntries(entry("path", request.getRequestURI())), "", 0, 0, "").get();
-            if (feature.size() == 0) {
-                throw new ResourceNotFoundException("This feature is not enabled!");
-            }
-            List<Permission> permissions = permissionRepository
-                    .getPermissionByUser(user.get(0).get_id().toString(), feature.get(0).get_id().toString())
-                    .orElseThrow(() -> new UnauthorizedException("You are not approved any permissions!"));
-            if (permissions.size() == 0) {
-                throw new ForbiddenException("Access denied!");
-            }
-            boolean skipAccessability = false;
-            for (Permission permission : permissions) {
-                if (permission.getSkipAccessability() == 0
-                        && permission.getFeatureId().contains(feature.get(0).get_id())) {
-                    skipAccessability = true;
-                }
-            }
-            return new ValidationResult(skipAccessability, user.get(0).get_id().toString());
-        } else {
-            if (!hasPublic)
+
+        String token = jwtValidation.getJwtFromRequest(request);
+        if (token == null) {
+            if (!hasPublic) {
                 throw new UnauthorizedException("Unauthorized");
+            }
             return new ValidationResult(false, "public");
         }
+        TokenContent info = jwtValidation.getUserIdFromJwt(token);
+        List<User> user = userRepository
+                .getUsers(Map.ofEntries(entry("_id", info.getUserId()), entry("deleted", "0")), "", 0, 0, "").get();
+        if (user.size() == 0) {
+            throw new UnauthorizedException("User are deactivated or deleted!");
+        }
+        if (!user.get(0).getTokens().containsKey(info.getDeviceId())) {
+            throw new UnauthorizedException("Unauthorized!");
+        }
+        Date now = new Date();
+        if (user.get(0).getTokens().get(info.getDeviceId()).compareTo(now) <= 0) {
+            throw new UnauthorizedException("Unauthorized!");
+        }
+        List<Feature> feature = featureRepository
+                .getFeatures(Map.ofEntries(entry("path", request.getRequestURI())), "", 0, 0, "").get();
+        if (feature.size() == 0) {
+            throw new ResourceNotFoundException("This feature is not enabled!");
+        }
+        List<Permission> permissions = permissionRepository
+                .getPermissionByUser(user.get(0).get_id().toString(), feature.get(0).get_id().toString())
+                .orElseThrow(() -> new UnauthorizedException("You are not approved any permissions!"));
+        if (permissions.size() == 0) {
+            throw new ForbiddenException("Access denied!");
+        }
+        boolean skipAccessability = false;
+        for (Permission permission : permissions) {
+            if (permission.getSkipAccessability() == 0
+                    && permission.getFeatureId().contains(feature.get(0).get_id())) {
+                skipAccessability = true;
+            }
+        }
+        return new ValidationResult(skipAccessability, user.get(0).get_id().toString());
     }
 
     protected ResponseType getResponseType(String ownerId, String loginId, boolean skipAccessability) {
