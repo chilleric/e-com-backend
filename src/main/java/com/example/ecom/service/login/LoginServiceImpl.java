@@ -133,8 +133,8 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             throw new InvalidRequestException(error, "username existed");
         }
         List<User> usersEmail = repository
-                .getUsers(Map.ofEntries(entry("email", registerRequest.getUsername())), "", 0, 0, "").get();
-        if (usersEmail.size() == 0) {
+                .getUsers(Map.ofEntries(entry("email", registerRequest.getEmail())), "", 0, 0, "").get();
+        if (usersEmail.size() != 0) {
             Map<String, String> error = generateError(RegisterRequest.class);
             if (usersEmail.get(0).isVerified()) {
                 error.put("email", "This email is taken!");
@@ -146,7 +146,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             }
         } else {
             if (repository
-                    .getUsers(Map.ofEntries(entry("phone", registerRequest.getUsername())), "", 0, 0, "").get()
+                    .getUsers(Map.ofEntries(entry("phone", registerRequest.getPhone())), "", 0, 0, "").get()
                     .size() > 0) {
                 Map<String, String> error = generateError(RegisterRequest.class);
                 error.put("phone", "Phone number is taken!");
@@ -158,16 +158,22 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             User user = objectMapper.convertValue(registerRequest, User.class);
             user.setPassword(passwordEncode);
             user.setTokens(null);
+            repository.insertAndUpdate(user);
             String newCode = UUID.randomUUID().toString();
             Date now = new Date();
             Date expiredDate = new Date(now.getTime() + 5 * 60 * 1000L);
             Optional<List<Code>> codes = codeRepository.getCodesByType(user.get_id().toString(),
                     TypeCode.REGISTER.getResponseType());
             if (codes.isPresent()) {
-                Code code = codes.get().get(0);
-                code.setCode(newCode);
-                code.setExpiredDate(expiredDate);
-                codeRepository.insertAndUpdateCode(code);
+                if (codes.get().size() > 0) {
+                    Code code = codes.get().get(0);
+                    code.setCode(newCode);
+                    code.setExpiredDate(expiredDate);
+                    codeRepository.insertAndUpdateCode(code);
+                } else {
+                    Code code = new Code(null, user.get_id(), TypeCode.REGISTER, newCode, expiredDate);
+                    codeRepository.insertAndUpdateCode(code);
+                }
             } else {
                 Code code = new Code(null, user.get_id(), TypeCode.REGISTER, newCode, expiredDate);
                 codeRepository.insertAndUpdateCode(code);
