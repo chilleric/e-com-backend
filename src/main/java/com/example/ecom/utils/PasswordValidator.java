@@ -46,10 +46,10 @@ public class PasswordValidator {
                 errorObject.put("password", "Password must be encoded!");
                 throw new InvalidRequestException(errorObject, "Password must be encoded!");
             } catch (IllegalStateException e) {
-                errorObject.put("password", "Password must be encoded!");
                 throw new InvalidRequestException(errorObject, "Password must be encoded!");
             }
         } else {
+            errorObject.put("password", "Password must be encoded!");
             throw new InvalidRequestException(errorObject, "Password must be encoded!");
         }
     }

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -88,7 +89,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
                             "2FA code from forum-api"));
             Date expiredDate = new Date(now.getTime() + 5 * 60 * 1000L);
             Optional<List<Code>> codes = codeRepository.getCodesByType(user.get_id().toString(),
-                    TypeCode.VERIFY2FA.getResponseType());
+                    TypeCode.VERIFY2FA.name());
             if (codes.isPresent()) {
                 Code code = codes.get().get(0);
                 code.setCode(verify2FACode);
@@ -133,8 +134,8 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             throw new InvalidRequestException(error, "username existed");
         }
         List<User> usersEmail = repository
-                .getUsers(Map.ofEntries(entry("email", registerRequest.getUsername())), "", 0, 0, "").get();
-        if (usersEmail.size() == 0) {
+                .getUsers(Map.ofEntries(entry("email", registerRequest.getEmail())), "", 0, 0, "").get();
+        if (usersEmail.size() != 0) {
             Map<String, String> error = generateError(RegisterRequest.class);
             if (usersEmail.get(0).isVerified()) {
                 error.put("email", "This email is taken!");
@@ -146,7 +147,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             }
         } else {
             if (repository
-                    .getUsers(Map.ofEntries(entry("phone", registerRequest.getUsername())), "", 0, 0, "").get()
+                    .getUsers(Map.ofEntries(entry("phone", registerRequest.getPhone())), "", 0, 0, "").get()
                     .size() > 0) {
                 Map<String, String> error = generateError(RegisterRequest.class);
                 error.put("phone", "Phone number is taken!");
@@ -157,17 +158,23 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             String passwordEncode = bCryptPasswordEncoder().encode(registerRequest.getPassword());
             User user = objectMapper.convertValue(registerRequest, User.class);
             user.setPassword(passwordEncode);
-            user.setTokens(null);
-            String newCode = UUID.randomUUID().toString();
+            user.setTokens(new HashMap<>());
+            repository.insertAndUpdate(user);
+            String newCode = RandomStringUtils.randomAlphabetic(6);
             Date now = new Date();
             Date expiredDate = new Date(now.getTime() + 5 * 60 * 1000L);
             Optional<List<Code>> codes = codeRepository.getCodesByType(user.get_id().toString(),
-                    TypeCode.REGISTER.getResponseType());
+                    TypeCode.REGISTER.name());
             if (codes.isPresent()) {
-                Code code = codes.get().get(0);
-                code.setCode(newCode);
-                code.setExpiredDate(expiredDate);
-                codeRepository.insertAndUpdateCode(code);
+                if (codes.get().size() > 0) {
+                    Code code = codes.get().get(0);
+                    code.setCode(newCode);
+                    code.setExpiredDate(expiredDate);
+                    codeRepository.insertAndUpdateCode(code);
+                } else {
+                    Code code = new Code(null, user.get_id(), TypeCode.REGISTER, newCode, expiredDate);
+                    codeRepository.insertAndUpdateCode(code);
+                }
             } else {
                 Code code = new Code(null, user.get_id(), TypeCode.REGISTER, newCode, expiredDate);
                 codeRepository.insertAndUpdateCode(code);
@@ -184,17 +191,23 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             List<User> users = repository.getUsers(Map.ofEntries(entry("email", email)), "", 0, 0, "").get();
             if (users.size() == 0) {
                 throw new ResourceNotFoundException("Not found user with email: " + email);
+            } else {
+                user = users.get(0);
             }
         }
         Date now = new Date();
         Optional<List<Code>> codes = codeRepository.getCodesByType(user.get_id().toString(),
-                TypeCode.REGISTER.getResponseType());
+                TypeCode.REGISTER.name());
         if (codes.isPresent()) {
-            Code code = codes.get().get(0);
-            if (code.getCode().compareTo(inputCode) != 0)
+            if (codes.get().size() > 0) {
+                Code code = codes.get().get(0);
+                if (code.getCode().compareTo(inputCode) != 0)
+                    throw new InvalidRequestException(new HashMap<>(), "This code is invalid");
+                else if (code.getExpiredDate().compareTo(now) < 0) {
+                    throw new InvalidRequestException(new HashMap<>(), "Code is expired");
+                }
+            } else {
                 throw new InvalidRequestException(new HashMap<>(), "This code is invalid");
-            else if (code.getExpiredDate().compareTo(now) < 0) {
-                throw new InvalidRequestException(new HashMap<>(), "Code is expired");
             }
         } else {
             throw new InvalidRequestException(new HashMap<>(), "This code is invalid");
@@ -210,16 +223,21 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             throw new ResourceNotFoundException("Not found user with email: " + email);
         }
         User userCheckMail = users.get(0);
-        String newCode = UUID.randomUUID().toString();
+        String newCode = RandomStringUtils.randomAlphabetic(6);
         Date now = new Date();
         Date expiredDate = new Date(now.getTime() + 5 * 60 * 1000L);
         Optional<List<Code>> codes = codeRepository.getCodesByType(userCheckMail.get_id().toString(),
-                TypeCode.REGISTER.getResponseType());
+                TypeCode.REGISTER.name());
         if (codes.isPresent()) {
-            Code code = codes.get().get(0);
-            code.setCode(newCode);
-            code.setExpiredDate(expiredDate);
-            codeRepository.insertAndUpdateCode(code);
+            if (codes.get().size() > 0) {
+                Code code = codes.get().get(0);
+                code.setCode(newCode);
+                code.setExpiredDate(expiredDate);
+                codeRepository.insertAndUpdateCode(code);
+            } else {
+                Code code = new Code(null, userCheckMail.get_id(), TypeCode.REGISTER, newCode, expiredDate);
+                codeRepository.insertAndUpdateCode(code);
+            }
         } else {
             Code code = new Code(null, userCheckMail.get_id(), TypeCode.REGISTER, newCode, expiredDate);
             codeRepository.insertAndUpdateCode(code);
@@ -266,13 +284,17 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         }
         Date now = new Date();
         Optional<List<Code>> codes = codeRepository.getCodesByType(user.get_id().toString(),
-                TypeCode.VERIFY2FA.getResponseType());
+                TypeCode.VERIFY2FA.name());
         if (codes.isPresent()) {
-            Code code = codes.get().get(0);
-            if (code.getCode().compareTo(inputCode) != 0)
+            if (codes.get().size() > 0) {
+                Code code = codes.get().get(0);
+                if (code.getCode().compareTo(inputCode) != 0)
+                    throw new InvalidRequestException(new HashMap<>(), "This code is invalid");
+                else if (code.getExpiredDate().compareTo(now) < 0) {
+                    throw new InvalidRequestException(new HashMap<>(), "Code is expired");
+                }
+            } else {
                 throw new InvalidRequestException(new HashMap<>(), "This code is invalid");
-            else if (code.getExpiredDate().compareTo(now) < 0) {
-                throw new InvalidRequestException(new HashMap<>(), "Code is expired");
             }
         } else {
             throw new InvalidRequestException(new HashMap<>(), "This code is invalid");
@@ -288,15 +310,21 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             throw new ResourceNotFoundException("Not found user with email: " + email);
         }
         User userCheckMail = users.get(0);
-        String newCode = UUID.randomUUID().toString();
+        String newCode = RandomStringUtils.randomAlphabetic(6);
         Date now = new Date();
         Date expiredDate = new Date(now.getTime() + 5 * 60 * 1000L);
-        Optional<List<Code>> codes = codeRepository.getCodesByType(userCheckMail.get_id().toString(), "verify2FA");
+        Optional<List<Code>> codes = codeRepository.getCodesByType(userCheckMail.get_id().toString(),
+                TypeCode.VERIFY2FA.name());
         if (codes.isPresent()) {
-            Code code = codes.get().get(0);
-            code.setCode(newCode);
-            code.setExpiredDate(expiredDate);
-            codeRepository.insertAndUpdateCode(code);
+            if (codes.get().size() > 0) {
+                Code code = codes.get().get(0);
+                code.setCode(newCode);
+                code.setExpiredDate(expiredDate);
+                codeRepository.insertAndUpdateCode(code);
+            } else {
+                Code code = new Code(null, userCheckMail.get_id(), TypeCode.VERIFY2FA, newCode, expiredDate);
+                codeRepository.insertAndUpdateCode(code);
+            }
         } else {
             Code code = new Code(null, userCheckMail.get_id(), TypeCode.VERIFY2FA, newCode, expiredDate);
             codeRepository.insertAndUpdateCode(code);
