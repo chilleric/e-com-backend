@@ -6,9 +6,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -63,12 +63,12 @@ public class UserController extends AbstractController<UserService> {
         }
 
         @SecurityRequirement(name = "Bearer Authentication")
-        @PostMapping(value = "update-user")
+        @PutMapping(value = "update-user")
         public ResponseEntity<CommonResponse<String>> updateUser(@RequestBody UserRequest userRequest,
-                        @RequestParam(required = true) String userId, HttpServletRequest request) {
+                        @RequestParam(required = true) String id, HttpServletRequest request) {
                 ValidationResult result = validateToken(request, false);
-                checkUserId(userId, result.getLoginId(), result.isSkipAccessability());
-                service.updateUserById(userId, userRequest);
+                checkUserId(id, result.getLoginId(), result.isSkipAccessability());
+                service.updateUserById(id, userRequest);
                 return new ResponseEntity<CommonResponse<String>>(
                                 new CommonResponse<String>(true, null, "Update user successfully!",
                                                 HttpStatus.OK.value()),
@@ -77,12 +77,13 @@ public class UserController extends AbstractController<UserService> {
         }
 
         @SecurityRequirement(name = "Bearer Authentication")
-        @DeleteMapping(value = "delete-user")
-        public ResponseEntity<CommonResponse<String>> deleteUser(@RequestParam String userId,
+        @PutMapping(value = "change-status-user")
+        public ResponseEntity<CommonResponse<String>> changeStatus(@RequestParam String id,
                         HttpServletRequest request) {
                 ValidationResult result = validateToken(request, false);
-                checkUserId(userId, result.getLoginId(), result.isSkipAccessability());
-                service.deleteUserById(userId);
+                preventOtherSuperAdmin(id);
+                checkUserId(id, result.getLoginId(), result.isSkipAccessability());
+                service.changeStatusUser(id);
                 return new ResponseEntity<CommonResponse<String>>(
                                 new CommonResponse<String>(true, null, "Delete user successfully!",
                                                 HttpStatus.OK.value()),

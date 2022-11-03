@@ -77,9 +77,9 @@ public abstract class AbstractController<s> {
         }
         List<Permission> permissions = permissionRepository
                 .getPermissionByUser(user.get(0).get_id().toString(), feature.get(0).get_id().toString())
-                .orElseThrow(() -> new UnauthorizedException("You are not approved any permissions!"));
+                .get();
         if (permissions.size() == 0) {
-            throw new ForbiddenException("Access denied!");
+            throw new ForbiddenException("You are not approved any permissions!");
         }
         boolean skipAccessability = false;
         for (Permission permission : permissions) {
@@ -107,7 +107,7 @@ public abstract class AbstractController<s> {
 
     protected void checkUserId(String userId, String loginId, boolean skipAccessability) {
         if (!skipAccessability) {
-            if (userId.compareTo(userId) != 0) {
+            if (loginId.compareTo(userId) == 0) {
                 throw new ForbiddenException("Access denied!");
             }
         }
@@ -117,6 +117,17 @@ public abstract class AbstractController<s> {
         if (!skipAccessability) {
             accessabilityRepository.getAccessability(loginId, targetId)
                     .orElseThrow(() -> new ForbiddenException("Access denied!"));
+        }
+    }
+
+    protected void preventOtherSuperAdmin(String userId) {
+        List<Permission> permissions = permissionRepository
+                .getPermissionByUserId(userId)
+                .get();
+        if (permissions.size() != 0) {
+            if (permissions.get(0).getName().compareTo("super_admin_permission") == 0) {
+                throw new ForbiddenException("Access denied!");
+            }
         }
     }
 }

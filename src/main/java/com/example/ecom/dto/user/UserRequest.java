@@ -23,11 +23,6 @@ public class UserRequest {
     @Pattern(regexp = TypeValidation.USERNAME, message = "Username is invalid!")
     private String username;
 
-    @NotEmpty(message = "Password is required!")
-    @NotBlank(message = "Password is required!")
-    @NotNull(message = "Password is required!")
-    private String password;
-
     @NotNull(message = "Gender is required!")
     @Min(value = 0, message = "Gender must be 0 or 1!")
     @Max(value = 1, message = "Gender must be 0 or 1!")

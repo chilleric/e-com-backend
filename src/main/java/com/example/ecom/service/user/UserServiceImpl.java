@@ -2,6 +2,7 @@ package com.example.ecom.service.user;
 
 import static java.util.Map.entry;
 
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +22,6 @@ import com.example.ecom.repository.user.User;
 import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
 import com.example.ecom.utils.DateFormat;
-import com.example.ecom.utils.PasswordValidator;
 
 @Service
 public class UserServiceImpl extends AbstractService<UserRepository> implements UserService {
@@ -29,7 +29,6 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
     @Override
     public void createNewUser(UserRequest userRequest) {
         validate(userRequest);
-        PasswordValidator.validateNewPassword(generateError(UserRequest.class), userRequest.getPassword());
         List<User> users = repository
                 .getUsers(Map.ofEntries(entry("username", userRequest.getUsername())), "", 0, 0, "")
                 .get();
@@ -38,10 +37,9 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
             error.put("username", "username existed");
             throw new InvalidRequestException(error, "username existed");
         }
-        String passwordEncode = bCryptPasswordEncoder().encode(userRequest.getPassword());
         Date currentTime = DateFormat.getCurrentTime();
-        userRequest.setPassword(passwordEncode);
         User user = objectMapper.convertValue(userRequest, User.class);
+        user.setPassword(bCryptPasswordEncoder().encode(Base64.getEncoder().encode("Abc@1234".getBytes()).toString()));
         user.setTokens(new HashMap<>());
         user.setCreated(currentTime);
         user.setModified(currentTime);
@@ -60,15 +58,14 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
     @Override
     public void updateUserById(String userId, UserRequest userRequest) {
         validate(userRequest);
-        PasswordValidator.validateNewPassword(generateError(UserRequest.class), userRequest.getPassword());
         List<User> users = repository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
         if (users.size() == 0) {
             throw new ResourceNotFoundException("Not found user!");
         }
         User user = users.get(0);
-
         Date currentTime = DateFormat.getCurrentTime();
         User newUser = objectMapper.convertValue(userRequest, User.class);
+        newUser.setPassword(user.getPassword());
         newUser.setTokens(user.getTokens());
         newUser.setCreated(user.getCreated());
         newUser.setModified(currentTime);
@@ -80,13 +77,13 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
     }
 
     @Override
-    public void deleteUserById(String userId) {
+    public void changeStatusUser(String userId) {
         List<User> users = repository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
         if (users.size() == 0) {
             throw new ResourceNotFoundException("Not found user!");
         }
         User user = users.get(0);
-        user.setDeleted(1);
+        user.setDeleted(user.getDeleted() == 0 ? 1 : 0);
 
         repository.insertAndUpdate(user);
     }
