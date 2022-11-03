@@ -18,5 +18,5 @@ public interface UserService {
     Optional<ListWrapperResponse<UserResponse>> getUsers(Map<String, String> allParams, String keySort, int page,
             int pageSize, String sortField, ResponseType type);
 
-    void deleteUserById(String userId);
+    void changeStatusUser(String userId);
 }
