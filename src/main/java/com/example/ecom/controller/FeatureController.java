@@ -4,8 +4,10 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,5 +34,18 @@ public class FeatureController extends AbstractController<FeatureService> {
         validateToken(request, false);
         return response(service.getFeatures(allParams, keySort, page, pageSize, sortField),
                 "Get list of features successfully!");
+    }
+
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PutMapping(value = "change-status")
+    public ResponseEntity<CommonResponse<String>> updateStatusFeature(HttpServletRequest request,
+            @RequestParam String id) {
+        validateToken(request, false);
+        service.changeStatusFeature(id);
+        return new ResponseEntity<CommonResponse<String>>(
+                new CommonResponse<String>(true, null, "Update status feature successfully!",
+                        HttpStatus.OK.value()),
+                null,
+                HttpStatus.OK.value());
     }
 }

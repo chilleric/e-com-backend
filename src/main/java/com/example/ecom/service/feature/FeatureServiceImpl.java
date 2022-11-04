@@ -1,5 +1,7 @@
 package com.example.ecom.service.feature;
 
+import static java.util.Map.entry;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.ecom.dto.common.ListWrapperResponse;
 import com.example.ecom.dto.feature.FeatureResponse;
+import com.example.ecom.exception.ResourceNotFoundException;
 import com.example.ecom.repository.feature.Feature;
 import com.example.ecom.repository.feature.FeatureRepository;
 import com.example.ecom.service.AbstractService;
@@ -27,5 +30,16 @@ public class FeatureServiceImpl extends AbstractService<FeatureRepository> imple
                                                                 f.getDeleted()))
                                                 .collect(Collectors.toList()),
                                 page, pageSize, repository.getTotal(allParams)));
+        }
+
+        @Override
+        public void changeStatusFeature(String id) {
+                List<Feature> features = repository.getFeatures(Map.ofEntries(entry("_id", id)), "", 0, 0, "").get();
+                if (features.size() == 0) {
+                        throw new ResourceNotFoundException("Not found feature!");
+                }
+                Feature feature = features.get(0);
+                feature.setDeleted(feature.getDeleted() == 0 ? 1 : 0);
+                repository.insertAndUpdate(feature);
         }
 }
