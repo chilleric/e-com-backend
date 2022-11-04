@@ -1,7 +1,5 @@
 package com.example.ecom.dto.login;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -35,15 +33,6 @@ public class RegisterRequest {
     @NotBlank(message = "Last name is required!")
     @NotEmpty(message = "Last name is required!")
     private String lastName;
-
-    @Min(value = 0, message = "Gender must be valid")
-    @Max(value = 1, message = "Gender must be valid")
-    @NotNull(message = "gender is required!")
-    private int gender;
-
-    @NotNull(message = "Date of birth is required!")
-    @Pattern(regexp = TypeValidation.DATE, message = "Date of birth is invalid!")
-    private String dob;
 
     @NotNull(message = "Phone number is required!")
     @Pattern(regexp = TypeValidation.PHONE, message = "Phone is invalid!")
