@@ -9,4 +9,6 @@ import com.example.ecom.dto.feature.FeatureResponse;
 public interface FeatureService {
     Optional<ListWrapperResponse<FeatureResponse>> getFeatures(Map<String, String> allParams, String keySort, int page,
             int pageSize, String sortField);
+
+    void changeStatusFeature(String id);
 }

@@ -19,6 +19,7 @@ import com.example.ecom.dto.feature.FeatureResponse;
 import com.example.ecom.dto.permission.PermissionRequest;
 import com.example.ecom.dto.permission.PermissionResponse;
 import com.example.ecom.dto.user.UserResponse;
+import com.example.ecom.exception.ForbiddenException;
 import com.example.ecom.exception.InvalidRequestException;
 import com.example.ecom.exception.ResourceNotFoundException;
 import com.example.ecom.repository.permission.Permission;
@@ -65,6 +66,7 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
             throw new InvalidRequestException(error, "This name is unavailable!");
         }
         Permission permission = new Permission();
+        permission.setCanDelete(true);
         permission.setName(permissionRequest.getName());
         permission.setCreated(DateFormat.getCurrentTime());
         permission.setSkipAccessability(1);
@@ -116,9 +118,13 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
 
     @Override
     public void deletePermission(String id) {
-        repository.getPermissionById(id)
+        Permission permission = repository.getPermissionById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found permission!"));
-        repository.deletePermission(id);
+        if (permission.isCanDelete()) {
+            repository.deletePermission(id);
+        } else {
+            throw new ForbiddenException("Access denied!");
+        }
     }
 
     private String generateParamsValue(List<String> features) {

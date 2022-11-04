@@ -4,6 +4,7 @@ import static java.util.Map.entry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
@@ -42,6 +44,11 @@ public class EndpointsListener implements ApplicationListener<ContextRefreshedEv
     @Value("${spring.mail.username}")
     protected String email;
 
+    @Value("${default.password}")
+    protected String defaultPassword;
+
+    private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         ApplicationContext applicationContext = event.getApplicationContext();
@@ -63,7 +70,7 @@ public class EndpointsListener implements ApplicationListener<ContextRefreshedEv
         User user = new User();
         if (users.size() == 0) {
             user = new User(new ObjectId(), "super_admin",
-                    "$2a$12$d6aWvOFKgqCVIaYJc9YkDu0y.wK8reuZXLwoUjgnNOP9YujICIHLm", 0,
+                    bCryptPasswordEncoder.encode(Base64.getEncoder().encodeToString(defaultPassword.getBytes())), 0,
                     "", "", "Super", "Admin", email, "", new HashMap<>(), DateFormat.getCurrentTime(), null, true,
                     false,
                     0);
@@ -78,18 +85,20 @@ public class EndpointsListener implements ApplicationListener<ContextRefreshedEv
                     .map(feature -> feature.get_id()).collect(Collectors.toList());
             List<ObjectId> userIds = Arrays.asList(user.get_id());
             Permission permission = new Permission(null, "super_admin_permission", userIds, features,
-                    DateFormat.getCurrentTime(), null, 0);
+                    DateFormat.getCurrentTime(), null, false, 0);
             permissionRepository.insertAndUpdate(permission);
         } else {
-            List<ObjectId> features = featureRepository.getFeatures(new HashMap<>(), "", 0, 0, "").get().stream()
-                    .map(feature -> feature.get_id()).collect(Collectors.toList());
-            List<ObjectId> userIds = permissions.get(0).getUserId();
-            Permission permission = new Permission(permissions.get(0).get_id(), "super_admin_permission", userIds,
-                    features,
-                    permissions.get(0).getCreated(), DateFormat.getCurrentTime(),
-                    permissions.get(0).getSkipAccessability());
-            permissionRepository.insertAndUpdate(permission);
-
+            permissionRepository.insertAndUpdate(permissions.get(0));
+        }
+        List<Permission> permissionsDefault = permissionRepository
+                .getPermissions(Map.ofEntries(entry("name", "default_permission")), "", 0, 0, "").get();
+        if (permissionsDefault.size() == 0) {
+            Permission defaultPermission = new Permission(null, "default_permission", new ArrayList<>(),
+                    new ArrayList<>(),
+                    DateFormat.getCurrentTime(), null, false, 0);
+            permissionRepository.insertAndUpdate(defaultPermission);
+        } else {
+            permissionRepository.insertAndUpdate(permissionsDefault.get(0));
         }
         featureRepository.getFeatures(new HashMap<>(), "", 0, 0,
                 "").get().forEach(featureCheck -> {

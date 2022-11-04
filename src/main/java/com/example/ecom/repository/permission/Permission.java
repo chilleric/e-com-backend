@@ -21,5 +21,6 @@ public class Permission {
     private List<ObjectId> featureId;
     private Date created;
     private Date modified;
+    private boolean isCanDelete;
     private int skipAccessability;
 }
