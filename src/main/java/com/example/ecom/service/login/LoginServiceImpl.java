@@ -72,7 +72,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             }
             user = users.get(0);
         }
-        PasswordValidator.validatePassword(generateError(LoginRequest.class), loginRequest.getPassword());
+        PasswordValidator.validatePassword(generateError(LoginRequest.class), loginRequest.getPassword(), "password");
         if (!user.isVerified())
             throw new InvalidRequestException(generateError(LoginRequest.class), "This account is not verified!");
         if (!bCryptPasswordEncoder().matches(loginRequest.getPassword(),
@@ -154,7 +154,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
                 throw new InvalidRequestException(error, "Phone number is taken!");
             }
             Map<String, String> error = generateError(RegisterRequest.class);
-            PasswordValidator.validateNewPassword(error, registerRequest.getPassword());
+            PasswordValidator.validateNewPassword(error, registerRequest.getPassword(), "password");
             String passwordEncode = bCryptPasswordEncoder().encode(registerRequest.getPassword());
             User user = objectMapper.convertValue(registerRequest, User.class);
             user.setPassword(passwordEncode);
