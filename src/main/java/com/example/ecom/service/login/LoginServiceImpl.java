@@ -46,7 +46,9 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         boolean normalUsername = true;
         if (loginRequest.getUsername().matches(TypeValidation.EMAIL)) {
             List<User> users = repository
-                    .getUsers(Map.ofEntries(entry("email", loginRequest.getUsername())), "", 0, 0, "").get();
+                    .getUsers(Map.ofEntries(entry("email", loginRequest.getUsername()), entry("deleted", "0")), "", 0,
+                            0, "")
+                    .get();
             if (users.size() == 0) {
                 throw new ResourceNotFoundException("Not found user with email: " + loginRequest.getUsername());
             }
@@ -55,7 +57,9 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         }
         if (loginRequest.getUsername().matches(TypeValidation.PHONE)) {
             List<User> users = repository
-                    .getUsers(Map.ofEntries(entry("phone", loginRequest.getUsername())), "", 0, 0, "").get();
+                    .getUsers(Map.ofEntries(entry("phone", loginRequest.getUsername()), entry("deleted", "0")), "", 0,
+                            0, "")
+                    .get();
             if (users.size() == 0) {
                 throw new ResourceNotFoundException(
                         "Not found user with username: " + loginRequest.getUsername());
@@ -65,7 +69,9 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         }
         if (normalUsername) {
             List<User> users = repository
-                    .getUsers(Map.ofEntries(entry("username", loginRequest.getUsername())), "", 0, 0, "").get();
+                    .getUsers(Map.ofEntries(entry("username", loginRequest.getUsername()), entry("deleted", "0")), "",
+                            0, 0, "")
+                    .get();
             if (users.size() == 0) {
                 throw new ResourceNotFoundException(
                         "Not found user with username: " + loginRequest.getUsername());
