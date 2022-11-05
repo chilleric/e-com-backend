@@ -1,5 +1,6 @@
 package com.example.ecom.repository.permission;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +53,8 @@ public class PermissionRepositoryImpl extends AbstractMongoRepo implements Permi
             query.addCriteria(Criteria.where("userId").in(user_id).and("featureId").in(feature_id));
             return replaceFind(query, Permission.class);
         } catch (IllegalArgumentException e) {
-            APP_LOGGER.error("wrong type user id");
-            return Optional.empty();
+            APP_LOGGER.error("wrong type user id or feature id");
+            return Optional.of(new ArrayList<>());
         }
     }
 
@@ -65,8 +66,8 @@ public class PermissionRepositoryImpl extends AbstractMongoRepo implements Permi
             query.addCriteria(Criteria.where("userId").in(user_id));
             return replaceFind(query, Permission.class);
         } catch (IllegalArgumentException e) {
-            APP_LOGGER.error("wrong type user id");
-            return Optional.empty();
+            APP_LOGGER.error("wrong type user id or feature id");
+            return Optional.of(new ArrayList<>());
         }
     }
 
