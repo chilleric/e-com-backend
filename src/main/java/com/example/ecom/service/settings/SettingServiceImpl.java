@@ -105,7 +105,7 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
             }
         }
         User user = users.get(0);
-        user.setPassword(accountSetting.getPhone());
+        user.setPhone(accountSetting.getPhone());
         user.setEmail(accountSetting.getEmail());
         user.setUsername(accountSetting.getUsername());
         user.setFirstName(accountSetting.getFirstName());
