@@ -46,10 +46,12 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
         List<Setting> settings = repository.getSettings(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
         if (settings.size() == 0) {
             repository.insertAndUpdate(new Setting(null, new ObjectId(userId), settingsRequest.isDarkTheme()));
+        } else {
+            Setting setting = settings.get(0);
+            setting.setDarkTheme(settingsRequest.isDarkTheme());
+            repository.insertAndUpdate(setting);
         }
-        Setting setting = settings.get(0);
-        setting.setDarkTheme(settingsRequest.isDarkTheme());
-        repository.insertAndUpdate(setting);
+
     }
 
     @Override
