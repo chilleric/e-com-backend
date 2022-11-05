@@ -165,6 +165,8 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             User user = objectMapper.convertValue(registerRequest, User.class);
             user.setPassword(passwordEncode);
             user.setTokens(new HashMap<>());
+            user.setGender(0);
+            user.setDob("");
             repository.insertAndUpdate(user);
             String newCode = RandomStringUtils.randomAlphabetic(6);
             Date now = new Date();

@@ -87,7 +87,22 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
         if (users.size() == 0) {
             throw new ResourceAccessException("Not found user");
         }
+        List<User> emailCheck = userRepository
+                .getUsers(Map.ofEntries(entry("email", accountSetting.getEmail())), userId, 0, 0, userId).get();
+        List<User> phoneCheck = userRepository
+                .getUsers(Map.ofEntries(entry("phone", accountSetting.getPhone())), userId, 0, 0, userId).get();
+        Map<String, String> error = generateError(AccountSetting.class);
+        if (emailCheck.size() > 0) {
+            error.put("email", "This email is taken!");
+            throw new InvalidRequestException(error, "Phone or email is taken!");
+        }
+        if (phoneCheck.size() > 0) {
+            error.put("phone", "This phone is taken!");
+            throw new InvalidRequestException(error, "Phone or email is taken!");
+        }
         User user = users.get(0);
+        user.setPassword(accountSetting.getPhone());
+        user.setEmail(accountSetting.getEmail());
         user.setUsername(accountSetting.getUsername());
         user.setFirstName(accountSetting.getFirstName());
         user.setLastName(accountSetting.getLastName());

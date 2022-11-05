@@ -37,6 +37,14 @@ public class AccountSetting {
     @NotNull(message = "Address is required!")
     private String address;
 
+    @NotNull(message = "Email is required!")
+    @Pattern(regexp = TypeValidation.EMAIL, message = "Email is invalid!")
+    private String email;
+
+    @NotNull(message = "Phone is required!")
+    @Pattern(regexp = TypeValidation.PHONE, message = "Phone is invalid!")
+    private String phone;
+
     @NotNull(message = "verify2FA is invalid")
     @AssertFalse(message = "verify2FA is invalid")
     @AssertTrue(message = "verify2FA is invalid")

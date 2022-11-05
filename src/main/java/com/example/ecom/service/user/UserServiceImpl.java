@@ -62,6 +62,19 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
         if (users.size() == 0) {
             throw new ResourceNotFoundException("Not found user!");
         }
+        List<User> emailCheck = repository
+                .getUsers(Map.ofEntries(entry("email", userRequest.getEmail())), userId, 0, 0, userId).get();
+        List<User> phoneCheck = repository
+                .getUsers(Map.ofEntries(entry("phone", userRequest.getPhone())), userId, 0, 0, userId).get();
+        Map<String, String> error = generateError(UserRequest.class);
+        if (emailCheck.size() > 0) {
+            error.put("email", "This email is taken!");
+            throw new InvalidRequestException(error, "Phone or email is taken!");
+        }
+        if (phoneCheck.size() > 0) {
+            error.put("phone", "This phone is taken!");
+            throw new InvalidRequestException(error, "Phone or email is taken!");
+        }
         User user = users.get(0);
         Date currentTime = DateFormat.getCurrentTime();
         User newUser = objectMapper.convertValue(userRequest, User.class);
