@@ -93,12 +93,16 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
                 .getUsers(Map.ofEntries(entry("phone", accountSetting.getPhone())), userId, 0, 0, userId).get();
         Map<String, String> error = generateError(AccountSetting.class);
         if (emailCheck.size() > 0) {
-            error.put("email", "This email is taken!");
-            throw new InvalidRequestException(error, "Phone or email is taken!");
+            if (emailCheck.get(0).get_id().compareTo((users.get(0).get_id())) != 0) {
+                error.put("email", "This email is taken!");
+                throw new InvalidRequestException(error, "Phone or email is taken!");
+            }
         }
         if (phoneCheck.size() > 0) {
-            error.put("phone", "This phone is taken!");
-            throw new InvalidRequestException(error, "Phone or email is taken!");
+            if (phoneCheck.get(0).get_id().compareTo((users.get(0).get_id())) != 0) {
+                error.put("phone", "This phone is taken!");
+                throw new InvalidRequestException(error, "Phone or email is taken!");
+            }
         }
         User user = users.get(0);
         user.setPassword(accountSetting.getPhone());

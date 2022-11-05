@@ -1,7 +1,5 @@
 package com.example.ecom.dto.settings;
 
-import javax.validation.constraints.AssertFalse;
-import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -46,8 +44,6 @@ public class AccountSetting {
     private String phone;
 
     @NotNull(message = "verify2FA is invalid")
-    @AssertFalse(message = "verify2FA is invalid")
-    @AssertTrue(message = "verify2FA is invalid")
     private boolean verify2FA;
 
     @NotEmpty(message = "First name is required!")
