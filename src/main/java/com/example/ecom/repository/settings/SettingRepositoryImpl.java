@@ -21,7 +21,7 @@ public class SettingRepositoryImpl extends AbstractMongoRepo implements SettingR
 
     @Override
     public void insertAndUpdate(Setting setting) {
-        authenticationTemplate.save(setting, "users");
+        authenticationTemplate.save(setting, "settings");
     }
 
 }
