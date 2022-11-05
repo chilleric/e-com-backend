@@ -31,7 +31,7 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
 
     @Override
     public Optional<SettingsResponse> getSettingsByUserId(String userId) {
-        List<Setting> settings = repository.getSettings(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
+        List<Setting> settings = repository.getSettings(Map.ofEntries(entry("userId", userId)), "", 0, 0, "").get();
         if (settings.size() == 0) {
             repository.insertAndUpdate(new Setting(null, new ObjectId(userId), false));
             return Optional.of(new SettingsResponse(false));
@@ -43,7 +43,7 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
     @Override
     public void updateSettings(SettingsRequest settingsRequest, String userId) {
         validate(settingsRequest);
-        List<Setting> settings = repository.getSettings(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
+        List<Setting> settings = repository.getSettings(Map.ofEntries(entry("userId", userId)), "", 0, 0, "").get();
         if (settings.size() == 0) {
             repository.insertAndUpdate(new Setting(null, new ObjectId(userId), settingsRequest.isDarkTheme()));
         } else {
