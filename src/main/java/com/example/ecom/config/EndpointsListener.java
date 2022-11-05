@@ -88,7 +88,11 @@ public class EndpointsListener implements ApplicationListener<ContextRefreshedEv
                     DateFormat.getCurrentTime(), null, false, 0);
             permissionRepository.insertAndUpdate(permission);
         } else {
-            permissionRepository.insertAndUpdate(permissions.get(0));
+            List<ObjectId> features = featureRepository.getFeatures(new HashMap<>(), "", 0, 0, "").get().stream()
+                    .map(feature -> feature.get_id()).collect(Collectors.toList());
+            Permission permission = permissions.get(0);
+            permission.setFeatureId(features);
+            permissionRepository.insertAndUpdate(permission);
         }
         List<Permission> permissionsDefault = permissionRepository
                 .getPermissions(Map.ofEntries(entry("name", "default_permission")), "", 0, 0, "").get();
