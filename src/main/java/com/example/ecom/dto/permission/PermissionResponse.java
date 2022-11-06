@@ -2,9 +2,6 @@ package com.example.ecom.dto.permission;
 
 import java.util.List;
 
-import com.example.ecom.dto.feature.FeatureResponse;
-import com.example.ecom.dto.user.UserResponse;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,8 +12,8 @@ import lombok.NoArgsConstructor;
 public class PermissionResponse {
     private String id;
     private String name;
-    private List<FeatureResponse> features;
-    private List<UserResponse> users;
+    private List<String> features;
+    private List<String> users;
     private String created;
     private String modified;
     private int skipAccessability;
