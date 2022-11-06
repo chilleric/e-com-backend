@@ -80,6 +80,15 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
                 throw new InvalidRequestException(error, "Phone or email is taken!");
             }
         }
+        List<User> usernameCheck = repository
+                .getUsers(Map.ofEntries(entry("username", userRequest.getUsername())), "", 0, 0, "")
+                .get();
+        if (usernameCheck.size() != 0) {
+            if (usernameCheck.get(0).get_id().compareTo(users.get(0).get_id()) != 0) {
+                error.put("username", "username existed");
+                throw new InvalidRequestException(error, "username existed");
+            }
+        }
         User user = users.get(0);
         Date currentTime = DateFormat.getCurrentTime();
         User newUser = objectMapper.convertValue(userRequest, User.class);

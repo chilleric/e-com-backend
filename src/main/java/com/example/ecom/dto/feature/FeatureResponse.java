@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FeatureResponse {
-    private String _id;
+    private String id;
     private String name;
     private String path;
     private int deleted;

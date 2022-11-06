@@ -21,6 +21,7 @@ import com.example.ecom.repository.settings.SettingRepository;
 import com.example.ecom.repository.user.User;
 import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
+import com.example.ecom.utils.DateFormat;
 import com.example.ecom.utils.PasswordValidator;
 
 @Service
@@ -78,6 +79,7 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
             error.put("confirmPassword", "Confirm password is different!");
             throw new InvalidRequestException(error, "Confirm password is different!");
         }
+        user.setModified(DateFormat.getCurrentTime());
         user.setPassword(bCryptPasswordEncoder().encode(changePasswordRequest.getNewPassword()));
         userRepository.insertAndUpdate(user);
     }
