@@ -149,7 +149,6 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             } else {
                 error.put("email", "Please verify your email!");
                 throw new InvalidRequestException(error, "Please verify your email!");
-
             }
         } else {
             if (repository
