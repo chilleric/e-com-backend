@@ -42,7 +42,7 @@ public class UserController extends AbstractController<UserService> {
 
         @SecurityRequirement(name = "Bearer Authentication")
         @GetMapping(value = "get-detail-user")
-        public ResponseEntity<CommonResponse<UserResponse>> getUserById(@RequestParam(required = true) String id,
+        public ResponseEntity<CommonResponse<UserResponse>> getUserDetail(@RequestParam(required = true) String id,
                         HttpServletRequest request) {
                 ValidationResult result = validateToken(request, false);
                 return response(service.findOneUserById(id,
@@ -51,7 +51,7 @@ public class UserController extends AbstractController<UserService> {
 
         @SecurityRequirement(name = "Bearer Authentication")
         @GetMapping(value = "get-list-users")
-        public ResponseEntity<CommonResponse<ListWrapperResponse<UserResponse>>> getUsers(
+        public ResponseEntity<CommonResponse<ListWrapperResponse<UserResponse>>> getListUsers(
                         @RequestParam(required = false, defaultValue = "1") int page,
                         @RequestParam(required = false, defaultValue = "10") int pageSize,
                         @RequestParam Map<String, String> allParams,
@@ -78,7 +78,7 @@ public class UserController extends AbstractController<UserService> {
 
         @SecurityRequirement(name = "Bearer Authentication")
         @PutMapping(value = "change-status-user")
-        public ResponseEntity<CommonResponse<String>> changeStatus(@RequestParam String id,
+        public ResponseEntity<CommonResponse<String>> changeStatusUser(@RequestParam String id,
                         HttpServletRequest request) {
                 ValidationResult result = validateToken(request, false);
                 preventOtherSuperAdmin(id);

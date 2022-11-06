@@ -28,6 +28,7 @@ import com.example.ecom.repository.permission.PermissionRepository;
 import com.example.ecom.repository.user.User;
 import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.utils.DateFormat;
+import com.example.ecom.utils.StringUtils;
 
 @Component
 public class EndpointsListener implements ApplicationListener<ContextRefreshedEvent> {
@@ -61,11 +62,13 @@ public class EndpointsListener implements ApplicationListener<ContextRefreshedEv
                         List<Feature> features = featureRepository
                                 .getFeatures(Map.ofEntries(entry("path", path)), "", 0, 0, "").get();
                         if (features.size() == 0) {
-                            Feature feature = new Feature(null, value.toString(), path, 0);
+                            Feature feature = new Feature(null,
+                                    StringUtils.camelCaseToText(value.getMethod().getName()), path, 0);
                             featureRepository.insertAndUpdate(feature);
                         }
                     }
                 });
+
         List<User> users = userRepository.getUsers(Map.ofEntries(entry("username", "super_admin")), "", 0, 0, "").get();
         User user = new User();
         if (users.size() == 0) {
@@ -79,7 +82,8 @@ public class EndpointsListener implements ApplicationListener<ContextRefreshedEv
             user = users.get(0);
         }
         List<Permission> permissions = permissionRepository
-                .getPermissions(Map.ofEntries(entry("name", "super_admin_permission")), "", 0, 0, "").get();
+                .getPermissions(Map.ofEntries(entry("name", "super_admin_permission")), "", 0, 0, "")
+                .get();
         if (permissions.size() == 0) {
             List<ObjectId> features = featureRepository.getFeatures(new HashMap<>(), "", 0, 0, "").get().stream()
                     .map(feature -> feature.get_id()).collect(Collectors.toList());
@@ -97,7 +101,8 @@ public class EndpointsListener implements ApplicationListener<ContextRefreshedEv
             permissionRepository.insertAndUpdate(permission);
         }
         List<Permission> permissionsDefault = permissionRepository
-                .getPermissions(Map.ofEntries(entry("name", "default_permission")), "", 0, 0, "").get();
+                .getPermissions(Map.ofEntries(entry("name", "default_permission")), "", 0, 0, "")
+                .get();
         if (permissionsDefault.size() == 0) {
             Permission defaultPermission = new Permission(null, "default_permission", new ArrayList<>(),
                     new ArrayList<>(),
@@ -106,25 +111,24 @@ public class EndpointsListener implements ApplicationListener<ContextRefreshedEv
         } else {
             permissionRepository.insertAndUpdate(permissionsDefault.get(0));
         }
-        featureRepository.getFeatures(new HashMap<>(), "", 0, 0,
-                "").get().forEach(featureCheck -> {
-                    boolean needDelete = true;
-                    for (String path : paths) {
-                        if (featureCheck.getPath().compareTo(path) == 0) {
-                            needDelete = false;
-                            break;
-                        }
-                    }
-                    if (needDelete) {
-                        featureRepository.deleteFeature(featureCheck.get_id().toString());
-                        permissionRepository.getPermissions(new HashMap<>(), "", 0, 0, "").get()
-                                .forEach(perm -> {
-                                    List<ObjectId> updateFeature = perm.getFeatureId().stream()
-                                            .filter(fea -> fea != featureCheck.get_id()).collect(Collectors.toList());
-                                    perm.setFeatureId(updateFeature);
-                                    permissionRepository.insertAndUpdate(perm);
-                                });
-                    }
-                });
+        featureRepository.getFeatures(new HashMap<>(), "", 0, 0, "").get().forEach(featureCheck -> {
+            boolean needDelete = true;
+            for (String path : paths) {
+                if (featureCheck.getPath().compareTo(path) == 0) {
+                    needDelete = false;
+                    break;
+                }
+            }
+            if (needDelete) {
+                featureRepository.deleteFeature(featureCheck.get_id().toString());
+                permissionRepository.getPermissions(new HashMap<>(), "", 0, 0, "").get()
+                        .forEach(perm -> {
+                            List<ObjectId> updateFeature = perm.getFeatureId().stream()
+                                    .filter(fea -> fea != featureCheck.get_id()).collect(Collectors.toList());
+                            perm.setFeatureId(updateFeature);
+                            permissionRepository.insertAndUpdate(perm);
+                        });
+            }
+        });
     }
 }

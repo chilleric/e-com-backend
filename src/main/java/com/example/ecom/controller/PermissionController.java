@@ -28,7 +28,7 @@ public class PermissionController extends AbstractController<PermissionService> 
 
         @SecurityRequirement(name = "Bearer Authentication")
         @GetMapping(value = "get-list-permissions")
-        public ResponseEntity<CommonResponse<ListWrapperResponse<PermissionResponse>>> getFeatures(
+        public ResponseEntity<CommonResponse<ListWrapperResponse<PermissionResponse>>> getListPermissions(
                         @RequestParam(required = false, defaultValue = "1") int page,
                         @RequestParam(required = false, defaultValue = "10") int pageSize,
                         @RequestParam Map<String, String> allParams,
@@ -41,7 +41,7 @@ public class PermissionController extends AbstractController<PermissionService> 
 
         @SecurityRequirement(name = "Bearer Authentication")
         @PostMapping(value = "add-new-permission")
-        public ResponseEntity<CommonResponse<String>> addNewFeature(
+        public ResponseEntity<CommonResponse<String>> addNewPermission(
                         @RequestBody PermissionRequest permissionRequest, HttpServletRequest request) {
                 validateToken(request, false);
                 service.addNewPermissions(permissionRequest);
@@ -54,7 +54,7 @@ public class PermissionController extends AbstractController<PermissionService> 
 
         @SecurityRequirement(name = "Bearer Authentication")
         @PutMapping(value = "update-permission")
-        public ResponseEntity<CommonResponse<String>> updateFeature(
+        public ResponseEntity<CommonResponse<String>> updatePermission(
                         @RequestBody PermissionRequest permissionRequest, @RequestParam(required = true) String id,
                         HttpServletRequest request) {
                 validateToken(request, false);
@@ -68,7 +68,7 @@ public class PermissionController extends AbstractController<PermissionService> 
 
         @SecurityRequirement(name = "Bearer Authentication")
         @PutMapping(value = "delete-permission")
-        public ResponseEntity<CommonResponse<String>> updateFeature(
+        public ResponseEntity<CommonResponse<String>> deletePermission(
                         @RequestParam(required = true) String id, HttpServletRequest request) {
                 validateToken(request, false);
                 service.deletePermission(id);
