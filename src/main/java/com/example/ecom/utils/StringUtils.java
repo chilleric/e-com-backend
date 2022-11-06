@@ -9,4 +9,10 @@ public class StringUtils {
         String result = m.replaceAll(match -> "_" + match.group().toLowerCase());
         return result;
     }
+
+    public static String camelCaseToText(String strInput) {
+        Matcher m = Pattern.compile("(?<=[a-z])[A-Z]").matcher(strInput);
+        String result = m.replaceAll(match -> " " + match.group().toLowerCase());
+        return result;
+    }
 }
