@@ -64,7 +64,7 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
             throw new ResourceAccessException("Not found user");
         }
         User user = users.get(0);
-        if (bCryptPasswordEncoder().matches(changePasswordRequest.getOldPassword(), user.getPassword())) {
+        if (!bCryptPasswordEncoder().matches(changePasswordRequest.getOldPassword(), user.getPassword())) {
             Map<String, String> error = generateError(ChangePasswordRequest.class);
             error.put("oldPassword", "Old password does not match!");
             throw new InvalidRequestException(error, "Old password not match!");
