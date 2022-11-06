@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 public class PermissionResponse {
     private String id;
     private String name;
-    private List<String> features;
-    private List<String> users;
+    private List<String> featureId;
+    private List<String> userId;
     private String created;
     private String modified;
     private int skipAccessability;
