@@ -45,12 +45,12 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
                 permissions.stream()
                         .map(permission -> new PermissionResponse(permission.get_id().toString(), permission.getName(),
                                 permission.getFeatureId().size() > 0
-                                        ? generateFeatureList(permission.getFeatureId().stream()
-                                                .map(feature -> feature.toString()).collect(Collectors.toList()))
+                                        ? permission.getFeatureId().stream()
+                                                .map(feature -> feature.toString()).collect(Collectors.toList())
                                         : new ArrayList<>(),
-                                permission.getUserId().size() > 0 ? generateUserList(
-                                        permission.getUserId().stream().map(userId -> userId.toString())
-                                                .collect(Collectors.toList()))
+                                permission.getUserId().size() > 0
+                                        ? permission.getUserId().stream().map(userId -> userId.toString())
+                                                .collect(Collectors.toList())
                                         : new ArrayList<>(),
                                 DateFormat.toDateString(permission.getCreated(), DateTime.YYYY_MM_DD),
                                 DateFormat.toDateString(permission.getModified(), DateTime.YYYY_MM_DD),
