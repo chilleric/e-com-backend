@@ -123,11 +123,14 @@
 						<env>
 							<BP_NATIVE_IMAGE>true</BP_NATIVE_IMAGE>
 							<BP_BOOT_NATIVE_IMAGE_BUILD_ARGUMENTS>
-								--no-fallback
-								--report-unsupported-elements-at-runtime
-								--allow-incomplete-classpath
+								--verbose 
+								--no-fallback 
+								--enable-https 
+								--report-unsupported-elements-at-runtime 
+								--allow-incomplete-classpath 
+								--initialize-at-run-time=org.slf4j.impl.StaticLoggerBinder 
+								--trace-class-initialization=javax.xml.parsers.FactoryFinder 
 								-H:+ReportExceptionStackTraces
-								--trace-class-
 							</BP_BOOT_NATIVE_IMAGE_BUILD_ARGUMENTS>
 						</env>
 					</image>
