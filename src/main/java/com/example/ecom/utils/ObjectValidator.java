@@ -5,16 +5,14 @@ import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 @Component
 public class ObjectValidator {
-    @Autowired
-    @Qualifier("validator")
-    LocalValidatorFactoryBean validatorFactory;
+    // @Autowired
+    // @Qualifier("validator")
+    private LocalValidatorFactoryBean validatorFactory;
 
     public <T> Map<String, String> validateRequestThenReturnMessage(Map<String, String> errorResult, T t) {
         Set<ConstraintViolation<T>> violations = validatorFactory.getValidator().validate(t);
