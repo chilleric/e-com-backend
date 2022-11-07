@@ -51,9 +51,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: install font-package
-        run: sudo apt install -y fontconfig
-
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:

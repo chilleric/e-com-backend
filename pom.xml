@@ -18,6 +18,12 @@
 	</properties>
 	<dependencies>
 		<dependency>
+			<groupId>com.oracle.substratevm</groupId>
+			<artifactId>svm</artifactId>
+			<version>19.2.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
