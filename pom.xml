@@ -17,12 +17,12 @@
 		<java.version>11</java.version>
 	</properties>
 	<dependencies>
-		<!-- <dependency>
+		<dependency>
 			<groupId>org.graalvm.nativeimage</groupId>
 			<artifactId>svm</artifactId>
 			<version>22.3.0</version>
 			<scope>provided</scope>
-		</dependency> -->
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
