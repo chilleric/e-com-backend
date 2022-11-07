@@ -6,6 +6,7 @@ env:
   EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD_E_COM }}
   KEY_JWT: ${{ secrets.KEY_JWT_E_COM }}
   DEFAULT_PASSWORD: ${{ secrets.DEFAULT_PASSWORD_E_COM}}
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
 on:
   push:
