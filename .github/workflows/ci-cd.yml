@@ -68,7 +68,7 @@ jobs:
         run: |
           pack build ghcr.io/ericchentch/e-com-backend:latest \
               --builder paketobuildpacks/builder:tiny \
-              --buildpack paketo-buildpacks/java-native-image@7.27.1 \
+              --buildpack paketo-buildpacks/java-native-image@7.37.0 \
               --path . \
               --env "BP_JVM_VERSION=11" \
               --env "BP_NATIVE_IMAGE=true" \
