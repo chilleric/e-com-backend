@@ -116,6 +116,9 @@
 				<configuration>
 					<classifier>${repackage.classifier}</classifier>
 					<image>
+						<buildpacks>
+							<buildpack>gcr.io/paketo-buildpacks/java-native-image:7.37.0</buildpack>
+						</buildpacks>
 						<builder>paketobuildpacks/builder:tiny</builder>
 						<env>
 							<BP_NATIVE_IMAGE>true</BP_NATIVE_IMAGE>
