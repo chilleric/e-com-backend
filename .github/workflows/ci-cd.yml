@@ -70,7 +70,7 @@ jobs:
               --builder paketobuildpacks/builder:tiny \
               --buildpack paketo-buildpacks/java-native-image@7.37.0 \
               --path . \
-              --env "BP_JVM_VERSION=17" \
+              --env "BP_JVM_VERSION=19" \
               --env "BP_NATIVE_IMAGE=true" \
               --cache-image ghcr.io/ericchentch/e-com-backend-paketo-cache-image:latest \
               --publish
