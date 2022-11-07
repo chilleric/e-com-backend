@@ -71,6 +71,7 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
         }
         Permission permission = new Permission();
         permission.setCanDelete(true);
+        permission.setCanUpdate(true);
         permission.setName(permissionRequest.getName());
         permission.setCreated(DateFormat.getCurrentTime());
         permission.setSkipAccessability(1);
@@ -98,6 +99,18 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
         Permission permission = repository.getPermissionById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found permission!"));
         validate(permissionRequest);
+        if (!permission.isCanUpdate()) {
+            throw new ForbiddenException("Permission can not update!");
+        }
+        List<Permission> permissions = repository
+                .getPermissions(Map.ofEntries(entry("name", permissionRequest.getName())), "", 0, 0, "").get();
+        if (permissions.size() != 0) {
+            if (permissions.get(0).get_id().compareTo(permission.get_id()) != 0) {
+                Map<String, String> error = generateError(PermissionRequest.class);
+                error.put("name", "This name is unavailable!");
+                throw new InvalidRequestException(error, "This name is unavailable!");
+            }
+        }
         permission.setName(permissionRequest.getName());
         if (permissionRequest.getFeatureId().size() != 0) {
             List<FeatureResponse> featureResponse = generateFeatureList(permissionRequest.getFeatureId());

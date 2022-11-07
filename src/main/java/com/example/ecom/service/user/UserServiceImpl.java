@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.example.ecom.constant.ResponseType;
@@ -26,6 +27,9 @@ import com.example.ecom.utils.DateFormat;
 @Service
 public class UserServiceImpl extends AbstractService<UserRepository> implements UserService {
 
+    @Value("${default.password}")
+    protected String defaultPassword;
+
     @Override
     public void createNewUser(UserRequest userRequest) {
         validate(userRequest);
@@ -39,7 +43,8 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
         }
         Date currentTime = DateFormat.getCurrentTime();
         User user = objectMapper.convertValue(userRequest, User.class);
-        user.setPassword(bCryptPasswordEncoder().encode(Base64.getEncoder().encode("Abc@1234".getBytes()).toString()));
+        user.setPassword(
+                bCryptPasswordEncoder().encode(Base64.getEncoder().encodeToString(defaultPassword.getBytes())));
         user.setTokens(new HashMap<>());
         user.setCreated(currentTime);
         user.setModified(currentTime);

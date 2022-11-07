@@ -22,11 +22,9 @@ public class PermissionRequest {
     private String name;
 
     @NotNull(message = "Feature id is required!")
-    @NotEmpty(message = "Feature id is required!")
     private List<String> featureId;
 
     @NotNull(message = "User id is required!")
-    @NotEmpty(message = "User id is required!")
     private List<String> userId;
 
     @NotNull(message = "Skip accessability id is required!")
