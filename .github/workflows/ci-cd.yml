@@ -52,7 +52,6 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Config font
-        uses: sudo apt-get update -y
         uses: sudo apt-get install -y ttf-dejavu
 
       - name: Login to GitHub Container Registry
