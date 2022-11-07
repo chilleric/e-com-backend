@@ -122,6 +122,12 @@
 						<builder>paketobuildpacks/builder:tiny</builder>
 						<env>
 							<BP_NATIVE_IMAGE>true</BP_NATIVE_IMAGE>
+							<BP_BOOT_NATIVE_IMAGE_BUILD_ARGUMENTS>
+								--no-fallback
+								--report-unsupported-elements-at-runtime
+								--allow-incomplete-classpath
+								-H:+ReportExceptionStackTraces
+							</BP_BOOT_NATIVE_IMAGE_BUILD_ARGUMENTS>
 						</env>
 					</image>
 				</configuration>
