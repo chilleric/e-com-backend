@@ -127,6 +127,7 @@
 								--report-unsupported-elements-at-runtime
 								--allow-incomplete-classpath
 								-H:+ReportExceptionStackTraces
+								--trace-class-
 							</BP_BOOT_NATIVE_IMAGE_BUILD_ARGUMENTS>
 						</env>
 					</image>
