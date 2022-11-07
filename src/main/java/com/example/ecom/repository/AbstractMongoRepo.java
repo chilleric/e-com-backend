@@ -9,8 +9,6 @@ import java.util.Optional;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -34,9 +32,13 @@ public abstract class AbstractMongoRepo {
         Query query = new Query();
         Field[] fields = clazz.getDeclaredFields();
         List<Criteria> allCriteria = new ArrayList<>();
+        int isSort = 0;
         for (Map.Entry<String, String> items : allParams.entrySet()) {
             for (Field field : fields) {
                 if (field.getName().compareTo(items.getKey()) == 0) {
+                    if (field.getName().compareTo(sortField) == 0) {
+                        isSort = 1;
+                    }
                     String[] values = items.getValue().split(",");
                     List<Criteria> multipleCriteria = new ArrayList<>();
                     if (field.getType() == ObjectId.class) {
@@ -81,15 +83,14 @@ public abstract class AbstractMongoRepo {
         if (allCriteria.size() > 0) {
             query.addCriteria(new Criteria().andOperator(allCriteria));
         }
-        if (keySort.trim().compareTo("") != 0 && sortField.trim().compareTo("ASC") != 0) {
+        if (isSort == 1 && keySort.trim().compareTo("") != 0 && keySort.trim().compareTo("ASC") != 0) {
             query.with(Sort.by(Sort.Direction.ASC, sortField));
         }
-        if (keySort.trim().compareTo("") != 0 && sortField.trim().compareTo("DESC") != 0) {
+        if (isSort == 1 && keySort.trim().compareTo("") != 0 && keySort.trim().compareTo("DESC") != 0) {
             query.with(Sort.by(Sort.Direction.DESC, sortField));
         }
         if (page > 0 && pageSize > 0) {
-            Pageable pageable = PageRequest.of(page - 1, pageSize);
-            query.with(pageable);
+            query.skip((page - 1) * pageSize).limit(pageSize);
         }
         return query;
     }
