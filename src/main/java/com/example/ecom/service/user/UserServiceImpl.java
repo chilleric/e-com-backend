@@ -95,6 +95,9 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
             }
         }
         User user = users.get(0);
+        if (user.getUsername().compareTo("super_admin") == 0) {
+            throw new InvalidRequestException(new HashMap<>(), "Can not edit super_admin!");
+        }
         Date currentTime = DateFormat.getCurrentTime();
         User newUser = objectMapper.convertValue(userRequest, User.class);
         newUser.setPassword(user.getPassword());
@@ -115,7 +118,11 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
             throw new ResourceNotFoundException("Not found user!");
         }
         User user = users.get(0);
+        if (user.getUsername().compareTo("super_admin") == 0) {
+            throw new InvalidRequestException(new HashMap<>(), "Can not deactivate super_admin!");
+        }
         user.setDeleted(user.getDeleted() == 0 ? 1 : 0);
+        user.setModified(DateFormat.getCurrentTime());
 
         repository.insertAndUpdate(user);
     }
