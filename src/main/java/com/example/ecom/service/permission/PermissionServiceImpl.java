@@ -71,7 +71,6 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
         }
         Permission permission = new Permission();
         permission.setCanDelete(true);
-        permission.setCanUpdate(true);
         permission.setName(permissionRequest.getName());
         permission.setCreated(DateFormat.getCurrentTime());
         permission.setSkipAccessability(1);
@@ -99,9 +98,6 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
         Permission permission = repository.getPermissionById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found permission!"));
         validate(permissionRequest);
-        if (!permission.isCanUpdate()) {
-            throw new ForbiddenException("Permission can not update!");
-        }
         List<Permission> permissions = repository
                 .getPermissions(Map.ofEntries(entry("name", permissionRequest.getName())), "", 0, 0, "").get();
         if (permissions.size() != 0) {
@@ -111,26 +107,42 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
                 throw new InvalidRequestException(error, "This name is unavailable!");
             }
         }
-        permission.setName(permissionRequest.getName());
-        if (permissionRequest.getFeatureId().size() != 0) {
-            List<FeatureResponse> featureResponse = generateFeatureList(permissionRequest.getFeatureId());
-            permission.setFeatureId(
-                    featureResponse.stream().map(feature -> new ObjectId(feature.getId()))
-                            .collect(Collectors.toList()));
+        if (permission.getName().compareTo("super_admin_permission") == 0) {
+            UserResponse adminUser = userService
+                    .getUsers(Map.ofEntries(entry("username", "super_admin")), "", 0, 0, "", ResponseType.PRIVATE)
+                    .get()
+                    .getData().get(0);
+            if (!permissionRequest.getUserId().contains(adminUser.getId())) {
+                Map<String, String> error = generateError(PermissionRequest.class);
+                error.put("userId", "Must contain admin account!");
+                throw new InvalidRequestException(error, "Must contain admin account!");
+            }
+            permission.setModified(DateFormat.getCurrentTime());
+            repository.insertAndUpdate(permission);
         } else {
-            permission.setFeatureId(new ArrayList<>());
+            permission.setName(permissionRequest.getName());
+            if (permissionRequest.getFeatureId().size() != 0) {
+                List<FeatureResponse> featureResponse = generateFeatureList(permissionRequest.getFeatureId());
+                permission.setFeatureId(
+                        featureResponse.stream().map(feature -> new ObjectId(feature.getId()))
+                                .collect(Collectors.toList()));
+            } else {
+                permission.setFeatureId(new ArrayList<>());
+            }
+            if (permissionRequest.getUserId().size() != 0) {
+                List<UserResponse> userResponse = generateUserList(permissionRequest.getUserId());
+                permission
+                        .setUserId(
+                                userResponse.stream().map(user -> new ObjectId(user.getId()))
+                                        .collect(Collectors.toList()));
+            } else {
+                permission.setUserId(new ArrayList<>());
+            }
+            permission.setSkipAccessability(permissionRequest.getSkipAccessability());
+            permission.setModified(DateFormat.getCurrentTime());
+            repository.insertAndUpdate(permission);
         }
-        if (permissionRequest.getUserId().size() != 0) {
-            List<UserResponse> userResponse = generateUserList(permissionRequest.getUserId());
-            permission
-                    .setUserId(
-                            userResponse.stream().map(user -> new ObjectId(user.getId())).collect(Collectors.toList()));
-        } else {
-            permission.setUserId(new ArrayList<>());
-        }
-        permission.setSkipAccessability(permissionRequest.getSkipAccessability());
-        permission.setModified(DateFormat.getCurrentTime());
-        repository.insertAndUpdate(permission);
+
     }
 
     @Override

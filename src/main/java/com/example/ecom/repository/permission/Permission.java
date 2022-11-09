@@ -22,6 +22,5 @@ public class Permission {
     private Date created;
     private Date modified;
     private boolean isCanDelete;
-    private boolean isCanUpdate;
     private int skipAccessability;
 }
