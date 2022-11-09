@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.example.ecom.constant.TypeValidation;
@@ -38,6 +39,9 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
 
     @Autowired
     private CodeRepository codeRepository;
+
+    @Value("${default.password}")
+    protected String defaultPassword;
 
     @Override
     public Optional<LoginResponse> login(LoginRequest loginRequest, boolean isRegister) {
@@ -80,7 +84,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         }
         PasswordValidator.validatePassword(generateError(LoginRequest.class), loginRequest.getPassword(), "password");
         if (!user.isVerified())
-            throw new InvalidRequestException(generateError(LoginRequest.class), "This account is not verified!");
+            return Optional.of(new LoginResponse("", "", false, true));
         if (!bCryptPasswordEncoder().matches(loginRequest.getPassword(),
                 user.getPassword())) {
             Map<String, String> error = generateError(LoginRequest.class);
@@ -105,14 +109,14 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
                 Code code = new Code(null, user.get_id(), TypeCode.VERIFY2FA, verify2FACode, expiredDate);
                 codeRepository.insertAndUpdateCode(code);
             }
-            return Optional.of(new LoginResponse("", "", true));
+            return Optional.of(new LoginResponse("", "", true, false));
         } else {
             String deviceId = UUID.randomUUID().toString();
             Date expiredDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000L);
             Map<String, Date> tokens = user.getTokens();
             tokens.put(deviceId, expiredDate);
             repository.insertAndUpdate(user);
-            return Optional.of(new LoginResponse(user.get_id().toString(), deviceId, false));
+            return Optional.of(new LoginResponse(user.get_id().toString(), deviceId, false, false));
         }
     }
 
@@ -262,13 +266,12 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             throw new ResourceNotFoundException("Not found user with email: " + email);
         }
         User userCheckMail = users.get(0);
-        String newPassword = UUID.randomUUID().toString();
         userCheckMail
                 .setPassword(
-                        bCryptPasswordEncoder().encode(Base64.getEncoder().encodeToString(newPassword.getBytes())));
+                        bCryptPasswordEncoder().encode(Base64.getEncoder().encodeToString(defaultPassword.getBytes())));
         repository.insertAndUpdate(userCheckMail);
         emailService.sendSimpleMail(new EmailDetail(userCheckMail.getEmail(),
-                "Your new username: " + userCheckMail.getUsername() + " \n" + "Your new password: " + newPassword,
+                "Your new username: " + userCheckMail.getUsername() + " \n" + "Your new password: " + defaultPassword,
                 "Your new password!"));
     }
 
@@ -307,7 +310,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             throw new InvalidRequestException(new HashMap<>(), "This code is invalid");
         }
         String deviceId = UUID.randomUUID().toString();
-        return Optional.of(new LoginResponse(user.get_id().toString(), deviceId, false));
+        return Optional.of(new LoginResponse(user.get_id().toString(), deviceId, false, false));
     }
 
     @Override
