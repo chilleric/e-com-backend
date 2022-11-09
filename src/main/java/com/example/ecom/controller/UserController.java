@@ -81,7 +81,6 @@ public class UserController extends AbstractController<UserService> {
         public ResponseEntity<CommonResponse<String>> changeStatusUser(@RequestParam String id,
                         HttpServletRequest request) {
                 ValidationResult result = validateToken(request, false);
-                preventOtherSuperAdmin(id);
                 checkUserId(id, result.getLoginId(), result.isSkipAccessability());
                 service.changeStatusUser(id);
                 return new ResponseEntity<CommonResponse<String>>(

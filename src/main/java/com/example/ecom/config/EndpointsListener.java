@@ -89,7 +89,7 @@ public class EndpointsListener implements ApplicationListener<ContextRefreshedEv
                     .map(feature -> feature.get_id()).collect(Collectors.toList());
             List<ObjectId> userIds = Arrays.asList(user.get_id());
             Permission permission = new Permission(null, "super_admin_permission", userIds, features,
-                    DateFormat.getCurrentTime(), null, false, false, 0);
+                    DateFormat.getCurrentTime(), null, false, 0);
             permissionRepository.insertAndUpdate(permission);
         } else {
             List<ObjectId> features = featureRepository.getFeatures(new HashMap<>(), "", 0, 0, "").get().stream()
@@ -105,8 +105,7 @@ public class EndpointsListener implements ApplicationListener<ContextRefreshedEv
                 .get();
         if (permissionsDefault.size() == 0) {
             Permission defaultPermission = new Permission(null, "default_permission", new ArrayList<>(),
-                    new ArrayList<>(),
-                    DateFormat.getCurrentTime(), null, false, true, 0);
+                    new ArrayList<>(), DateFormat.getCurrentTime(), null, true, 0);
             permissionRepository.insertAndUpdate(defaultPermission);
         } else {
             permissionRepository.insertAndUpdate(permissionsDefault.get(0));

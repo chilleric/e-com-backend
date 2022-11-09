@@ -119,15 +119,4 @@ public abstract class AbstractController<s> {
                     .orElseThrow(() -> new ForbiddenException("Access denied!"));
         }
     }
-
-    protected void preventOtherSuperAdmin(String userId) {
-        List<Permission> permissions = permissionRepository
-                .getPermissionByUserId(userId)
-                .get();
-        if (permissions.size() != 0) {
-            if (permissions.get(0).getName().compareTo("super_admin_permission") == 0) {
-                throw new ForbiddenException("Access denied!");
-            }
-        }
-    }
 }
