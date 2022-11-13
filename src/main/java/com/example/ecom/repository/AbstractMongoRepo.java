@@ -35,10 +35,10 @@ public abstract class AbstractMongoRepo {
         int isSort = 0;
         for (Map.Entry<String, String> items : allParams.entrySet()) {
             for (Field field : fields) {
+                if (field.getName().compareTo(sortField) == 0) {
+                    isSort = 1;
+                }
                 if (field.getName().compareTo(items.getKey()) == 0) {
-                    if (field.getName().compareTo(sortField) == 0) {
-                        isSort = 1;
-                    }
                     String[] values = items.getValue().split(",");
                     List<Criteria> multipleCriteria = new ArrayList<>();
                     if (field.getType() == ObjectId.class) {
@@ -83,10 +83,10 @@ public abstract class AbstractMongoRepo {
         if (allCriteria.size() > 0) {
             query.addCriteria(new Criteria().andOperator(allCriteria));
         }
-        if (isSort == 1 && keySort.trim().compareTo("") != 0 && keySort.trim().compareTo("ASC") != 0) {
+        if (isSort == 1 && keySort.trim().compareTo("") != 0 && keySort.trim().compareTo("ASC") == 0) {
             query.with(Sort.by(Sort.Direction.ASC, sortField));
         }
-        if (isSort == 1 && keySort.trim().compareTo("") != 0 && keySort.trim().compareTo("DESC") != 0) {
+        if (isSort == 1 && keySort.trim().compareTo("") != 0 && keySort.trim().compareTo("DESC") == 0) {
             query.with(Sort.by(Sort.Direction.DESC, sortField));
         }
         if (page > 0 && pageSize > 0) {

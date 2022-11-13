@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 
 import com.example.ecom.constant.ResponseType;
 import com.example.ecom.dto.common.CommonResponse;
@@ -49,7 +50,6 @@ public abstract class AbstractController<s> {
     private AccessabilityRepository accessabilityRepository;
 
     protected ValidationResult validateToken(HttpServletRequest request, boolean hasPublic) {
-
         String token = jwtValidation.getJwtFromRequest(request);
         if (token == null) {
             if (!hasPublic) {
@@ -57,6 +57,19 @@ public abstract class AbstractController<s> {
             }
             return new ValidationResult(false, "public");
         }
+        return checkAuthentication(token, request.getRequestURI(), true);
+    }
+
+    protected ValidationResult validateSSE(String token) {
+        if (StringUtils.hasText(token) && token.startsWith("Bearer ")) {
+            return checkAuthentication(token.substring(7), "", false);
+        } else {
+            throw new UnauthorizedException("Unauthorized");
+        }
+
+    }
+
+    protected ValidationResult checkAuthentication(String token, String path, boolean checkPath) {
         TokenContent info = jwtValidation.getUserIdFromJwt(token);
         List<User> user = userRepository
                 .getUsers(Map.ofEntries(entry("_id", info.getUserId()), entry("deleted", "0")), "", 0, 0, "").get();
@@ -70,25 +83,29 @@ public abstract class AbstractController<s> {
         if (user.get(0).getTokens().get(info.getDeviceId()).compareTo(now) <= 0) {
             throw new UnauthorizedException("Unauthorized!");
         }
-        List<Feature> feature = featureRepository
-                .getFeatures(Map.ofEntries(entry("path", request.getRequestURI())), "", 0, 0, "").get();
-        if (feature.size() == 0) {
-            throw new ResourceNotFoundException("This feature is not enabled!");
-        }
-        List<Permission> permissions = permissionRepository
-                .getPermissionByUser(user.get(0).get_id().toString(), feature.get(0).get_id().toString())
-                .get();
-        if (permissions.size() == 0) {
-            throw new ForbiddenException("You are not approved any permissions!");
-        }
-        boolean skipAccessability = false;
-        for (Permission permission : permissions) {
-            if (permission.getSkipAccessability() == 0
-                    && permission.getFeatureId().contains(feature.get(0).get_id())) {
-                skipAccessability = true;
+        if (checkPath) {
+            List<Feature> feature = featureRepository
+                    .getFeatures(Map.ofEntries(entry("path", path)), "", 0, 0, "").get();
+            if (feature.size() == 0) {
+                throw new ResourceNotFoundException("This feature is not enabled!");
             }
+            List<Permission> permissions = permissionRepository
+                    .getPermissionByUser(user.get(0).get_id().toString(), feature.get(0).get_id().toString())
+                    .get();
+            if (permissions.size() == 0) {
+                throw new ForbiddenException("You are not approved any permissions!");
+            }
+            boolean skipAccessability = false;
+            for (Permission permission : permissions) {
+                if (permission.getSkipAccessability() == 0
+                        && permission.getFeatureId().contains(feature.get(0).get_id())) {
+                    skipAccessability = true;
+                }
+            }
+            return new ValidationResult(skipAccessability, user.get(0).get_id().toString());
         }
-        return new ValidationResult(skipAccessability, user.get(0).get_id().toString());
+        return new ValidationResult(false, user.get(0).get_id().toString());
+
     }
 
     protected ResponseType getResponseType(String ownerId, String loginId, boolean skipAccessability) {

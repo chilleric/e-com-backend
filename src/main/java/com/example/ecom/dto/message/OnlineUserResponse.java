@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class OnlineUserResponse {
     private String name;
-    private String userId;
+    private String id;
 }

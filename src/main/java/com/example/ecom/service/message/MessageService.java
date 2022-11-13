@@ -9,24 +9,23 @@ import com.example.ecom.dto.common.ListWrapperResponse;
 import com.example.ecom.dto.message.ChatRoom;
 import com.example.ecom.dto.message.MessageRequest;
 import com.example.ecom.dto.message.MessageResponse;
+import com.example.ecom.dto.message.OnlineUserResponse;
 
 import reactor.core.publisher.Flux;
 
 public interface MessageService {
 
-    Optional<ListWrapperResponse<MessageResponse>> getReceiveMessages(String userId, String sendId, int page);
+    Optional<ListWrapperResponse<MessageResponse>> getOldMessage(String userId, String sendId, int page);
 
-    Optional<ListWrapperResponse<MessageResponse>> getSendMessages(String userId, String sendId, int page);
+    Optional<List<ChatRoom>> getChatroom(String loginId, int page);
 
-    Optional<List<ChatRoom>> getChatroom(String loginId);
-
-    void sendMessage(MessageRequest messageRequest);
+    Optional<MessageResponse> sendMessage(MessageRequest messageRequest, String loginId, String receiveId);
 
     void addOnlineUser(String userId);
 
     void removeOnlineUser(String userId);
 
-    Flux<ServerSentEvent<List<String>>> getOnlineUsers();
+    Flux<ServerSentEvent<List<OnlineUserResponse>>> getOnlineUsers(String userId);
 
     Flux<ServerSentEvent<MessageResponse>> getLastUserMessage(String userId);
 }

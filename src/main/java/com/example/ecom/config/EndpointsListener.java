@@ -94,10 +94,8 @@ public class EndpointsListener implements ApplicationListener<ContextRefreshedEv
         } else {
             List<ObjectId> features = featureRepository.getFeatures(new HashMap<>(), "", 0, 0, "").get().stream()
                     .map(feature -> feature.get_id()).collect(Collectors.toList());
-            List<ObjectId> userIds = Arrays.asList(user.get_id());
             Permission permission = permissions.get(0);
             permission.setFeatureId(features);
-            permission.setUserId(userIds);
             permissionRepository.insertAndUpdate(permission);
         }
         List<Permission> permissionsDefault = permissionRepository

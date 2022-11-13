@@ -1,5 +1,7 @@
 package com.example.ecom.dto.message;
 
+import java.util.Date;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,5 +14,5 @@ public class MessageResponse {
     private String sendId;
     private String receiveId;
     private String context;
-    private String created;
+    private Date created;
 }
