@@ -117,6 +117,8 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
                 error.put("userId", "Must contain admin account!");
                 throw new InvalidRequestException(error, "Must contain admin account!");
             }
+            permission.setUserId(permissionRequest.getUserId().stream().map(userId -> new ObjectId(userId))
+                    .collect(Collectors.toList()));
             permission.setModified(DateFormat.getCurrentTime());
             repository.insertAndUpdate(permission);
         } else {

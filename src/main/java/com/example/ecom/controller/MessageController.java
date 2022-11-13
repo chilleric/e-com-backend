@@ -2,30 +2,36 @@ package com.example.ecom.controller;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.ecom.dto.common.CommonResponse;
 import com.example.ecom.dto.common.ListWrapperResponse;
+import com.example.ecom.dto.common.ValidationResult;
+import com.example.ecom.dto.message.ChatRoom;
 import com.example.ecom.dto.message.MessageRequest;
 import com.example.ecom.dto.message.MessageResponse;
+import com.example.ecom.dto.message.OnlineUserResponse;
 import com.example.ecom.service.message.MessageService;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import reactor.core.publisher.Flux;
 
 @RestController
 @RequestMapping("/message")
 public class MessageController extends AbstractController<MessageService> {
     @PostMapping("/to-chat-room")
-    public ResponseEntity<CommonResponse<String>> toChatRoom(@RequestParam("id") String userId) {
-        service.addOnlineUser(userId);
+    public ResponseEntity<CommonResponse<String>> toChatRoom(HttpServletRequest request) {
+        ValidationResult result = validateToken(request, false);
+        service.addOnlineUser(result.getLoginId());
         return new ResponseEntity<CommonResponse<String>>(
                 new CommonResponse<String>(true, null, "Connected to Chat!",
                         HttpStatus.OK.value()),
@@ -34,8 +40,9 @@ public class MessageController extends AbstractController<MessageService> {
     }
 
     @PostMapping("/out-chat-room")
-    public ResponseEntity<CommonResponse<String>> outChatRoom(@RequestParam("id") String userId) {
-        service.removeOnlineUser(userId);
+    public ResponseEntity<CommonResponse<String>> outChatRoom(HttpServletRequest request) {
+        ValidationResult result = validateToken(request, false);
+        service.removeOnlineUser(result.getLoginId());
         return new ResponseEntity<CommonResponse<String>>(
                 new CommonResponse<String>(true, null, "Disconnected to Chat!",
                         HttpStatus.OK.value()),
@@ -44,38 +51,39 @@ public class MessageController extends AbstractController<MessageService> {
     }
 
     @PostMapping("/send-message")
-    public ResponseEntity<CommonResponse<String>> sendMessages(@RequestBody MessageRequest messageRequest) {
-        service.sendMessage(messageRequest);
-        return new ResponseEntity<CommonResponse<String>>(
-                new CommonResponse<String>(true, null, "Message is sent!",
-                        HttpStatus.OK.value()),
-                null,
-                HttpStatus.OK.value());
+    public ResponseEntity<CommonResponse<MessageResponse>> sendMessages(@RequestBody MessageRequest messageRequest,
+            @RequestParam("id") String receiveId,
+            HttpServletRequest request) {
+        ValidationResult result = validateToken(request, false);
+        return response(service.sendMessage(messageRequest, result.getLoginId(), receiveId), "Message sent!");
+
     }
 
     @GetMapping("/online-users")
-    public Flux<ServerSentEvent<List<String>>> streamUsers() {
-        return service.getOnlineUsers();
+    public Flux<ServerSentEvent<List<OnlineUserResponse>>> streamUsers(@RequestParam String token) {
+        ValidationResult result = validateSSE(token);
+        return service.getOnlineUsers(result.getLoginId());
     }
 
     @GetMapping("/get-last-messages")
-    public Flux<ServerSentEvent<MessageResponse>> streamLastMessage(@RequestParam("id") String userId) {
-        return service.getLastUserMessage(userId);
+    public Flux<ServerSentEvent<MessageResponse>> streamLastMessage(@RequestParam String token) {
+        ValidationResult result = validateSSE(token);
+        return service.getLastUserMessage(result.getLoginId());
     }
 
-    @GetMapping("/get-old-message")
+    @GetMapping("/get-old-messages")
     public ResponseEntity<CommonResponse<ListWrapperResponse<MessageResponse>>> getOldSendMessage(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam String userId,
-            @RequestParam String sendId) {
-        return response(service.getSendMessages(userId, sendId, page), "get old sent message successfully!");
+            @RequestParam("id") String sendId, HttpServletRequest request) {
+        ValidationResult result = validateToken(request, false);
+        return response(service.getOldMessage(result.getLoginId(), sendId, page), "get old sent message successfully!");
     }
 
-    @GetMapping("/get-receive-message")
-    public ResponseEntity<CommonResponse<ListWrapperResponse<MessageResponse>>> getOldReceiveMessage(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam String userId,
-            @RequestParam String sendId) {
-        return response(service.getReceiveMessages(userId, sendId, page), "get old received message successfully!");
+    @GetMapping(value = "/get-chat-room")
+    public ResponseEntity<CommonResponse<List<ChatRoom>>> getChatRoom(@RequestParam(defaultValue = "1") int page,
+            HttpServletRequest request) {
+        ValidationResult result = validateToken(request, false);
+        return response(service.getChatroom(result.getLoginId(), page), "Success");
     }
+
 }
