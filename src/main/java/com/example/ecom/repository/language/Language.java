@@ -16,5 +16,6 @@ import lombok.NoArgsConstructor;
 public class Language {
     private ObjectId _id;
     private String language;
+    private String key;
     private Map<String, String> dictionary;
 }

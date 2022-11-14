@@ -19,5 +19,10 @@ public class LanguageRequest {
     @NotNull(message = "Language is required")
     private String language;
 
+    @NotEmpty(message = "Key is required")
+    @NotBlank(message = "Key is required")
+    @NotNull(message = "Key is required")
+    private String key;
+
     private Map<String, String> dictionary;
 }
