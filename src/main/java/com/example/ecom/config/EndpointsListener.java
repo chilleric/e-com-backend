@@ -23,6 +23,8 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 import com.example.ecom.repository.feature.Feature;
 import com.example.ecom.repository.feature.FeatureRepository;
+import com.example.ecom.repository.language.Language;
+import com.example.ecom.repository.language.LanguageRepository;
 import com.example.ecom.repository.permission.Permission;
 import com.example.ecom.repository.permission.PermissionRepository;
 import com.example.ecom.repository.user.User;
@@ -41,6 +43,9 @@ public class EndpointsListener implements ApplicationListener<ContextRefreshedEv
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private LanguageRepository languageRepository;
 
     @Value("${spring.mail.username}")
     protected String email;
@@ -127,5 +132,11 @@ public class EndpointsListener implements ApplicationListener<ContextRefreshedEv
                         });
             }
         });
+        List<Language> defLanguages = languageRepository.getLanguages(Map.ofEntries(entry("key", "en")), "", 0, 0, "")
+                .get();
+        if (defLanguages.size() == 0) {
+            Language defLanguage = new Language(null, "English", "en", new HashMap<>());
+            languageRepository.insertAndUpdate(defLanguage);
+        }
     }
 }

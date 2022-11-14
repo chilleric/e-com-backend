@@ -15,4 +15,5 @@ public class Setting {
     private ObjectId _id;
     private ObjectId userId;
     private boolean darkTheme;
+    private String languageKey;
 }

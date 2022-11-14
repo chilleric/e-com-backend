@@ -1,4 +1,4 @@
-package com.example.ecom.dto.settings;
+package com.example.ecom.dto.language;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SettingsResponse {
-    private boolean darkTheme;
-    private String languageKey;
+public class SelectLanguage {
+    private String label;
+    private String key;
 }
