@@ -29,7 +29,7 @@ jobs:
 
   build-vumkt:
     if: ${{ always() }}
-    needs: [test]
+    needs: [test-vumkt]
     runs-on: ubuntu-latest
 
     steps:

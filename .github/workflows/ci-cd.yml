@@ -29,7 +29,7 @@ jobs:
 
   build-develop:
     if: ${{ always() }}
-    needs: [test]
+    needs: [test-develop]
     runs-on: ubuntu-latest
 
     steps:
