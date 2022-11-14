@@ -46,6 +46,12 @@ public class LanguageController extends AbstractController<LanguageService> {
                 return response(service.getSelectLanguage(), "Success");
         }
 
+        @GetMapping(value = "get-language-by-key")
+        public ResponseEntity<CommonResponse<LanguageResponse>> getLanguageByKey(@RequestParam("key") String key,
+                        HttpServletRequest request) {
+                return response(service.getLanguageByKey(key), "Success");
+        }
+
         @SecurityRequirement(name = "Bearer Authentication")
         @PostMapping(value = "add-new-language")
         public ResponseEntity<CommonResponse<String>> addNewLanguage(@RequestBody LanguageRequest languageRequest,
