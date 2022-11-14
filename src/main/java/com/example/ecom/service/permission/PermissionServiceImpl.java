@@ -56,7 +56,7 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
                                 DateFormat.toDateString(permission.getModified(), DateTime.YYYY_MM_DD),
                                 permission.getSkipAccessability()))
                         .collect(Collectors.toList()),
-                page, pageSize, permissions.size()));
+                page, pageSize, repository.getTotal(allParams)));
     }
 
     @Override

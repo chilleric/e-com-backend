@@ -17,4 +17,6 @@ public interface PermissionRepository {
     void insertAndUpdate(Permission permission);
 
     void deletePermission(String id);
+
+    long getTotal(Map<String, String> allParams);
 }
