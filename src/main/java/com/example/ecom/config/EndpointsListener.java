@@ -63,7 +63,7 @@ public class EndpointsListener implements ApplicationListener<ContextRefreshedEv
                                 .getFeatures(Map.ofEntries(entry("path", path)), "", 0, 0, "").get();
                         if (features.size() == 0) {
                             Feature feature = new Feature(null,
-                                    StringUtils.camelCaseToText(value.getMethod().getName()), path, 0);
+                                    StringUtils.camelCaseToPascalCase(value.getMethod().getName()), path, 0);
                             featureRepository.insertAndUpdate(feature);
                         }
                     }

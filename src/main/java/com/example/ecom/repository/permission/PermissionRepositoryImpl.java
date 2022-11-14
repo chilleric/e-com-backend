@@ -71,4 +71,11 @@ public class PermissionRepositoryImpl extends AbstractMongoRepo implements Permi
         }
     }
 
+    @Override
+    public long getTotal(Map<String, String> allParams) {
+        Query query = generateQueryMongoDB(allParams, Permission.class, "", "", 0, 0);
+        long total = authenticationTemplate.count(query, Permission.class);
+        return total;
+    }
+
 }
