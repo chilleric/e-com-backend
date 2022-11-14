@@ -1,4 +1,4 @@
-name: e-com-api CI/CD work-flow
+name: develop CI/CD work-flow
 
 env:
   MONGO_DATABASE_URI: ${{ secrets.MONGO_DATABASE_URI_E_COM }}
