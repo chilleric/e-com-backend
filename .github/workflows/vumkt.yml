@@ -1,4 +1,4 @@
-name: e-com-api CI/CD work-flow
+name: vumkt work-flow
 
 env:
   MONGO_DATABASE_URI: ${{ secrets.MONGO_DATABASE_URI_E_COM }}
@@ -9,9 +9,9 @@ env:
 
 on:
   push:
-    branches: [develop]
+    branches: [vumkt]
   pull_request:
-    branches: [develop]
+    branches: [vumkt]
 
 jobs:
   test:
