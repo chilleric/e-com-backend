@@ -23,11 +23,14 @@ import com.example.ecom.dto.message.MessageResponse;
 import com.example.ecom.dto.message.OnlineUserResponse;
 import com.example.ecom.service.message.MessageService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import reactor.core.publisher.Flux;
 
 @RestController
 @RequestMapping("/message")
 public class MessageController extends AbstractController<MessageService> {
+
+    @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("/to-chat-room")
     public ResponseEntity<CommonResponse<String>> toChatRoom(HttpServletRequest request) {
         ValidationResult result = validateToken(request, false);
@@ -39,6 +42,7 @@ public class MessageController extends AbstractController<MessageService> {
                 HttpStatus.OK.value());
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("/out-chat-room")
     public ResponseEntity<CommonResponse<String>> outChatRoom(HttpServletRequest request) {
         ValidationResult result = validateToken(request, false);
@@ -50,6 +54,7 @@ public class MessageController extends AbstractController<MessageService> {
                 HttpStatus.OK.value());
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("/send-message")
     public ResponseEntity<CommonResponse<MessageResponse>> sendMessages(@RequestBody MessageRequest messageRequest,
             @RequestParam("id") String receiveId,
@@ -71,6 +76,7 @@ public class MessageController extends AbstractController<MessageService> {
         return service.getLastUserMessage(result.getLoginId());
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @GetMapping("/get-old-messages")
     public ResponseEntity<CommonResponse<ListWrapperResponse<MessageResponse>>> getOldSendMessage(
             @RequestParam(defaultValue = "1") int page,
@@ -79,6 +85,7 @@ public class MessageController extends AbstractController<MessageService> {
         return response(service.getOldMessage(result.getLoginId(), sendId, page), "get old sent message successfully!");
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @GetMapping(value = "/get-chat-room")
     public ResponseEntity<CommonResponse<List<ChatRoom>>> getChatRoom(@RequestParam(defaultValue = "1") int page,
             HttpServletRequest request) {
