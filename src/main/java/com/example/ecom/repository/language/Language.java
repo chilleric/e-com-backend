@@ -1,4 +1,6 @@
-package com.example.ecom.repository.settings;
+package com.example.ecom.repository.language;
+
+import java.util.Map;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -7,13 +9,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document(collection = "settings")
+@Document(collection = "languages")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Setting {
+public class Language {
     private ObjectId _id;
-    private ObjectId userId;
-    private boolean darkTheme;
-    private String languageKey;
+    private String language;
+    private String key;
+    private Map<String, String> dictionary;
 }

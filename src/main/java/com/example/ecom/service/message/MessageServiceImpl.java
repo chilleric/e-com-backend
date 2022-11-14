@@ -136,6 +136,7 @@ public class MessageServiceImpl extends AbstractService<MessageRepository> imple
 
         @Override
         public Optional<MessageResponse> sendMessage(MessageRequest messageRequest, String loginId, String receiveId) {
+                validate(messageRequest);
                 ObjectId id = new ObjectId();
                 Date now = DateFormat.getCurrentTime();
                 Message message = new Message(id, new ObjectId(loginId),

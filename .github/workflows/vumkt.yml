@@ -1,4 +1,4 @@
-name: develop CI/CD work-flow
+name: vumkt work-flow
 
 env:
   MONGO_DATABASE_URI: ${{ secrets.MONGO_DATABASE_URI_E_COM }}
@@ -9,12 +9,12 @@ env:
 
 on:
   push:
-    branches: [develop]
+    branches: [vumkt]
   pull_request:
-    branches: [develop]
+    branches: [vumkt]
 
 jobs:
-  test-develop:
+  test-vumkt:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,7 +27,7 @@ jobs:
       - name: Test with Maven
         run: mvn test
 
-  build-develop:
+  build-vumkt:
     if: ${{ always() }}
     needs: [test]
     runs-on: ubuntu-latest

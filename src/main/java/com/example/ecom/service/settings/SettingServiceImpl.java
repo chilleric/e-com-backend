@@ -16,6 +16,8 @@ import com.example.ecom.dto.settings.ChangePasswordRequest;
 import com.example.ecom.dto.settings.SettingsRequest;
 import com.example.ecom.dto.settings.SettingsResponse;
 import com.example.ecom.exception.InvalidRequestException;
+import com.example.ecom.repository.language.Language;
+import com.example.ecom.repository.language.LanguageRepository;
 import com.example.ecom.repository.settings.Setting;
 import com.example.ecom.repository.settings.SettingRepository;
 import com.example.ecom.repository.user.User;
@@ -30,12 +32,16 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private LanguageRepository languageRepository;
+
     @Override
     public Optional<SettingsResponse> getSettingsByUserId(String userId) {
         List<Setting> settings = repository.getSettings(Map.ofEntries(entry("userId", userId)), "", 0, 0, "").get();
+
         if (settings.size() == 0) {
-            repository.insertAndUpdate(new Setting(null, new ObjectId(userId), false));
-            return Optional.of(new SettingsResponse(false));
+            repository.insertAndUpdate(new Setting(null, new ObjectId(userId), false, "en"));
+            return Optional.of(new SettingsResponse(false, "en"));
         }
         Setting setting = settings.get(0);
         return Optional.of(objectMapper.convertValue(setting, SettingsResponse.class));
@@ -44,12 +50,24 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
     @Override
     public void updateSettings(SettingsRequest settingsRequest, String userId) {
         validate(settingsRequest);
+        List<Language> languages = languageRepository
+                .getLanguages(Map.ofEntries(
+                        entry("key", settingsRequest.getLanguageKey().toLowerCase())), "", 0,
+                        0,
+                        "")
+                .get();
+        if (languages.size() == 0) {
+            Map<String, String> error = generateError(SettingsRequest.class);
+            error.put("languageKey", "Language is invalid");
+            throw new InvalidRequestException(error, "Language is invalid");
+        }
         List<Setting> settings = repository.getSettings(Map.ofEntries(entry("userId", userId)), "", 0, 0, "").get();
         if (settings.size() == 0) {
-            repository.insertAndUpdate(new Setting(null, new ObjectId(userId), settingsRequest.isDarkTheme()));
+            repository.insertAndUpdate(new Setting(null, new ObjectId(userId), settingsRequest.isDarkTheme(), "en"));
         } else {
             Setting setting = settings.get(0);
             setting.setDarkTheme(settingsRequest.isDarkTheme());
+            setting.setLanguageKey(settingsRequest.getLanguageKey());
             repository.insertAndUpdate(setting);
         }
 
