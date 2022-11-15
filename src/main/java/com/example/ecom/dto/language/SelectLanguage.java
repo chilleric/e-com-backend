@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SelectLanguage {
     private String label;
-    private String key;
+    private String value;
 }

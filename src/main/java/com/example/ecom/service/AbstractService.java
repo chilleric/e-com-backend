@@ -1,22 +1,17 @@
 package com.example.ecom.service;
 
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-
+import com.example.ecom.exception.InvalidRequestException;
+import com.example.ecom.utils.ObjectValidator;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.example.ecom.exception.InvalidRequestException;
-import com.example.ecom.log.AppLogger;
-import com.example.ecom.log.LoggerFactory;
-import com.example.ecom.log.LoggerType;
-import com.example.ecom.utils.ObjectValidator;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.annotation.PostConstruct;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AbstractService<r> {
     @Autowired
@@ -29,8 +24,6 @@ public abstract class AbstractService<r> {
     protected ObjectValidator objectValidator;
 
     protected ObjectMapper objectMapper;
-
-    protected AppLogger APP_LOGGER = LoggerFactory.getLogger(LoggerType.APPLICATION);;
 
     @PostConstruct
     public void init() {
@@ -66,12 +59,12 @@ public abstract class AbstractService<r> {
         return result;
     }
 
-    protected String isPublic(String ownerId, String loginId, boolean skipAccessability) {
-        if (skipAccessability)
-            return "";
-        if (ownerId.compareTo(loginId) == 0) {
-            return "";
-        } else
-            return "public";
-    }
+//    protected String isPublic(String ownerId, String loginId, boolean skipAccessability) {
+//        if (skipAccessability)
+//            return "";
+//        if (ownerId.compareTo(loginId) == 0) {
+//            return "";
+//        } else
+//            return "public";
+//    }
 }
