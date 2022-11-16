@@ -44,9 +44,9 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
                 throw new InvalidRequestException(new HashMap<>(), "Must contain all key!");
             }
         }
-        for (Map.Entry<String, String> inputItem : defaultValue.entrySet()) {
+        for (Map.Entry<String, String> inputItem : inputValue.entrySet()) {
             boolean isFound = false;
-            for (Map.Entry<String, String> defaultItem : inputValue.entrySet()) {
+            for (Map.Entry<String, String> defaultItem : defaultValue.entrySet()) {
                 if (inputItem.getKey().compareTo(defaultItem.getKey()) == 0) {
                     isFound = true;
                     break;
@@ -65,16 +65,14 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
                 .getLanguages(Map.ofEntries(entry("key", languageRequest.getKey().toLowerCase())), "",
                         0, 0, "")
                 .get();
-        if (languagesName.size() > 0 || languageRequest.getKey().length() > 2) {
+        if (languagesName.size() > 0 || languageRequest.getKey().length() != 2) {
             Map<String, String> error = generateError(LanguageRequest.class);
             error.put("key", "Invalid config key");
             throw new InvalidRequestException(error, "Invalid config key");
         }
         List<Language> languageDefault = repository
                 .getLanguages(Map.ofEntries(entry("key", "en")), "", 0, 0, "").get();
-        validateDictionary(languageDefault.get(0).getDictionary(), languageRequest.getDictionary());
-        Language language = objectMapper.convertValue(languageRequest, Language.class);
-        language.setKey(language.getKey().toLowerCase());
+        Language language = new Language(null, languageRequest.getLanguage(), languageRequest.getKey().toLowerCase(), languageDefault.get(0).getDictionary());
         repository.insertAndUpdate(language);
     }
 
@@ -85,6 +83,9 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
         if (languages.size() == 0) {
             throw new ResourceNotFoundException("not found language");
         }
+        List<Language> languageDefault = repository
+                .getLanguages(Map.ofEntries(entry("key", "en")), "", 0, 0, "").get();
+        validateDictionary(languageDefault.get(0).getDictionary(), languageRequest.getDictionary());
         Language language = languages.get(0);
         if (language.getKey().compareTo("en") != 0) {
             List<Language> languagesName = repository
@@ -103,11 +104,6 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
                     throw new InvalidRequestException(error, "Invalid config key");
                 }
             }
-            if (languages.get(0).getKey().compareTo("en") != 0) {
-                List<Language> languageDefault = repository
-                        .getLanguages(Map.ofEntries(entry("key", "en")), "", 0, 0, "").get();
-                validateDictionary(languageDefault.get(0).getDictionary(), languageRequest.getDictionary());
-            }
             language.setLanguage(languageRequest.getLanguage());
             language.setKey(languageRequest.getKey().toLowerCase());
             language.setDictionary(languageRequest.getDictionary());
@@ -115,6 +111,54 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
             language.setDictionary(languageRequest.getDictionary());
         }
         repository.insertAndUpdate(language);
+    }
+
+    @Override
+    public void deleteDictionaryKey(String dictKey) {
+        repository.getLanguages(new HashMap<>(), "", 0, 0, "").get().forEach(language -> {
+            Map<String, String> updateDict = new HashMap<>();
+            language.getDictionary().entrySet().forEach(word -> {
+                if (word.getKey().compareTo(dictKey) != 0) {
+                    updateDict.put(word.getKey(), word.getValue());
+                }
+            });
+            language.setDictionary(updateDict);
+            repository.insertAndUpdate(language);
+        });
+    }
+
+    @Override
+    public void addNewDictionary(Map<String, String> newDict) {
+        StringBuilder keyUpdate = new StringBuilder();
+        newDict.entrySet().forEach(key -> {
+            boolean isHasKey = false;
+            if (key.getKey().compareTo("key") == 0) {
+                isHasKey = true;
+                keyUpdate.append(key.getKey());
+            }
+            if (!isHasKey) {
+                throw new InvalidRequestException(new HashMap<>(), "Does not have key in payload!");
+            }
+        });
+        repository.getLanguages(new HashMap<>(), "", 0, 0, "").get().forEach(lang -> {
+            newDict.entrySet().forEach(key -> {
+                boolean isFound = key.getKey().compareTo(lang.getKey()) == 0;
+                if (key.getKey().compareTo("key") == 0) isFound = true;
+                if (!isFound) {
+                    throw new InvalidRequestException(new HashMap<>(), "Does not contain all language!");
+                }
+            });
+        });
+        repository.getLanguages(new HashMap<>(), "", 0, 0, "").get().forEach(lang -> {
+            newDict.entrySet().forEach(key -> {
+                if (key.getKey().compareTo("key") != 0 && key.getKey().compareTo(lang.getKey()) == 0) {
+                    Map<String, String> updateDict = lang.getDictionary();
+                    updateDict.put(keyUpdate.toString(), key.getValue());
+                    lang.setDictionary(updateDict);
+                    repository.insertAndUpdate(lang);
+                }
+            });
+        });
     }
 
     @Override

@@ -65,6 +65,32 @@ public class LanguageController extends AbstractController<LanguageService> {
     }
 
     @SecurityRequirement(name = "Bearer Authentication")
+    @PostMapping(value = "add-new-dictionary")
+    public ResponseEntity<CommonResponse<String>> addNewDictionary(@RequestBody Map<String, String> payload,
+                                                                   HttpServletRequest httpServletRequest) {
+        validateToken(httpServletRequest, false);
+        service.addNewDictionary(payload);
+        return new ResponseEntity<CommonResponse<String>>(
+                new CommonResponse<String>(true, null, "Add new key successfully!",
+                        HttpStatus.OK.value()),
+                null,
+                HttpStatus.OK.value());
+    }
+
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PutMapping(value = "delete-dictionary-key")
+    public ResponseEntity<CommonResponse<String>> deleteKeyDictionary(@RequestParam("key") String keyDict,
+                                                                      HttpServletRequest httpServletRequest) {
+        validateToken(httpServletRequest, false);
+        service.deleteDictionaryKey(keyDict);
+        return new ResponseEntity<CommonResponse<String>>(
+                new CommonResponse<String>(true, null, "Add language successfully!",
+                        HttpStatus.OK.value()),
+                null,
+                HttpStatus.OK.value());
+    }
+
+    @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping(value = "update-language")
     public ResponseEntity<CommonResponse<String>> updateLanguage(@RequestBody LanguageRequest languageRequest,
                                                                  @RequestParam("id") String languageId,
