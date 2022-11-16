@@ -22,5 +22,9 @@ public interface LanguageService {
 
     void updateLanguage(LanguageRequest languageRequest, String id);
 
+    void deleteDictionaryKey(String dictKey);
+
+    void addNewDictionary(Map<String, String> newDict);
+
     Optional<Map<String, String>> getDefaultValueSample();
 }
