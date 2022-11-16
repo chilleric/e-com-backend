@@ -134,7 +134,7 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
             boolean isHasKey = false;
             if (key.getKey().compareTo("key") == 0) {
                 isHasKey = true;
-                keyUpdate.append(key.getKey());
+                keyUpdate.append(key.getValue());
             }
             if (!isHasKey) {
                 throw new InvalidRequestException(new HashMap<>(), "Does not have key in payload!");
