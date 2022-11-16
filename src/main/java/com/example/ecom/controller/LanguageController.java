@@ -84,7 +84,7 @@ public class LanguageController extends AbstractController<LanguageService> {
         validateToken(httpServletRequest, false);
         service.deleteDictionaryKey(keyDict);
         return new ResponseEntity<CommonResponse<String>>(
-                new CommonResponse<String>(true, null, "Add language successfully!",
+                new CommonResponse<String>(true, null, "Delete key language successfully!",
                         HttpStatus.OK.value()),
                 null,
                 HttpStatus.OK.value());
