@@ -144,23 +144,17 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
             }
         }
         repository.getLanguages(new HashMap<>(), "", 0, 0, "").get().forEach(lang -> {
-            newDict.entrySet().forEach(key -> {
-                boolean isFound = key.getKey().compareTo(lang.getKey()) == 0;
-                if (key.getKey().compareTo("key") == 0) isFound = true;
-                if (!isFound) {
-                    throw new InvalidRequestException(new HashMap<>(), "Does not contain all language!");
-                }
-            });
+            if (!newDict.containsKey(lang.getKey())) {
+                throw new InvalidRequestException(new HashMap<>(), "Does not contain all language!");
+            }
         });
         repository.getLanguages(new HashMap<>(), "", 0, 0, "").get().forEach(lang -> {
-            newDict.entrySet().forEach(key -> {
-                if (key.getKey().compareTo("key") != 0 && key.getKey().compareTo(lang.getKey()) == 0) {
-                    Map<String, String> updateDict = lang.getDictionary();
-                    updateDict.put(keyUpdate.toString(), key.getValue());
-                    lang.setDictionary(updateDict);
-                    repository.insertAndUpdate(lang);
-                }
-            });
+            if (newDict.containsKey(lang.getKey())) {
+                Map<String, String> updateDict = lang.getDictionary();
+                updateDict.put(keyUpdate.toString(), newDict.get(lang.getKey()));
+                lang.setDictionary(updateDict);
+                repository.insertAndUpdate(lang);
+            }
         });
     }
 
