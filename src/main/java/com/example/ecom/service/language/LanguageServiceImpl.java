@@ -130,7 +130,7 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
     @Override
     public void addNewDictionary(Map<String, String> newDict) {
         StringBuilder keyUpdate = new StringBuilder();
-        newDict.entrySet().forEach(key -> {
+        for (Map.Entry<String, String> key : newDict.entrySet()) {
             boolean isHasKey = false;
             if (key.getKey().compareTo("key") == 0) {
                 isHasKey = true;
@@ -139,7 +139,10 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
             if (!isHasKey) {
                 throw new InvalidRequestException(new HashMap<>(), "Does not have key in payload!");
             }
-        });
+            if (isHasKey) {
+                break;
+            }
+        }
         repository.getLanguages(new HashMap<>(), "", 0, 0, "").get().forEach(lang -> {
             newDict.entrySet().forEach(key -> {
                 boolean isFound = key.getKey().compareTo(lang.getKey()) == 0;
