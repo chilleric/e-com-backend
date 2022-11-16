@@ -44,6 +44,18 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
                 throw new InvalidRequestException(new HashMap<>(), "Must contain all key!");
             }
         }
+        for (Map.Entry<String, String> inputItem : defaultValue.entrySet()) {
+            boolean isFound = false;
+            for (Map.Entry<String, String> defaultItem : inputValue.entrySet()) {
+                if (inputItem.getKey().compareTo(defaultItem.getKey()) == 0) {
+                    isFound = true;
+                    break;
+                }
+            }
+            if (!isFound) {
+                throw new InvalidRequestException(new HashMap<>(), "More key then default!");
+            }
+        }
     }
 
     @Override
@@ -98,6 +110,7 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
             }
             language.setLanguage(languageRequest.getLanguage());
             language.setKey(languageRequest.getKey().toLowerCase());
+            language.setDictionary(languageRequest.getDictionary());
         } else {
             language.setDictionary(languageRequest.getDictionary());
         }
