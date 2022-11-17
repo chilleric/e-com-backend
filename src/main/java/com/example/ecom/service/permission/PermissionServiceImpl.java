@@ -1,18 +1,7 @@
 package com.example.ecom.service.permission;
 
-import static java.util.Map.entry;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.example.ecom.constant.DateTime;
+import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.constant.ResponseType;
 import com.example.ecom.dto.common.ListWrapperResponse;
 import com.example.ecom.dto.feature.FeatureResponse;
@@ -28,6 +17,17 @@ import com.example.ecom.service.AbstractService;
 import com.example.ecom.service.feature.FeatureService;
 import com.example.ecom.service.user.UserService;
 import com.example.ecom.utils.DateFormat;
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static java.util.Map.entry;
 
 @Service
 public class PermissionServiceImpl extends AbstractService<PermissionRepository> implements PermissionService {
@@ -39,18 +39,18 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
 
     @Override
     public Optional<ListWrapperResponse<PermissionResponse>> getPermissions(Map<String, String> allParams,
-            String keySort, int page, int pageSize, String sortField) {
+                                                                            String keySort, int page, int pageSize, String sortField) {
         List<Permission> permissions = repository.getPermissions(allParams, keySort, page, pageSize, sortField).get();
         return Optional.of(new ListWrapperResponse<PermissionResponse>(
                 permissions.stream()
                         .map(permission -> new PermissionResponse(permission.get_id().toString(), permission.getName(),
                                 permission.getFeatureId().size() > 0
                                         ? permission.getFeatureId().stream()
-                                                .map(feature -> feature.toString()).collect(Collectors.toList())
+                                        .map(feature -> feature.toString()).collect(Collectors.toList())
                                         : new ArrayList<>(),
                                 permission.getUserId().size() > 0
                                         ? permission.getUserId().stream().map(userId -> userId.toString())
-                                                .collect(Collectors.toList())
+                                        .collect(Collectors.toList())
                                         : new ArrayList<>(),
                                 DateFormat.toDateString(permission.getCreated(), DateTime.YYYY_MM_DD),
                                 DateFormat.toDateString(permission.getModified(), DateTime.YYYY_MM_DD),
@@ -66,8 +66,8 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
                 .getPermissions(Map.ofEntries(entry("name", permissionRequest.getName())), "", 0, 0, "").get();
         if (permissions.size() != 0) {
             Map<String, String> error = generateError(PermissionRequest.class);
-            error.put("name", "This name is unavailable!");
-            throw new InvalidRequestException(error, "This name is unavailable!");
+            error.put("name", LanguageMessageKey.INVALID_NAME_PERMISSION);
+            throw new InvalidRequestException(error, LanguageMessageKey.INVALID_NAME_PERMISSION);
         }
         Permission permission = new Permission();
         permission.setCanDelete(true);
@@ -96,15 +96,15 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
     @Override
     public void editPermission(PermissionRequest permissionRequest, String id) {
         Permission permission = repository.getPermissionById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Not found permission!"));
+                .orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.PERMISSION_NOT_FOUND));
         validate(permissionRequest);
         List<Permission> permissions = repository
                 .getPermissions(Map.ofEntries(entry("name", permissionRequest.getName())), "", 0, 0, "").get();
         if (permissions.size() != 0) {
             if (permissions.get(0).get_id().compareTo(permission.get_id()) != 0) {
                 Map<String, String> error = generateError(PermissionRequest.class);
-                error.put("name", "This name is unavailable!");
-                throw new InvalidRequestException(error, "This name is unavailable!");
+                error.put("name", LanguageMessageKey.INVALID_NAME_PERMISSION);
+                throw new InvalidRequestException(error, LanguageMessageKey.INVALID_NAME_PERMISSION);
             }
         }
         if (permission.getName().compareTo("super_admin_permission") == 0) {
@@ -114,8 +114,8 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
                     .getData().get(0);
             if (!permissionRequest.getUserId().contains(adminUser.getId())) {
                 Map<String, String> error = generateError(PermissionRequest.class);
-                error.put("userId", "Must contain admin account!");
-                throw new InvalidRequestException(error, "Must contain admin account!");
+                error.put("userId", LanguageMessageKey.MUST_CONTAIN_ADMIN_ACCOUNT);
+                throw new InvalidRequestException(error, LanguageMessageKey.MUST_CONTAIN_ADMIN_ACCOUNT);
             }
             permission.setUserId(permissionRequest.getUserId().stream().map(userId -> new ObjectId(userId))
                     .collect(Collectors.toList()));
@@ -150,11 +150,11 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
     @Override
     public void deletePermission(String id) {
         Permission permission = repository.getPermissionById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Not found permission!"));
+                .orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.PERMISSION_NOT_FOUND));
         if (permission.isCanDelete()) {
             repository.deletePermission(id);
         } else {
-            throw new ForbiddenException("Access denied!");
+            throw new ForbiddenException(LanguageMessageKey.FORBIDDEN);
         }
     }
 

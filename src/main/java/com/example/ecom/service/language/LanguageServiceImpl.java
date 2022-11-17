@@ -1,5 +1,6 @@
 package com.example.ecom.service.language;
 
+import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.dto.common.ListWrapperResponse;
 import com.example.ecom.dto.language.LanguageRequest;
 import com.example.ecom.dto.language.LanguageResponse;
@@ -30,7 +31,7 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
 
     public void validateDictionary(Map<String, String> defaultValue, Map<String, String> inputValue) {
         if (defaultValue.size() != 0 && inputValue.size() == 0) {
-            throw new InvalidRequestException(new HashMap<>(), "Must contain all key!");
+            throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.CONTAIN_ALL_KEY);
         }
         for (Map.Entry<String, String> defaultItem : defaultValue.entrySet()) {
             boolean isFound = false;
@@ -41,7 +42,7 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
                 }
             }
             if (!isFound) {
-                throw new InvalidRequestException(new HashMap<>(), "Must contain all key!");
+                throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.CONTAIN_ALL_KEY);
             }
         }
         for (Map.Entry<String, String> inputItem : inputValue.entrySet()) {
@@ -53,7 +54,7 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
                 }
             }
             if (!isFound) {
-                throw new InvalidRequestException(new HashMap<>(), "More key then default!");
+                throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.CONTAIN_ALL_KEY);
             }
         }
     }
@@ -67,8 +68,8 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
                 .get();
         if (languagesName.size() > 0 || languageRequest.getKey().length() != 2) {
             Map<String, String> error = generateError(LanguageRequest.class);
-            error.put("key", "Invalid config key");
-            throw new InvalidRequestException(error, "Invalid config key");
+            error.put("key", LanguageMessageKey.INVALID_LANGUAGE_KEY);
+            throw new InvalidRequestException(error, LanguageMessageKey.INVALID_LANGUAGE_KEY);
         }
         List<Language> languageDefault = repository
                 .getLanguages(Map.ofEntries(entry("key", "en")), "", 0, 0, "").get();
@@ -81,7 +82,7 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
         validate(languageRequest);
         List<Language> languages = repository.getLanguages(Map.ofEntries(entry("_id", id)), "", 0, 0, "").get();
         if (languages.size() == 0) {
-            throw new ResourceNotFoundException("not found language");
+            throw new ResourceNotFoundException(LanguageMessageKey.LANGUAGE_NOT_FOUND);
         }
         List<Language> languageDefault = repository
                 .getLanguages(Map.ofEntries(entry("key", "en")), "", 0, 0, "").get();
@@ -94,14 +95,14 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
                     .get();
             if (languageRequest.getKey().length() != 2) {
                 Map<String, String> error = generateError(LanguageRequest.class);
-                error.put("key", "Invalid config key");
-                throw new InvalidRequestException(error, "Key is 2 digits char!");
+                error.put("key", LanguageMessageKey.INVALID_LANGUAGE_KEY);
+                throw new InvalidRequestException(error, LanguageMessageKey.INVALID_KEY_2_DIGIT);
             }
             if (languagesName.size() > 0) {
                 if (languagesName.get(0).get_id().compareTo(languages.get(0).get_id()) != 0) {
                     Map<String, String> error = generateError(LanguageRequest.class);
-                    error.put("key", "Invalid config key");
-                    throw new InvalidRequestException(error, "Invalid config key");
+                    error.put("key", LanguageMessageKey.INVALID_LANGUAGE_KEY);
+                    throw new InvalidRequestException(error, LanguageMessageKey.INVALID_LANGUAGE_KEY);
                 }
             }
             language.setLanguage(languageRequest.getLanguage());
@@ -137,7 +138,7 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
                 keyUpdate.append(key.getValue());
             }
             if (!isHasKey) {
-                throw new InvalidRequestException(new HashMap<>(), "Does not have key in payload!");
+                throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.INVALID_LANGUAGE_KEY);
             }
             if (isHasKey) {
                 break;
@@ -145,7 +146,7 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
         }
         repository.getLanguages(new HashMap<>(), "", 0, 0, "").get().forEach(lang -> {
             if (!newDict.containsKey(lang.getKey())) {
-                throw new InvalidRequestException(new HashMap<>(), "Does not contain all language!");
+                throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.INVALID_CONTAIN_ALL_LANGUAGE);
             }
         });
         repository.getLanguages(new HashMap<>(), "", 0, 0, "").get().forEach(lang -> {

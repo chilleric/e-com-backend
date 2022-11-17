@@ -1,16 +1,5 @@
 package com.example.ecom.jwt;
 
-import static java.util.Map.entry;
-
-import java.util.Date;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -18,10 +7,20 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.exception.UnauthorizedException;
 import com.example.ecom.log.AppLogger;
 import com.example.ecom.log.LoggerFactory;
 import com.example.ecom.log.LoggerType;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
+import java.util.Map;
+
+import static java.util.Map.entry;
 
 @Component
 public class JwtValidation {
@@ -29,7 +28,8 @@ public class JwtValidation {
     @Value("${spring.key.jwt}")
     protected String JWT_SECRET;
 
-    protected AppLogger APP_LOGGER = LoggerFactory.getLogger(LoggerType.APPLICATION);;
+    protected AppLogger APP_LOGGER = LoggerFactory.getLogger(LoggerType.APPLICATION);
+    ;
 
     public String generateToken(String userId, String deviceId) {
         Date now = new Date();
@@ -69,7 +69,7 @@ public class JwtValidation {
                     deviceId.substring(1, deviceId.length() - 1));
         } catch (JWTVerificationException exception) {
             APP_LOGGER.error("JWT signature does not match locally computed signature!");
-            throw new UnauthorizedException("Unauthorized!");
+            throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
         }
 
     }

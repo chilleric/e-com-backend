@@ -1,50 +1,50 @@
 package com.example.ecom.dto.login;
 
+import com.example.ecom.constant.LanguageMessageKey;
+import com.example.ecom.constant.TypeValidation;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-import com.example.ecom.constant.TypeValidation;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegisterRequest {
-    @NotNull(message = "Username is required!")
-    @Pattern(regexp = TypeValidation.USERNAME, message = "Username is invalid!")
+    @NotNull(message = LanguageMessageKey.USERNAME_REQUIRED)
+    @Pattern(regexp = TypeValidation.USERNAME, message = LanguageMessageKey.INVALID_USERNAME)
     private String username;
 
-    @NotNull(message = "Password is required!")
-    @NotBlank(message = "Password is required!")
-    @NotEmpty(message = "Password is required!")
+    @NotNull(message = LanguageMessageKey.PASSWORD_REQUIRED)
+    @NotBlank(message = LanguageMessageKey.PASSWORD_REQUIRED)
+    @NotEmpty(message = LanguageMessageKey.PASSWORD_REQUIRED)
     private String password;
 
-    @NotNull(message = "First name is required!")
-    @NotBlank(message = "First name is required!")
-    @NotEmpty(message = "First name is required!")
+    @NotNull(message = LanguageMessageKey.FIRSTNAME_REQUIRED)
+    @NotBlank(message = LanguageMessageKey.FIRSTNAME_REQUIRED)
+    @NotEmpty(message = LanguageMessageKey.FIRSTNAME_REQUIRED)
     private String firstName;
 
-    @NotNull(message = "Last name is required!")
-    @NotBlank(message = "Last name is required!")
-    @NotEmpty(message = "Last name is required!")
+    @NotNull(message = LanguageMessageKey.LASTNAME_REQUIRED)
+    @NotBlank(message = LanguageMessageKey.LASTNAME_REQUIRED)
+    @NotEmpty(message = LanguageMessageKey.LASTNAME_REQUIRED)
     private String lastName;
 
-    @NotNull(message = "Phone number is required!")
-    @Pattern(regexp = TypeValidation.PHONE, message = "Phone is invalid!")
+    @NotNull(message = LanguageMessageKey.PHONE_REQUIRED)
+    @Pattern(regexp = TypeValidation.PHONE, message = LanguageMessageKey.INVALID_PHONE)
     private String phone;
 
-    @NotNull(message = "Email is required!")
-    @Pattern(regexp = TypeValidation.EMAIL, message = "Email is invalid")
+    @NotNull(message = LanguageMessageKey.EMAIL_REQUIRED)
+    @Pattern(regexp = TypeValidation.EMAIL, message = LanguageMessageKey.INVALID_EMAIL)
     private String email;
 
-    @NotNull(message = "Address is required!")
-    @NotBlank(message = "Address is required!")
-    @NotEmpty(message = "Address is required!")
+    @NotNull(message = LanguageMessageKey.ADDRESS_REQUIRED)
+    @NotBlank(message = LanguageMessageKey.ADDRESS_REQUIRED)
+    @NotEmpty(message = LanguageMessageKey.ADDRESS_REQUIRED)
     private String address;
 
 }

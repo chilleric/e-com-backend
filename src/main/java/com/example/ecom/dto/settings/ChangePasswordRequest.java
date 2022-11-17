@@ -1,29 +1,30 @@
 package com.example.ecom.dto.settings;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
+import com.example.ecom.constant.LanguageMessageKey;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChangePasswordRequest {
-    @NotEmpty(message = "Old password is required!")
-    @NotBlank(message = "Old password is required!")
-    @NotNull(message = "Old password is required!")
+    @NotEmpty(message = LanguageMessageKey.OLD_PASSWORD_REQUIRED)
+    @NotBlank(message = LanguageMessageKey.OLD_PASSWORD_REQUIRED)
+    @NotNull(message = LanguageMessageKey.OLD_PASSWORD_REQUIRED)
     private String oldPassword;
 
-    @NotEmpty(message = "New password is required!")
-    @NotBlank(message = "New password is required!")
-    @NotNull(message = "New password is required!")
+    @NotEmpty(message = LanguageMessageKey.NEW_PASSWORD_REQUIRED)
+    @NotBlank(message = LanguageMessageKey.NEW_PASSWORD_REQUIRED)
+    @NotNull(message = LanguageMessageKey.NEW_PASSWORD_REQUIRED)
     private String newPassword;
 
-    @NotEmpty(message = "Confirm password is required!")
-    @NotBlank(message = "Confirm password is required!")
-    @NotNull(message = "Confirm password is required!")
+    @NotEmpty(message = LanguageMessageKey.CONFIRM_PASSWORD_REQUIRED)
+    @NotBlank(message = LanguageMessageKey.CONFIRM_PASSWORD_REQUIRED)
+    @NotNull(message = LanguageMessageKey.CONFIRM_PASSWORD_REQUIRED)
     private String confirmNewPassword;
 }

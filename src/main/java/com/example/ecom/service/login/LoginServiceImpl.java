@@ -1,20 +1,6 @@
 package com.example.ecom.service.login;
 
-import static java.util.Map.entry;
-
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
+import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.constant.TypeValidation;
 import com.example.ecom.dto.login.LoginRequest;
 import com.example.ecom.dto.login.LoginResponse;
@@ -30,6 +16,14 @@ import com.example.ecom.repository.user.User;
 import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
 import com.example.ecom.utils.PasswordValidator;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+
+import static java.util.Map.entry;
 
 @Service
 public class LoginServiceImpl extends AbstractService<UserRepository> implements LoginService {
@@ -54,7 +48,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
                             0, "")
                     .get();
             if (users.size() == 0) {
-                throw new ResourceNotFoundException("Not found user with email: " + loginRequest.getUsername());
+                throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL);
             }
             normalUsername = false;
             user = users.get(0);
@@ -65,8 +59,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
                             0, "")
                     .get();
             if (users.size() == 0) {
-                throw new ResourceNotFoundException(
-                        "Not found user with username: " + loginRequest.getUsername());
+                throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_PHONE_NUMBER);
             }
             normalUsername = false;
             user = users.get(0);
@@ -77,8 +70,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
                             0, 0, "")
                     .get();
             if (users.size() == 0) {
-                throw new ResourceNotFoundException(
-                        "Not found user with username: " + loginRequest.getUsername());
+                throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USERNAME);
             }
             user = users.get(0);
         }
@@ -88,15 +80,15 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         if (!bCryptPasswordEncoder().matches(loginRequest.getPassword(),
                 user.getPassword())) {
             Map<String, String> error = generateError(LoginRequest.class);
-            error.put("password", "password does not match");
-            throw new InvalidRequestException(error, "password does not match");
+            error.put("password", LanguageMessageKey.PASSWORD_NOT_MATCH);
+            throw new InvalidRequestException(error, LanguageMessageKey.PASSWORD_NOT_MATCH);
         }
         Date now = new Date();
         if (user.isVerify2FA()) {
-            String verify2FACode = UUID.randomUUID().toString();
+            String verify2FACode = RandomStringUtils.randomAlphabetic(6);
             emailService
-                    .sendSimpleMail(new EmailDetail(user.getEmail(), "Your 2FA code is: " + verify2FACode,
-                            "2FA code from forum-api"));
+                    .sendSimpleMail(new EmailDetail(user.getEmail(), verify2FACode,
+                            "OTP"));
             Date expiredDate = new Date(now.getTime() + 5 * 60 * 1000L);
             Optional<List<Code>> codes = codeRepository.getCodesByType(user.get_id().toString(),
                     TypeCode.VERIFY2FA.name());
@@ -124,7 +116,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
     public void logout(String id, String deviceId) {
         List<User> users = repository.getUsers(Map.ofEntries(entry("_id", id)), "", 0, 0, "").get();
         if (users.size() == 0) {
-            throw new ResourceNotFoundException("Not found user!");
+            throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER);
         }
         User user = users.get(0);
         if (user.getTokens() != null) {
@@ -140,27 +132,27 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
                 .getUsers(Map.ofEntries(entry("username", registerRequest.getUsername())), "", 0, 0, "").get();
         if (users.size() != 0) {
             Map<String, String> error = generateError(RegisterRequest.class);
-            error.put("username", "username existed");
-            throw new InvalidRequestException(error, "username existed");
+            error.put("username", LanguageMessageKey.USERNAME_EXISTED);
+            throw new InvalidRequestException(error, LanguageMessageKey.USERNAME_EXISTED);
         }
         List<User> usersEmail = repository
                 .getUsers(Map.ofEntries(entry("email", registerRequest.getEmail())), "", 0, 0, "").get();
         if (usersEmail.size() != 0) {
             Map<String, String> error = generateError(RegisterRequest.class);
             if (usersEmail.get(0).isVerified()) {
-                error.put("email", "This email is taken!");
-                throw new InvalidRequestException(error, "This email is taken!");
+                error.put("email", LanguageMessageKey.EMAIL_TAKEN);
+                throw new InvalidRequestException(error, LanguageMessageKey.EMAIL_TAKEN);
             } else {
-                error.put("email", "Please verify your email!");
-                throw new InvalidRequestException(error, "Please verify your email!");
+                error.put("email", LanguageMessageKey.PLEASE_VERIFY_EMAIL);
+                throw new InvalidRequestException(error, LanguageMessageKey.PLEASE_VERIFY_EMAIL);
             }
         } else {
             if (repository
                     .getUsers(Map.ofEntries(entry("phone", registerRequest.getPhone())), "", 0, 0, "").get()
                     .size() > 0) {
                 Map<String, String> error = generateError(RegisterRequest.class);
-                error.put("phone", "Phone number is taken!");
-                throw new InvalidRequestException(error, "Phone number is taken!");
+                error.put("phone", LanguageMessageKey.PHONE_TAKEN);
+                throw new InvalidRequestException(error, LanguageMessageKey.PHONE_TAKEN);
             }
             Map<String, String> error = generateError(RegisterRequest.class);
             PasswordValidator.validateNewPassword(error, registerRequest.getPassword(), "password");
@@ -191,7 +183,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
                 codeRepository.insertAndUpdateCode(code);
             }
             emailService
-                    .sendSimpleMail(new EmailDetail(user.getEmail(), newCode, "Sign up code from forum-api"));
+                    .sendSimpleMail(new EmailDetail(user.getEmail(), newCode, "OTP"));
         }
     }
 
@@ -201,7 +193,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         if (email.matches(TypeValidation.EMAIL)) {
             List<User> users = repository.getUsers(Map.ofEntries(entry("email", email)), "", 0, 0, "").get();
             if (users.size() == 0) {
-                throw new ResourceNotFoundException("Not found user with email: " + email);
+                throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL);
             } else {
                 user = users.get(0);
             }
@@ -213,15 +205,15 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             if (codes.get().size() > 0) {
                 Code code = codes.get().get(0);
                 if (code.getCode().compareTo(inputCode) != 0)
-                    throw new InvalidRequestException(new HashMap<>(), "This code is invalid");
+                    throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.INVALID_CODE);
                 else if (code.getExpiredDate().compareTo(now) < 0) {
-                    throw new InvalidRequestException(new HashMap<>(), "Code is expired");
+                    throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.CODE_EXPIRED);
                 }
             } else {
-                throw new InvalidRequestException(new HashMap<>(), "This code is invalid");
+                throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.INVALID_CODE);
             }
         } else {
-            throw new InvalidRequestException(new HashMap<>(), "This code is invalid");
+            throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.INVALID_CODE);
         }
         user.setVerified(true);
         repository.insertAndUpdate(user);
@@ -231,7 +223,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
     public void resendVerifyRegister(String email) {
         List<User> users = repository.getUsers(Map.ofEntries(entry("email", email)), "", 0, 0, "").get();
         if (users.size() == 0) {
-            throw new ResourceNotFoundException("Not found user with email: " + email);
+            throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL);
         }
         User userCheckMail = users.get(0);
         String newCode = RandomStringUtils.randomAlphabetic(6);
@@ -255,7 +247,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         }
         emailService
                 .sendSimpleMail(new EmailDetail(userCheckMail.getEmail(), newCode,
-                        "Sign up code from forum-api"));
+                        "OTP"));
 
     }
 
@@ -263,7 +255,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
     public void forgotPassword(String email) {
         List<User> users = repository.getUsers(Map.ofEntries(entry("email", email)), "", 0, 0, "").get();
         if (users.size() == 0) {
-            throw new ResourceNotFoundException("Not found user with email: " + email);
+            throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL);
         }
         User userCheckMail = users.get(0);
         userCheckMail
@@ -271,8 +263,8 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
                         bCryptPasswordEncoder().encode(Base64.getEncoder().encodeToString(defaultPassword.getBytes())));
         repository.insertAndUpdate(userCheckMail);
         emailService.sendSimpleMail(new EmailDetail(userCheckMail.getEmail(),
-                "Your new username: " + userCheckMail.getUsername() + " \n" + "Your new password: " + defaultPassword,
-                "Your new password!"));
+                "Username: " + userCheckMail.getUsername() + " \n" + "Password: " + defaultPassword,
+                "New password!"));
     }
 
     @Override
@@ -281,14 +273,13 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         if (email.matches(TypeValidation.EMAIL)) {
             List<User> users = repository.getUsers(Map.ofEntries(entry("email", email)), "", 0, 0, "").get();
             if (users.size() == 0) {
-                throw new ResourceNotFoundException("Not found user with email: " + email);
+                throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL);
             }
             user = users.get(0);
         } else {
             List<User> users = repository.getUsers(Map.ofEntries(entry("username", email)), "", 0, 0, "").get();
             if (users.size() == 0) {
-                throw new ResourceNotFoundException(
-                        "Not found user with username: " + email);
+                throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER);
             }
             user = users.get(0);
         }
@@ -299,15 +290,15 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             if (codes.get().size() > 0) {
                 Code code = codes.get().get(0);
                 if (code.getCode().compareTo(inputCode) != 0)
-                    throw new InvalidRequestException(new HashMap<>(), "This code is invalid");
+                    throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.INVALID_CODE);
                 else if (code.getExpiredDate().compareTo(now) < 0) {
-                    throw new InvalidRequestException(new HashMap<>(), "Code is expired");
+                    throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.CODE_EXPIRED);
                 }
             } else {
-                throw new InvalidRequestException(new HashMap<>(), "This code is invalid");
+                throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.INVALID_CODE);
             }
         } else {
-            throw new InvalidRequestException(new HashMap<>(), "This code is invalid");
+            throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.INVALID_CODE);
         }
         String deviceId = UUID.randomUUID().toString();
         return Optional.of(new LoginResponse(user.get_id().toString(), deviceId, false, false));
@@ -317,7 +308,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
     public void resend2FACode(String email) {
         List<User> users = repository.getUsers(Map.ofEntries(entry("email", email)), "", 0, 0, "").get();
         if (users.size() == 0) {
-            throw new ResourceNotFoundException("Not found user with email: " + email);
+            throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL);
         }
         User userCheckMail = users.get(0);
         String newCode = RandomStringUtils.randomAlphabetic(6);
@@ -341,7 +332,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         }
         emailService
                 .sendSimpleMail(new EmailDetail(userCheckMail.getEmail(), newCode,
-                        "Verify 2FA code from forum-api"));
+                        "OTP"));
     }
 
 }
