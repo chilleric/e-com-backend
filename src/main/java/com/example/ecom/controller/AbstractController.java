@@ -1,19 +1,6 @@
 package com.example.ecom.controller;
 
-import static java.util.Map.entry;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
-
+import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.constant.ResponseType;
 import com.example.ecom.dto.common.CommonResponse;
 import com.example.ecom.dto.common.ValidationResult;
@@ -29,6 +16,18 @@ import com.example.ecom.repository.permission.Permission;
 import com.example.ecom.repository.permission.PermissionRepository;
 import com.example.ecom.repository.user.User;
 import com.example.ecom.repository.user.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static java.util.Map.entry;
 
 public abstract class AbstractController<s> {
     @Autowired
@@ -53,7 +52,7 @@ public abstract class AbstractController<s> {
         String token = jwtValidation.getJwtFromRequest(request);
         if (token == null) {
             if (!hasPublic) {
-                throw new UnauthorizedException("Unauthorized");
+                throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
             }
             return new ValidationResult(false, "public");
         }
@@ -64,7 +63,7 @@ public abstract class AbstractController<s> {
         if (StringUtils.hasText(token) && token.startsWith("Bearer ")) {
             return checkAuthentication(token.substring(7), "", false);
         } else {
-            throw new UnauthorizedException("Unauthorized");
+            throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
         }
 
     }
@@ -74,26 +73,26 @@ public abstract class AbstractController<s> {
         List<User> user = userRepository
                 .getUsers(Map.ofEntries(entry("_id", info.getUserId()), entry("deleted", "0")), "", 0, 0, "").get();
         if (user.size() == 0) {
-            throw new UnauthorizedException("User are deactivated or deleted!");
+            throw new UnauthorizedException(LanguageMessageKey.NOT_FOUND_USER);
         }
         if (!user.get(0).getTokens().containsKey(info.getDeviceId())) {
-            throw new UnauthorizedException("Unauthorized!");
+            throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
         }
         Date now = new Date();
         if (user.get(0).getTokens().get(info.getDeviceId()).compareTo(now) <= 0) {
-            throw new UnauthorizedException("Unauthorized!");
+            throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
         }
         if (checkPath) {
             List<Feature> feature = featureRepository
                     .getFeatures(Map.ofEntries(entry("path", path)), "", 0, 0, "").get();
             if (feature.size() == 0) {
-                throw new ResourceNotFoundException("This feature is not enabled!");
+                throw new ResourceNotFoundException(LanguageMessageKey.DISABLED_FEATURE);
             }
             List<Permission> permissions = permissionRepository
                     .getPermissionByUser(user.get(0).get_id().toString(), feature.get(0).get_id().toString())
                     .get();
             if (permissions.size() == 0) {
-                throw new ForbiddenException("You are not approved any permissions!");
+                throw new ForbiddenException(LanguageMessageKey.FORBIDDEN);
             }
             boolean skipAccessability = false;
             for (Permission permission : permissions) {
@@ -125,7 +124,7 @@ public abstract class AbstractController<s> {
     protected void checkUserId(String userId, String loginId, boolean skipAccessability) {
         if (!skipAccessability) {
             if (loginId.compareTo(userId) == 0) {
-                throw new ForbiddenException("Access denied!");
+                throw new ForbiddenException(LanguageMessageKey.FORBIDDEN);
             }
         }
     }
@@ -133,7 +132,7 @@ public abstract class AbstractController<s> {
     protected void checkAccessability(String loginId, String targetId, boolean skipAccessability) {
         if (!skipAccessability) {
             accessabilityRepository.getAccessability(loginId, targetId)
-                    .orElseThrow(() -> new ForbiddenException("Access denied!"));
+                    .orElseThrow(() -> new ForbiddenException(LanguageMessageKey.FORBIDDEN));
         }
     }
 }

@@ -1,11 +1,8 @@
 package com.example.ecom.repository;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.example.ecom.log.AppLogger;
+import com.example.ecom.log.LoggerFactory;
+import com.example.ecom.log.LoggerType;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -14,10 +11,11 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
-import com.example.ecom.exception.BadSqlException;
-import com.example.ecom.log.AppLogger;
-import com.example.ecom.log.LoggerFactory;
-import com.example.ecom.log.LoggerType;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public abstract class AbstractMongoRepo {
 
@@ -28,7 +26,7 @@ public abstract class AbstractMongoRepo {
     protected AppLogger APP_LOGGER = LoggerFactory.getLogger(LoggerType.APPLICATION);
 
     protected Query generateQueryMongoDB(Map<String, String> allParams, Class<?> clazz, String keySort,
-            String sortField, int page, int pageSize) {
+                                         String sortField, int page, int pageSize) {
         Query query = new Query();
         Field[] fields = clazz.getDeclaredFields();
         List<Criteria> allCriteria = new ArrayList<>();
@@ -47,7 +45,6 @@ public abstract class AbstractMongoRepo {
                                 multipleCriteria.add(Criteria.where(items.getKey()).is(new ObjectId(values[i])));
                             } catch (IllegalArgumentException e) {
                                 APP_LOGGER.error(e.getMessage());
-                                throw new BadSqlException("id must be objectId format!");
                             }
                         }
                     }

@@ -1,16 +1,6 @@
 package com.example.ecom.service.settings;
 
-import static java.util.Map.entry;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.ResourceAccessException;
-
+import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.dto.settings.AccountSetting;
 import com.example.ecom.dto.settings.ChangePasswordRequest;
 import com.example.ecom.dto.settings.SettingsRequest;
@@ -25,6 +15,16 @@ import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
 import com.example.ecom.utils.DateFormat;
 import com.example.ecom.utils.PasswordValidator;
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static java.util.Map.entry;
 
 @Service
 public class SettingServiceImpl extends AbstractService<SettingRepository> implements SettingService {
@@ -52,14 +52,14 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
         validate(settingsRequest);
         List<Language> languages = languageRepository
                 .getLanguages(Map.ofEntries(
-                        entry("key", settingsRequest.getLanguageKey().toLowerCase())), "", 0,
+                                entry("key", settingsRequest.getLanguageKey().toLowerCase())), "", 0,
                         0,
                         "")
                 .get();
         if (languages.size() == 0) {
             Map<String, String> error = generateError(SettingsRequest.class);
-            error.put("languageKey", "Language is invalid");
-            throw new InvalidRequestException(error, "Language is invalid");
+            error.put("languageKey", LanguageMessageKey.INVALID_LANGUAGE_KEY);
+            throw new InvalidRequestException(error, LanguageMessageKey.INVALID_LANGUAGE_KEY);
         }
         List<Setting> settings = repository.getSettings(Map.ofEntries(entry("userId", userId)), "", 0, 0, "").get();
         if (settings.size() == 0) {
@@ -85,17 +85,17 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
         User user = users.get(0);
         if (!bCryptPasswordEncoder().matches(changePasswordRequest.getOldPassword(), user.getPassword())) {
             Map<String, String> error = generateError(ChangePasswordRequest.class);
-            error.put("oldPassword", "Old password does not match!");
-            throw new InvalidRequestException(error, "Old password not match!");
+            error.put("oldPassword", LanguageMessageKey.OLD_PASSWORD_NOT_MATCH);
+            throw new InvalidRequestException(error, LanguageMessageKey.OLD_PASSWORD_NOT_MATCH);
         }
         ;
         PasswordValidator.validateNewPassword(generateError(ChangePasswordRequest.class),
                 changePasswordRequest.getNewPassword(), "newPassword");
         if (changePasswordRequest.getNewPassword().compareTo(changePasswordRequest.getConfirmNewPassword()) != 0) {
             Map<String, String> error = generateError(ChangePasswordRequest.class);
-            error.put("newPassword", "Confirm password is different!");
-            error.put("confirmPassword", "Confirm password is different!");
-            throw new InvalidRequestException(error, "Confirm password is different!");
+            error.put("newPassword", LanguageMessageKey.CONFIRM_PASSWORD_NOT_MATCH);
+            error.put("confirmPassword", LanguageMessageKey.CONFIRM_PASSWORD_NOT_MATCH);
+            throw new InvalidRequestException(error, LanguageMessageKey.CONFIRM_PASSWORD_NOT_MATCH);
         }
         user.setModified(DateFormat.getCurrentTime());
         user.setPassword(bCryptPasswordEncoder().encode(changePasswordRequest.getNewPassword()));
@@ -107,7 +107,7 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
         validate(accountSetting);
         List<User> users = userRepository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
         if (users.size() == 0) {
-            throw new ResourceAccessException("Not found user");
+            throw new ResourceAccessException(LanguageMessageKey.NOT_FOUND_EMAIL);
         }
         List<User> emailCheck = userRepository
                 .getUsers(Map.ofEntries(entry("email", accountSetting.getEmail())), userId, 0, 0, userId).get();
@@ -116,14 +116,14 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
         Map<String, String> error = generateError(AccountSetting.class);
         if (emailCheck.size() > 0) {
             if (emailCheck.get(0).get_id().compareTo((users.get(0).get_id())) != 0) {
-                error.put("email", "This email is taken!");
-                throw new InvalidRequestException(error, "Phone or email is taken!");
+                error.put("email", LanguageMessageKey.EMAIL_TAKEN);
+                throw new InvalidRequestException(error, LanguageMessageKey.EMAIL_TAKEN);
             }
         }
         if (phoneCheck.size() > 0) {
             if (phoneCheck.get(0).get_id().compareTo((users.get(0).get_id())) != 0) {
-                error.put("phone", "This phone is taken!");
-                throw new InvalidRequestException(error, "Phone or email is taken!");
+                error.put("phone", LanguageMessageKey.PHONE_TAKEN);
+                throw new InvalidRequestException(error, LanguageMessageKey.PHONE_TAKEN);
             }
         }
         User user = users.get(0);

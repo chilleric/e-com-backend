@@ -1,18 +1,6 @@
 package com.example.ecom.service.user;
 
-import static java.util.Map.entry;
-
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
+import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.constant.ResponseType;
 import com.example.ecom.dto.common.ListWrapperResponse;
 import com.example.ecom.dto.user.UserRequest;
@@ -23,6 +11,13 @@ import com.example.ecom.repository.user.User;
 import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
 import com.example.ecom.utils.DateFormat;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Map.entry;
 
 @Service
 public class UserServiceImpl extends AbstractService<UserRepository> implements UserService {
@@ -38,8 +33,8 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
                 .get();
         if (users.size() != 0) {
             Map<String, String> error = generateError(UserRequest.class);
-            error.put("username", "username existed");
-            throw new InvalidRequestException(error, "username existed");
+            error.put("username", LanguageMessageKey.USERNAME_EXISTED);
+            throw new InvalidRequestException(error, LanguageMessageKey.USERNAME_EXISTED);
         }
         Date currentTime = DateFormat.getCurrentTime();
         User user = objectMapper.convertValue(userRequest, User.class);
@@ -54,7 +49,7 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
     public Optional<UserResponse> findOneUserById(String userId, ResponseType type) {
         List<User> users = repository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
         if (users.size() == 0) {
-            throw new ResourceNotFoundException("Not found user!");
+            throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER);
         }
         User user = users.get(0);
         return Optional.of(new UserResponse(user, type));
@@ -65,7 +60,7 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
         validate(userRequest);
         List<User> users = repository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
         if (users.size() == 0) {
-            throw new ResourceNotFoundException("Not found user!");
+            throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER);
         }
         List<User> emailCheck = repository
                 .getUsers(Map.ofEntries(entry("email", userRequest.getEmail())), userId, 0, 0, userId).get();
@@ -74,15 +69,15 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
         Map<String, String> error = generateError(UserRequest.class);
         if (emailCheck.size() > 0) {
             if (emailCheck.get(0).get_id().compareTo(users.get(0).get_id()) != 0) {
-                error.put("email", "This email is taken!");
-                throw new InvalidRequestException(error, "Phone or email is taken!");
+                error.put("email", LanguageMessageKey.EMAIL_TAKEN);
+                throw new InvalidRequestException(error, LanguageMessageKey.EMAIL_TAKEN);
 
             }
         }
         if (phoneCheck.size() > 0) {
             if (phoneCheck.get(0).get_id().compareTo(users.get(0).get_id()) != 0) {
-                error.put("phone", "This phone is taken!");
-                throw new InvalidRequestException(error, "Phone or email is taken!");
+                error.put("phone", LanguageMessageKey.PHONE_TAKEN);
+                throw new InvalidRequestException(error, LanguageMessageKey.PHONE_TAKEN);
             }
         }
         List<User> usernameCheck = repository
@@ -90,13 +85,13 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
                 .get();
         if (usernameCheck.size() != 0) {
             if (usernameCheck.get(0).get_id().compareTo(users.get(0).get_id()) != 0) {
-                error.put("username", "username existed");
-                throw new InvalidRequestException(error, "username existed");
+                error.put("username", LanguageMessageKey.USERNAME_EXISTED);
+                throw new InvalidRequestException(error, LanguageMessageKey.USERNAME_EXISTED);
             }
         }
         User user = users.get(0);
         if (user.getUsername().compareTo("super_admin") == 0) {
-            throw new InvalidRequestException(new HashMap<>(), "Can not edit super_admin!");
+            throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.FORBIDDEN);
         }
         Date currentTime = DateFormat.getCurrentTime();
         User newUser = objectMapper.convertValue(userRequest, User.class);
@@ -115,11 +110,11 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
     public void changeStatusUser(String userId) {
         List<User> users = repository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
         if (users.size() == 0) {
-            throw new ResourceNotFoundException("Not found user!");
+            throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER);
         }
         User user = users.get(0);
         if (user.getUsername().compareTo("super_admin") == 0) {
-            throw new InvalidRequestException(new HashMap<>(), "Can not deactivate super_admin!");
+            throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.FORBIDDEN);
         }
         user.setDeleted(user.getDeleted() == 0 ? 1 : 0);
         user.setModified(DateFormat.getCurrentTime());
@@ -129,7 +124,7 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
 
     @Override
     public Optional<ListWrapperResponse<UserResponse>> getUsers(Map<String, String> allParams, String keySort, int page,
-            int pageSize, String sortField, ResponseType type) {
+                                                                int pageSize, String sortField, ResponseType type) {
         if (type.compareTo(ResponseType.PUBLIC) == 0) {
             allParams.put("deleted", "0");
         }
