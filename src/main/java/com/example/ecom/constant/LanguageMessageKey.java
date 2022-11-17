@@ -77,14 +77,12 @@ public class LanguageMessageKey {
     public static final String SKIP_ACCESS_REQUIRED = "skipAccessAbilityRequired";
     public static final String ONLY_0_1 = "only01";
     public static final String INVALID_DARK_THEME = "invalidDarkTheme";
-
     public static final String OLD_PASSWORD_REQUIRED = "oldPasswordRequired";
     public static final String NEW_PASSWORD_REQUIRED = "newPasswordRequired";
     public static final String CONFIRM_PASSWORD_REQUIRED = "confirmPasswordRequired";
-
     public static final String GENDER_REQUIRED = "genderRequired";
-    public static final String INVALID_GENDER = "invalidGender";
     public static final String DOB_REQUIRED = "dobRequired";
     public static final String INVALID_DOB = "invalidRequired";
     public static final String DELETED_REQUIRED = "deletedRequired";
+    public static final String INVALID_REQUEST = "invalidRequest";
 }
