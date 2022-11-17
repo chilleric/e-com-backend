@@ -1,19 +1,6 @@
 package com.example.ecom.controller;
 
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.codec.ServerSentEvent;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.dto.common.CommonResponse;
 import com.example.ecom.dto.common.ListWrapperResponse;
 import com.example.ecom.dto.common.ValidationResult;
@@ -22,9 +9,15 @@ import com.example.ecom.dto.message.MessageRequest;
 import com.example.ecom.dto.message.MessageResponse;
 import com.example.ecom.dto.message.OnlineUserResponse;
 import com.example.ecom.service.message.MessageService;
-
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @RestController
 @RequestMapping("/message")
@@ -36,7 +29,7 @@ public class MessageController extends AbstractController<MessageService> {
         ValidationResult result = validateToken(request, false);
         service.addOnlineUser(result.getLoginId());
         return new ResponseEntity<CommonResponse<String>>(
-                new CommonResponse<String>(true, null, "Connected to Chat!",
+                new CommonResponse<String>(true, null, LanguageMessageKey.CONNECTED_TO_CHAT,
                         HttpStatus.OK.value()),
                 null,
                 HttpStatus.OK.value());
@@ -48,7 +41,7 @@ public class MessageController extends AbstractController<MessageService> {
         ValidationResult result = validateToken(request, false);
         service.removeOnlineUser(result.getLoginId());
         return new ResponseEntity<CommonResponse<String>>(
-                new CommonResponse<String>(true, null, "Disconnected to Chat!",
+                new CommonResponse<String>(true, null, LanguageMessageKey.DISCONNECT_CHAT,
                         HttpStatus.OK.value()),
                 null,
                 HttpStatus.OK.value());
@@ -57,10 +50,10 @@ public class MessageController extends AbstractController<MessageService> {
     @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("/send-message")
     public ResponseEntity<CommonResponse<MessageResponse>> sendMessages(@RequestBody MessageRequest messageRequest,
-            @RequestParam("id") String receiveId,
-            HttpServletRequest request) {
+                                                                        @RequestParam("id") String receiveId,
+                                                                        HttpServletRequest request) {
         ValidationResult result = validateToken(request, false);
-        return response(service.sendMessage(messageRequest, result.getLoginId(), receiveId), "Message sent!");
+        return response(service.sendMessage(messageRequest, result.getLoginId(), receiveId), LanguageMessageKey.SUCCESS);
 
     }
 
@@ -82,15 +75,15 @@ public class MessageController extends AbstractController<MessageService> {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam("id") String sendId, HttpServletRequest request) {
         ValidationResult result = validateToken(request, false);
-        return response(service.getOldMessage(result.getLoginId(), sendId, page), "get old sent message successfully!");
+        return response(service.getOldMessage(result.getLoginId(), sendId, page), LanguageMessageKey.SUCCESS);
     }
 
     @SecurityRequirement(name = "Bearer Authentication")
     @GetMapping(value = "/get-chat-room")
     public ResponseEntity<CommonResponse<List<ChatRoom>>> getChatRoom(@RequestParam(defaultValue = "1") int page,
-            HttpServletRequest request) {
+                                                                      HttpServletRequest request) {
         ValidationResult result = validateToken(request, false);
-        return response(service.getChatroom(result.getLoginId(), page), "Success");
+        return response(service.getChatroom(result.getLoginId(), page), LanguageMessageKey.SUCCESS);
     }
 
 }

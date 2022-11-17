@@ -1,5 +1,6 @@
 package com.example.ecom.service.message;
 
+import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.dto.common.ListWrapperResponse;
 import com.example.ecom.dto.message.ChatRoom;
 import com.example.ecom.dto.message.MessageRequest;
@@ -36,10 +37,10 @@ public class MessageServiceImpl extends AbstractService<MessageRepository> imple
     public Optional<ListWrapperResponse<MessageResponse>> getOldMessage(String userId, String sendId, int page) {
         List<Message> result = new ArrayList<>(repository.getMessage(
                 Map.ofEntries(entry("sendId", userId), entry("receiveId", sendId)), "DESC", page, 5,
-                "create").orElseThrow(() -> new ResourceNotFoundException("Not found")));
+                "create").get());
         result.addAll(repository.getMessage(
                 Map.ofEntries(entry("sendId", sendId), entry("receiveId", userId)), "DESC", page, 5,
-                "create").orElseThrow(() -> new ResourceNotFoundException("Not found")));
+                "create").get());
         return Optional.of(new ListWrapperResponse<MessageResponse>(
                 result.stream()
                         .map(sendMessage -> new MessageResponse(sendMessage.get_id().toString(),
@@ -55,10 +56,10 @@ public class MessageServiceImpl extends AbstractService<MessageRepository> imple
     public Optional<List<ChatRoom>> getChatroom(String loginId, int page) {
         List<ChatRoom> result = new ArrayList<>();
         repository.getMessage(Map.ofEntries(entry("sendId", loginId)), "", page, 10, "")
-                .orElseThrow(() -> new ResourceNotFoundException("Not found")).forEach(message -> {
+                .get().forEach(message -> {
                     List<User> users = userRepository.getUsers(
                             Map.ofEntries(entry("_id", message.getReceiveId().toString())),
-                            "", 0, 0, "").orElseThrow(() -> new ResourceNotFoundException("Not found"));
+                            "", 0, 0, "").get();
                     boolean hasId = false;
                     for (ChatRoom chatRoom : result) {
                         if (chatRoom.getReceiveId()
@@ -78,9 +79,9 @@ public class MessageServiceImpl extends AbstractService<MessageRepository> imple
 
     @Override
     public void addOnlineUser(String userId) {
-        List<User> users = userRepository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").orElseThrow(() -> new ResourceNotFoundException("Not found"));
+        List<User> users = userRepository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
         if (users.size() == 0) {
-            throw new ResourceNotFoundException("Not found user!");
+            throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER);
         }
         if (onlineUsers.size() == 0) {
             onlineUsers.add(new OnlineUserResponse(
@@ -104,9 +105,9 @@ public class MessageServiceImpl extends AbstractService<MessageRepository> imple
     @Override
     public void removeOnlineUser(String userId) {
         List<User> users = userRepository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "")
-                .orElseThrow(() -> new ResourceNotFoundException("Not found"));
+                .get();
         if (users.size() == 0) {
-            throw new ResourceNotFoundException("Not found user!");
+            throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER);
         }
         if (onlineUsers.size() != 0) {
             boolean isOnline = false;

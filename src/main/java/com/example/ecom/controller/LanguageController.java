@@ -1,5 +1,6 @@
 package com.example.ecom.controller;
 
+import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.dto.common.CommonResponse;
 import com.example.ecom.dto.common.ListWrapperResponse;
 import com.example.ecom.dto.language.LanguageRequest;
@@ -28,27 +29,27 @@ public class LanguageController extends AbstractController<LanguageService> {
             @RequestParam(defaultValue = "asc") String keySort,
             @RequestParam(defaultValue = "modified") String sortField, HttpServletRequest request) {
         validateToken(request, false);
-        return response(service.getLanguages(allParams, keySort, page, pageSize, sortField), "Success");
+        return response(service.getLanguages(allParams, keySort, page, pageSize, sortField), LanguageMessageKey.SUCCESS);
     }
 
     @SecurityRequirement(name = "Bearer Authentication")
     @GetMapping(value = "get-language-select-list")
     public ResponseEntity<CommonResponse<List<SelectLanguage>>> getSelectLanguages(HttpServletRequest request) {
         validateToken(request, false);
-        return response(service.getSelectLanguage(), "Success");
+        return response(service.getSelectLanguage(), LanguageMessageKey.SUCCESS);
     }
 
     @SecurityRequirement(name = "Bearer Authentication")
     @GetMapping(value = "get-default-dictionary")
     public ResponseEntity<CommonResponse<Map<String, String>>> getDefaultDictionary(HttpServletRequest request) {
         validateToken(request, false);
-        return response(service.getDefaultValueSample(), "Success");
+        return response(service.getDefaultValueSample(), LanguageMessageKey.SUCCESS);
     }
 
     @GetMapping(value = "get-language-by-key")
     public ResponseEntity<CommonResponse<LanguageResponse>> getLanguageByKey(@RequestParam("key") String key,
                                                                              HttpServletRequest request) {
-        return response(service.getLanguageByKey(key), "Success");
+        return response(service.getLanguageByKey(key), LanguageMessageKey.SUCCESS);
     }
 
     @SecurityRequirement(name = "Bearer Authentication")
@@ -58,7 +59,7 @@ public class LanguageController extends AbstractController<LanguageService> {
         validateToken(httpServletRequest, false);
         service.addNewLanguage(languageRequest);
         return new ResponseEntity<CommonResponse<String>>(
-                new CommonResponse<String>(true, null, "Add language successfully!",
+                new CommonResponse<String>(true, null, LanguageMessageKey.ADD_LANGUAGE_SUCCESS,
                         HttpStatus.OK.value()),
                 null,
                 HttpStatus.OK.value());
@@ -71,7 +72,7 @@ public class LanguageController extends AbstractController<LanguageService> {
         validateToken(httpServletRequest, false);
         service.addNewDictionary(payload);
         return new ResponseEntity<CommonResponse<String>>(
-                new CommonResponse<String>(true, null, "Add new key successfully!",
+                new CommonResponse<String>(true, null, LanguageMessageKey.ADD_LANGUAGE_KEY_SUCCESS,
                         HttpStatus.OK.value()),
                 null,
                 HttpStatus.OK.value());
@@ -84,7 +85,7 @@ public class LanguageController extends AbstractController<LanguageService> {
         validateToken(httpServletRequest, false);
         service.deleteDictionaryKey(keyDict);
         return new ResponseEntity<CommonResponse<String>>(
-                new CommonResponse<String>(true, null, "Delete key language successfully!",
+                new CommonResponse<String>(true, null, LanguageMessageKey.DELETE_LANGUAGE_KEY_SUCCESS,
                         HttpStatus.OK.value()),
                 null,
                 HttpStatus.OK.value());
@@ -98,7 +99,7 @@ public class LanguageController extends AbstractController<LanguageService> {
         validateToken(httpServletRequest, false);
         service.updateLanguage(languageRequest, languageId);
         return new ResponseEntity<CommonResponse<String>>(
-                new CommonResponse<String>(true, null, "Update language successfully!",
+                new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_LANGUAGE_SUCCESS,
                         HttpStatus.OK.value()),
                 null,
                 HttpStatus.OK.value());

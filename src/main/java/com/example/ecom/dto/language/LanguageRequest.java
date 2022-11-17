@@ -1,27 +1,27 @@
 package com.example.ecom.dto.language;
 
-import java.util.Map;
+import com.example.ecom.constant.LanguageMessageKey;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class LanguageRequest {
-    @NotEmpty(message = "Language is required")
-    @NotBlank(message = "Language is required")
-    @NotNull(message = "Language is required")
+    @NotEmpty(message = LanguageMessageKey.LANGUAGE_REQUIRED)
+    @NotBlank(message = LanguageMessageKey.LANGUAGE_REQUIRED)
+    @NotNull(message = LanguageMessageKey.LANGUAGE_REQUIRED)
     private String language;
 
-    @NotEmpty(message = "Key is required")
-    @NotBlank(message = "Key is required")
-    @NotNull(message = "Key is required")
+    @NotEmpty(message = LanguageMessageKey.LANGUAGE_KEY_REQUIRED)
+    @NotBlank(message = LanguageMessageKey.LANGUAGE_KEY_REQUIRED)
+    @NotNull(message = LanguageMessageKey.LANGUAGE_KEY_REQUIRED)
     private String key;
 
     private Map<String, String> dictionary;

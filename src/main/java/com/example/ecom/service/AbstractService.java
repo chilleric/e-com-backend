@@ -1,5 +1,6 @@
 package com.example.ecom.service;
 
+import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.exception.InvalidRequestException;
 import com.example.ecom.utils.ObjectValidator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -46,7 +47,7 @@ public abstract class AbstractService<r> {
             }
         }
         if (isError) {
-            throw new InvalidRequestException(errors, "Invalid request");
+            throw new InvalidRequestException(errors, LanguageMessageKey.INVALID_REQUEST);
         }
     }
 
