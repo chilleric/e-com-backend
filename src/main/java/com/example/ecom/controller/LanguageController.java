@@ -107,7 +107,7 @@ public class LanguageController extends AbstractController<LanguageService> {
     }
 
     @SecurityRequirement(name = "Bearer Authentication")
-    @PutMapping(value = "delete-dictionary-key")
+    @PutMapping(value = "update-dictionary-list")
     public ResponseEntity<CommonResponse<String>> updateLanguageByList(@RequestBody List<LanguageFileRequest> payload,
                                                                        HttpServletRequest httpServletRequest) {
         validateToken(httpServletRequest, false);
