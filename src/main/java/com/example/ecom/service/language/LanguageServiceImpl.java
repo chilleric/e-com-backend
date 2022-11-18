@@ -2,6 +2,7 @@ package com.example.ecom.service.language;
 
 import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.dto.common.ListWrapperResponse;
+import com.example.ecom.dto.language.LanguageFileRequest;
 import com.example.ecom.dto.language.LanguageRequest;
 import com.example.ecom.dto.language.LanguageResponse;
 import com.example.ecom.dto.language.SelectLanguage;
@@ -11,6 +12,7 @@ import com.example.ecom.repository.language.Language;
 import com.example.ecom.repository.language.LanguageRepository;
 import com.example.ecom.service.AbstractService;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -164,6 +166,20 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
         List<Language> languageDefault = repository
                 .getLanguages(Map.ofEntries(entry("key", "en")), "", 0, 0, "").get();
         return Optional.of(languageDefault.get(0).getDictionary());
+    }
+
+    @Override
+    public void updateDictionaryByFile(List<LanguageFileRequest> payload) {
+        payload.forEach(item -> {
+            if (StringUtils.hasText(item.getId())) {
+                List<Language> languages = repository.getLanguages(Map.ofEntries(entry("_id", item.getId())), "", 0, 0, "").get();
+                if (languages.size() > 0) {
+                    Language langUpdate = languages.get(0);
+                    langUpdate.setDictionary(item.getDictionary());
+                    repository.insertAndUpdate(langUpdate);
+                }
+            }
+        });
     }
 
     @Override
