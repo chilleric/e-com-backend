@@ -78,4 +78,5 @@ public class LanguageMessageKey {
     public static final String INVALID_DOB = "invalidDob"; // Invalid date of birth - Ngày sinh không hợp lệ
     public static final String DELETED_REQUIRED = "deletedRequired"; // Deleted is required - Trạng thái là bắt buộc
     public static final String INVALID_REQUEST = "invalidRequest"; // Invalid request - Yêu cầu không hợp lệ
+    public static final String ID_REQUIRED = "idRequired"; // Id is required - Id là bắt buộc
 }

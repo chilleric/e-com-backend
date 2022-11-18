@@ -1,6 +1,7 @@
 package com.example.ecom.service.language;
 
 import com.example.ecom.dto.common.ListWrapperResponse;
+import com.example.ecom.dto.language.LanguageFileRequest;
 import com.example.ecom.dto.language.LanguageRequest;
 import com.example.ecom.dto.language.LanguageResponse;
 import com.example.ecom.dto.language.SelectLanguage;
@@ -27,4 +28,6 @@ public interface LanguageService {
     void addNewDictionary(Map<String, String> newDict);
 
     Optional<Map<String, String>> getDefaultValueSample();
+
+    void updateDictionaryByFile(List<LanguageFileRequest> payload);
 }

@@ -3,6 +3,7 @@ package com.example.ecom.controller;
 import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.dto.common.CommonResponse;
 import com.example.ecom.dto.common.ListWrapperResponse;
+import com.example.ecom.dto.language.LanguageFileRequest;
 import com.example.ecom.dto.language.LanguageRequest;
 import com.example.ecom.dto.language.LanguageResponse;
 import com.example.ecom.dto.language.SelectLanguage;
@@ -92,12 +93,25 @@ public class LanguageController extends AbstractController<LanguageService> {
     }
 
     @SecurityRequirement(name = "Bearer Authentication")
-    @PostMapping(value = "update-language")
+    @PutMapping(value = "update-language")
     public ResponseEntity<CommonResponse<String>> updateLanguage(@RequestBody LanguageRequest languageRequest,
                                                                  @RequestParam("id") String languageId,
                                                                  HttpServletRequest httpServletRequest) {
         validateToken(httpServletRequest, false);
         service.updateLanguage(languageRequest, languageId);
+        return new ResponseEntity<CommonResponse<String>>(
+                new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_LANGUAGE_SUCCESS,
+                        HttpStatus.OK.value()),
+                null,
+                HttpStatus.OK.value());
+    }
+
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PutMapping(value = "delete-dictionary-key")
+    public ResponseEntity<CommonResponse<String>> updateLanguageByList(@RequestBody List<LanguageFileRequest> payload,
+                                                                       HttpServletRequest httpServletRequest) {
+        validateToken(httpServletRequest, false);
+        service.updateDictionaryByFile(payload);
         return new ResponseEntity<CommonResponse<String>>(
                 new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_LANGUAGE_SUCCESS,
                         HttpStatus.OK.value()),
