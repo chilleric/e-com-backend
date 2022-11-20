@@ -1,7 +1,14 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy WAR app to Azure Web App - e-com-backend
+name: Build and deploy to Azure
+
+env:
+  MONGO_DATABASE_URI: ${{ secrets.MONGO_DATABASE_URI_E_COM }}
+  EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME_E_COM }}
+  EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD_E_COM }}
+  KEY_JWT: ${{ secrets.KEY_JWT_E_COM }}
+  DEFAULT_PASSWORD: ${{ secrets.DEFAULT_PASSWORD_E_COM}}
 
 on:
   push:
