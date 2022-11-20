@@ -22,13 +22,19 @@ jobs:
           java-version: '11'
 
       - name: Build with Maven
+        env:
+          MONGO_DATABASE_URI: ${{ secrets.MONGO_DATABASE_URI_E_COM }}
+          EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME_E_COM }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD_E_COM }}
+          KEY_JWT: ${{ secrets.KEY_JWT_E_COM }}
+          DEFAULT_PASSWORD: ${{ secrets.DEFAULT_PASSWORD_E_COM}}
         run: mvn clean install
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
         with:
           name: java-app
-          path: '${{ github.workspace }}/target/*.war'
+          path: '${{ github.workspace }}/target/*.jar'
 
   deploy:
     runs-on: ubuntu-latest
@@ -50,4 +56,4 @@ jobs:
           app-name: 'e-com-backend'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D8DF71C4FFCD44F390F2B09904D1120D }}
-          package: '*.war'
+          package: '*.jar'
