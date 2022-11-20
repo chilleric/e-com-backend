@@ -33,6 +33,15 @@ jobs:
           DEFAULT_PASSWORD: ${{ secrets.DEFAULT_PASSWORD_E_COM}}
         run: mvn clean install
 
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'e-com-backend'
+          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_089DB6A383254AA99A2536367EDFFA1A }}
+          package: '${{ github.workspace }}/target/e-com-0.0.1-SNAPSHOT.jar'
+
       #      - name: Upload artifact for deployment job
       #        uses: actions/upload-artifact@v2
       #        with:
@@ -52,11 +61,3 @@ jobs:
       #        with:
       #          name: e-com
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'e-com-backend'
-          slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_089DB6A383254AA99A2536367EDFFA1A }}
-          package: '${{ github.workspace }}/target/*.war'
