@@ -42,22 +42,3 @@ jobs:
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_089DB6A383254AA99A2536367EDFFA1A }}
           package: '${{ github.workspace }}/target/e-com-0.0.1-SNAPSHOT.jar'
 
-      #      - name: Upload artifact for deployment job
-      #        uses: actions/upload-artifact@v2
-      #        with:
-      #          name: e-com
-      #          path: '${{ github.workspace }}/target/*.war'
-      #
-      #  deploy:
-      #    runs-on: ubuntu-latest
-      #    needs: build
-      #    environment:
-      #      name: 'Production'
-      #      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-      #
-      #    steps:
-      #      - name: Download artifact from build job
-      #        uses: actions/download-artifact@v3
-      #        with:
-      #          name: e-com
-

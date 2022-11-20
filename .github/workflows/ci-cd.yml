@@ -8,10 +8,8 @@ env:
   DEFAULT_PASSWORD: ${{ secrets.DEFAULT_PASSWORD_E_COM}}
 
 on:
-  push:
-    branches: [develop]
   pull_request:
-    branches: [develop]
+    branches: [ develop ]
 
 jobs:
   test-develop:
@@ -29,7 +27,7 @@ jobs:
 
   build-develop:
     if: ${{ always() }}
-    needs: [test-develop]
+    needs: [ test-develop ]
     runs-on: ubuntu-latest
 
     steps:
