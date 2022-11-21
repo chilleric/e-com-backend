@@ -29,7 +29,6 @@ public class JwtValidation {
     protected String JWT_SECRET;
 
     protected AppLogger APP_LOGGER = LoggerFactory.getLogger(LoggerType.APPLICATION);
-    ;
 
     public String generateToken(String userId, String deviceId) {
         Date now = new Date();
@@ -63,10 +62,17 @@ public class JwtValidation {
             JWTVerifier verifier = JWT.require(algorithm).build();
             DecodedJWT decodedJwt = verifier.verify(token);
             Map<String, Claim> claims = decodedJwt.getClaims();
-            String userId = claims.get("userId").toString();
-            String deviceId = claims.get("deviceId").toString();
-            return new TokenContent(userId.substring(1, userId.length() - 1),
-                    deviceId.substring(1, deviceId.length() - 1));
+            if (claims == null) {
+                throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
+            } else {
+                if (!claims.containsKey("userId") || !claims.containsKey("deviceId")) {
+                    throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
+                }
+                String userId = claims.get("userId").toString();
+                String deviceId = claims.get("deviceId").toString();
+                return new TokenContent(userId.substring(1, userId.length() - 1),
+                        deviceId.substring(1, deviceId.length() - 1));
+            }
         } catch (JWTVerificationException exception) {
             APP_LOGGER.error("JWT signature does not match locally computed signature!");
             throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
