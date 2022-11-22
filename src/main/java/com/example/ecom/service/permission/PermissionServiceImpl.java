@@ -13,6 +13,8 @@ import com.example.ecom.exception.InvalidRequestException;
 import com.example.ecom.exception.ResourceNotFoundException;
 import com.example.ecom.inventory.permission.PermissionInventory;
 import com.example.ecom.inventory.user.UserInventory;
+import com.example.ecom.repository.accessability.Accessability;
+import com.example.ecom.repository.accessability.AccessabilityRepository;
 import com.example.ecom.repository.permission.Permission;
 import com.example.ecom.repository.permission.PermissionRepository;
 import com.example.ecom.service.AbstractService;
@@ -45,6 +47,9 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
     @Autowired
     private UserInventory userInventory;
 
+    @Autowired
+    private AccessabilityRepository accessabilityRepository;
+
     @Override
     public Optional<ListWrapperResponse<PermissionResponse>> getPermissions(Map<String, String> allParams,
                                                                             String keySort, int page, int pageSize, String sortField) {
@@ -68,7 +73,7 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
     }
 
     @Override
-    public void addNewPermissions(PermissionRequest permissionRequest) {
+    public void addNewPermissions(PermissionRequest permissionRequest, String loginId) {
         validate(permissionRequest);
         Map<String, String> error = generateError(PermissionRequest.class);
         List<Permission> permissions = repository
@@ -78,6 +83,8 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
             throw new InvalidRequestException(error, LanguageMessageKey.INVALID_NAME_PERMISSION);
         }
         Permission permission = new Permission();
+        ObjectId newId = new ObjectId();
+        permission.set_id(newId);
         permission.setCanDelete(true);
         permission.setName(permissionRequest.getName());
         permission.setCreated(DateFormat.getCurrentTime());
@@ -98,6 +105,7 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
         } else {
             permission.setUserId(new ArrayList<>());
         }
+        accessabilityRepository.addNewAccessability(new Accessability(null, new ObjectId(loginId), newId));
         repository.insertAndUpdate(permission);
     }
 

@@ -9,6 +9,8 @@ import com.example.ecom.exception.InvalidRequestException;
 import com.example.ecom.exception.ResourceNotFoundException;
 import com.example.ecom.inventory.permission.PermissionInventory;
 import com.example.ecom.inventory.user.UserInventory;
+import com.example.ecom.repository.accessability.Accessability;
+import com.example.ecom.repository.accessability.AccessabilityRepository;
 import com.example.ecom.repository.permission.Permission;
 import com.example.ecom.repository.permission.PermissionRepository;
 import com.example.ecom.repository.user.User;
@@ -37,8 +39,11 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
     @Autowired
     private UserInventory userInventory;
 
+    @Autowired
+    private AccessabilityRepository accessabilityRepository;
+
     @Override
-    public void createNewUser(UserRequest userRequest) {
+    public void createNewUser(UserRequest userRequest, String loginId) {
         validate(userRequest);
         Map<String, String> error = generateError(UserRequest.class);
         userInventory.findUserByUsername(userRequest.getUsername()).ifPresent(thisName -> {
@@ -58,6 +63,7 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
         List<ObjectId> userIds = defaultPerm.getUserId();
         userIds.add(newId);
         defaultPerm.setUserId(userIds);
+        accessabilityRepository.addNewAccessability(new Accessability(null, new ObjectId(loginId), newId));
         permissionRepository.insertAndUpdate(defaultPerm);
         repository.insertAndUpdate(user);
     }

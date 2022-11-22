@@ -23,8 +23,8 @@ public class UserController extends AbstractController<UserService> {
     @PostMapping(value = "add-new-user")
     public ResponseEntity<CommonResponse<String>> addNewUser(@RequestBody UserRequest userRequest,
                                                              HttpServletRequest request) {
-        validateToken(request, false);
-        service.createNewUser(userRequest);
+        ValidationResult result = validateToken(request, false);
+        service.createNewUser(userRequest, result.getLoginId());
         return new ResponseEntity<CommonResponse<String>>(
                 new CommonResponse<String>(true, null, LanguageMessageKey.CREATE_USER_SUCCESS,
                         HttpStatus.OK.value()),
@@ -37,6 +37,7 @@ public class UserController extends AbstractController<UserService> {
     public ResponseEntity<CommonResponse<UserResponse>> getUserDetail(@RequestParam(required = true) String id,
                                                                       HttpServletRequest request) {
         ValidationResult result = validateToken(request, false);
+        checkAccessability(result.getLoginId(), id, result.isSkipAccessability());
         return response(service.findOneUserById(id,
                 getResponseType(id, result.getLoginId(), result.isSkipAccessability())), LanguageMessageKey.SUCCESS);
     }
@@ -60,6 +61,7 @@ public class UserController extends AbstractController<UserService> {
                                                              @RequestParam(required = true) String id, HttpServletRequest request) {
         ValidationResult result = validateToken(request, false);
         checkUserId(id, result.getLoginId(), result.isSkipAccessability());
+        checkAccessability(result.getLoginId(), id, result.isSkipAccessability());
         service.updateUserById(id, userRequest);
         return new ResponseEntity<CommonResponse<String>>(
                 new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_USER_SUCCESS,
@@ -74,6 +76,7 @@ public class UserController extends AbstractController<UserService> {
                                                                    HttpServletRequest request) {
         ValidationResult result = validateToken(request, false);
         checkUserId(id, result.getLoginId(), result.isSkipAccessability());
+        checkAccessability(result.getLoginId(), id, result.isSkipAccessability());
         service.changeStatusUser(id);
         return new ResponseEntity<CommonResponse<String>>(
                 new CommonResponse<String>(true, null, LanguageMessageKey.CHANGE_STATUS_USER_SUCCESS,
