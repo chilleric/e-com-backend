@@ -8,9 +8,11 @@ import com.example.ecom.dto.language.LanguageResponse;
 import com.example.ecom.dto.language.SelectLanguage;
 import com.example.ecom.exception.InvalidRequestException;
 import com.example.ecom.exception.ResourceNotFoundException;
+import com.example.ecom.inventory.langauge.LanguageInventory;
 import com.example.ecom.repository.language.Language;
 import com.example.ecom.repository.language.LanguageRepository;
 import com.example.ecom.service.AbstractService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -21,6 +23,10 @@ import static java.util.Map.entry;
 
 @Service
 public class LanguageServiceImpl extends AbstractService<LanguageRepository> implements LanguageService {
+
+    @Autowired
+    private LanguageInventory languageInventory;
+
     @Override
     public Optional<ListWrapperResponse<LanguageResponse>> getLanguages(Map<String, String> allParams,
                                                                         String keySort, int page, int pageSize, String sortField) {
@@ -64,49 +70,38 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
     @Override
     public void addNewLanguage(LanguageRequest languageRequest) {
         validate(languageRequest);
-        List<Language> languagesName = repository
-                .getLanguages(Map.ofEntries(entry("key", languageRequest.getKey().toLowerCase())), "",
-                        0, 0, "")
-                .get();
-        if (languagesName.size() > 0 || languageRequest.getKey().length() != 2) {
-            Map<String, String> error = generateError(LanguageRequest.class);
+        Map<String, String> error = generateError(LanguageRequest.class);
+        languageInventory.findLanguageByKey(languageRequest.getKey().toLowerCase()).ifPresent(language -> {
+            error.put("key", LanguageMessageKey.INVALID_LANGUAGE_KEY);
+            throw new InvalidRequestException(error, LanguageMessageKey.INVALID_LANGUAGE_KEY);
+        });
+        if (languageRequest.getKey().length() != 2) {
             error.put("key", LanguageMessageKey.INVALID_LANGUAGE_KEY);
             throw new InvalidRequestException(error, LanguageMessageKey.INVALID_LANGUAGE_KEY);
         }
-        List<Language> languageDefault = repository
-                .getLanguages(Map.ofEntries(entry("key", "en")), "", 0, 0, "").get();
-        Language language = new Language(null, languageRequest.getLanguage(), languageRequest.getKey().toLowerCase(), languageDefault.get(0).getDictionary());
+        Language languageDefault = languageInventory.findLanguageByKey("en").orElseThrow(() -> new InvalidRequestException(new HashMap<>(), LanguageMessageKey.LANGUAGE_NOT_FOUND));
+        Language language = new Language(null, languageRequest.getLanguage(), languageRequest.getKey().toLowerCase(), languageDefault.getDictionary());
         repository.insertAndUpdate(language);
     }
 
     @Override
     public void updateLanguage(LanguageRequest languageRequest, String id) {
         validate(languageRequest);
-        List<Language> languages = repository.getLanguages(Map.ofEntries(entry("_id", id)), "", 0, 0, "").get();
-        if (languages.size() == 0) {
-            throw new ResourceNotFoundException(LanguageMessageKey.LANGUAGE_NOT_FOUND);
-        }
-        List<Language> languageDefault = repository
-                .getLanguages(Map.ofEntries(entry("key", "en")), "", 0, 0, "").get();
-        validateDictionary(languageDefault.get(0).getDictionary(), languageRequest.getDictionary());
-        Language language = languages.get(0);
+        Language language = languageInventory.findLanguageById(id).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.LANGUAGE_NOT_FOUND));
+        Language languageDefault = languageInventory.findLanguageByKey("en").orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.LANGUAGE_NOT_FOUND));
+        validateDictionary(languageDefault.getDictionary(), languageRequest.getDictionary());
+        Map<String, String> error = generateError(LanguageRequest.class);
         if (language.getKey().compareTo("en") != 0) {
-            List<Language> languagesName = repository
-                    .getLanguages(Map.ofEntries(entry("key", languageRequest.getKey().toLowerCase())), "",
-                            0, 0, "")
-                    .get();
             if (languageRequest.getKey().length() != 2) {
-                Map<String, String> error = generateError(LanguageRequest.class);
                 error.put("key", LanguageMessageKey.INVALID_LANGUAGE_KEY);
                 throw new InvalidRequestException(error, LanguageMessageKey.INVALID_KEY_2_DIGIT);
             }
-            if (languagesName.size() > 0) {
-                if (languagesName.get(0).get_id().compareTo(languages.get(0).get_id()) != 0) {
-                    Map<String, String> error = generateError(LanguageRequest.class);
+            languageInventory.findLanguageByKey(languageRequest.getKey().toLowerCase()).ifPresent(languageName -> {
+                if (languageName.get_id().compareTo(language.get_id()) != 0) {
                     error.put("key", LanguageMessageKey.INVALID_LANGUAGE_KEY);
                     throw new InvalidRequestException(error, LanguageMessageKey.INVALID_LANGUAGE_KEY);
                 }
-            }
+            });
             language.setLanguage(languageRequest.getLanguage());
             language.setKey(languageRequest.getKey().toLowerCase());
             language.setDictionary(languageRequest.getDictionary());
@@ -163,21 +158,18 @@ public class LanguageServiceImpl extends AbstractService<LanguageRepository> imp
 
     @Override
     public Optional<Map<String, String>> getDefaultValueSample() {
-        List<Language> languageDefault = repository
-                .getLanguages(Map.ofEntries(entry("key", "en")), "", 0, 0, "").get();
-        return Optional.of(languageDefault.get(0).getDictionary());
+        Language languageDefault = languageInventory.findLanguageByKey("en").orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.LANGUAGE_NOT_FOUND));
+        return Optional.of(languageDefault.getDictionary());
     }
 
     @Override
     public void updateDictionaryByFile(List<LanguageFileRequest> payload) {
         payload.forEach(item -> {
             if (StringUtils.hasText(item.getId())) {
-                List<Language> languages = repository.getLanguages(Map.ofEntries(entry("_id", item.getId())), "", 0, 0, "").get();
-                if (languages.size() > 0) {
-                    Language langUpdate = languages.get(0);
+                languageInventory.findLanguageById(item.getId()).ifPresent(langUpdate -> {
                     langUpdate.setDictionary(item.getDictionary());
                     repository.insertAndUpdate(langUpdate);
-                }
+                });
             }
         });
     }

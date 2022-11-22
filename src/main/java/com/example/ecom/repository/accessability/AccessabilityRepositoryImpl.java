@@ -1,15 +1,14 @@
 package com.example.ecom.repository.accessability;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
+import com.example.ecom.repository.AbstractMongoRepo;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
-import com.example.ecom.repository.AbstractMongoRepo;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public class AccessabilityRepositoryImpl extends AbstractMongoRepo implements AccessabilityRepository {
@@ -29,7 +28,7 @@ public class AccessabilityRepositoryImpl extends AbstractMongoRepo implements Ac
 
     @Override
     public void addNewAccessability(Accessability accessability) {
-        authenticationTemplate.save(accessability);
+        authenticationTemplate.save(accessability, "accessability");
     }
 
     @Override

@@ -11,6 +11,8 @@ import com.example.ecom.dto.user.UserResponse;
 import com.example.ecom.exception.ForbiddenException;
 import com.example.ecom.exception.InvalidRequestException;
 import com.example.ecom.exception.ResourceNotFoundException;
+import com.example.ecom.inventory.permission.PermissionInventory;
+import com.example.ecom.inventory.user.UserInventory;
 import com.example.ecom.repository.permission.Permission;
 import com.example.ecom.repository.permission.PermissionRepository;
 import com.example.ecom.service.AbstractService;
@@ -37,6 +39,12 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private PermissionInventory permissionInventory;
+
+    @Autowired
+    private UserInventory userInventory;
+
     @Override
     public Optional<ListWrapperResponse<PermissionResponse>> getPermissions(Map<String, String> allParams,
                                                                             String keySort, int page, int pageSize, String sortField) {
@@ -46,10 +54,10 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
                         .map(permission -> new PermissionResponse(permission.get_id().toString(), permission.getName(),
                                 permission.getFeatureId().size() > 0
                                         ? permission.getFeatureId().stream()
-                                        .map(feature -> feature.toString()).collect(Collectors.toList())
+                                        .map(ObjectId::toString).collect(Collectors.toList())
                                         : new ArrayList<>(),
                                 permission.getUserId().size() > 0
-                                        ? permission.getUserId().stream().map(userId -> userId.toString())
+                                        ? permission.getUserId().stream().map(ObjectId::toString)
                                         .collect(Collectors.toList())
                                         : new ArrayList<>(),
                                 DateFormat.toDateString(permission.getCreated(), DateTime.YYYY_MM_DD),
@@ -62,10 +70,10 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
     @Override
     public void addNewPermissions(PermissionRequest permissionRequest) {
         validate(permissionRequest);
+        Map<String, String> error = generateError(PermissionRequest.class);
         List<Permission> permissions = repository
                 .getPermissions(Map.ofEntries(entry("name", permissionRequest.getName())), "", 0, 0, "").get();
         if (permissions.size() != 0) {
-            Map<String, String> error = generateError(PermissionRequest.class);
             error.put("name", LanguageMessageKey.INVALID_NAME_PERMISSION);
             throw new InvalidRequestException(error, LanguageMessageKey.INVALID_NAME_PERMISSION);
         }
@@ -98,26 +106,20 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
         Permission permission = repository.getPermissionById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.PERMISSION_NOT_FOUND));
         validate(permissionRequest);
-        List<Permission> permissions = repository
-                .getPermissions(Map.ofEntries(entry("name", permissionRequest.getName())), "", 0, 0, "").get();
-        if (permissions.size() != 0) {
-            if (permissions.get(0).get_id().compareTo(permission.get_id()) != 0) {
-                Map<String, String> error = generateError(PermissionRequest.class);
+        Map<String, String> error = generateError(PermissionRequest.class);
+        permissionInventory.getPermissionByName(permissionRequest.getName()).ifPresent(perm -> {
+            if (perm.get_id().compareTo(permission.get_id()) != 0) {
                 error.put("name", LanguageMessageKey.INVALID_NAME_PERMISSION);
                 throw new InvalidRequestException(error, LanguageMessageKey.INVALID_NAME_PERMISSION);
             }
-        }
+        });
         if (permission.getName().compareTo("super_admin_permission") == 0) {
-            UserResponse adminUser = userService
-                    .getUsers(Map.ofEntries(entry("username", "super_admin")), "", 0, 0, "", ResponseType.PRIVATE)
-                    .get()
-                    .getData().get(0);
-            if (!permissionRequest.getUserId().contains(adminUser.getId())) {
-                Map<String, String> error = generateError(PermissionRequest.class);
+            if (!permissionRequest.getUserId().contains(userInventory.findUserByUsername("super_admin")
+                    .orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER)).get_id().toString())) {
                 error.put("userId", LanguageMessageKey.MUST_CONTAIN_ADMIN_ACCOUNT);
                 throw new InvalidRequestException(error, LanguageMessageKey.MUST_CONTAIN_ADMIN_ACCOUNT);
             }
-            permission.setUserId(permissionRequest.getUserId().stream().map(userId -> new ObjectId(userId))
+            permission.setUserId(permissionRequest.getUserId().stream().map(ObjectId::new)
                     .collect(Collectors.toList()));
             permission.setModified(DateFormat.getCurrentTime());
             repository.insertAndUpdate(permission);

@@ -6,8 +6,8 @@ import com.example.ecom.dto.settings.ChangePasswordRequest;
 import com.example.ecom.dto.settings.SettingsRequest;
 import com.example.ecom.dto.settings.SettingsResponse;
 import com.example.ecom.exception.InvalidRequestException;
-import com.example.ecom.repository.language.Language;
-import com.example.ecom.repository.language.LanguageRepository;
+import com.example.ecom.inventory.langauge.LanguageInventory;
+import com.example.ecom.inventory.user.UserInventory;
 import com.example.ecom.repository.settings.Setting;
 import com.example.ecom.repository.settings.SettingRepository;
 import com.example.ecom.repository.user.User;
@@ -32,8 +32,12 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
     @Autowired
     private UserRepository userRepository;
 
+
     @Autowired
-    private LanguageRepository languageRepository;
+    private LanguageInventory languageInventory;
+
+    @Autowired
+    private UserInventory userInventory;
 
     @Override
     public Optional<SettingsResponse> getSettingsByUserId(String userId) {
@@ -50,17 +54,11 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
     @Override
     public void updateSettings(SettingsRequest settingsRequest, String userId) {
         validate(settingsRequest);
-        List<Language> languages = languageRepository
-                .getLanguages(Map.ofEntries(
-                                entry("key", settingsRequest.getLanguageKey().toLowerCase())), "", 0,
-                        0,
-                        "")
-                .get();
-        if (languages.size() == 0) {
-            Map<String, String> error = generateError(SettingsRequest.class);
+        Map<String, String> error = generateError(SettingsRequest.class);
+        languageInventory.findLanguageByKey(settingsRequest.getLanguageKey()).orElseThrow(() -> {
             error.put("languageKey", LanguageMessageKey.INVALID_LANGUAGE_KEY);
             throw new InvalidRequestException(error, LanguageMessageKey.INVALID_LANGUAGE_KEY);
-        }
+        });
         List<Setting> settings = repository.getSettings(Map.ofEntries(entry("userId", userId)), "", 0, 0, "").get();
         if (settings.size() == 0) {
             repository.insertAndUpdate(new Setting(null, new ObjectId(userId), settingsRequest.isDarkTheme(), "en"));
@@ -78,21 +76,15 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
         validate(changePasswordRequest);
         PasswordValidator.validatePassword(generateError(ChangePasswordRequest.class),
                 changePasswordRequest.getOldPassword(), "oldPassword");
-        List<User> users = userRepository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
-        if (users.size() == 0) {
-            throw new ResourceAccessException("Not found user");
-        }
-        User user = users.get(0);
+        User user = userInventory.findUserById(userId).orElseThrow(() -> new ResourceAccessException(LanguageMessageKey.NOT_FOUND_USER));
+        Map<String, String> error = generateError(ChangePasswordRequest.class);
         if (!bCryptPasswordEncoder().matches(changePasswordRequest.getOldPassword(), user.getPassword())) {
-            Map<String, String> error = generateError(ChangePasswordRequest.class);
             error.put("oldPassword", LanguageMessageKey.OLD_PASSWORD_NOT_MATCH);
             throw new InvalidRequestException(error, LanguageMessageKey.OLD_PASSWORD_NOT_MATCH);
         }
-        ;
         PasswordValidator.validateNewPassword(generateError(ChangePasswordRequest.class),
                 changePasswordRequest.getNewPassword(), "newPassword");
         if (changePasswordRequest.getNewPassword().compareTo(changePasswordRequest.getConfirmNewPassword()) != 0) {
-            Map<String, String> error = generateError(ChangePasswordRequest.class);
             error.put("newPassword", LanguageMessageKey.CONFIRM_PASSWORD_NOT_MATCH);
             error.put("confirmPassword", LanguageMessageKey.CONFIRM_PASSWORD_NOT_MATCH);
             throw new InvalidRequestException(error, LanguageMessageKey.CONFIRM_PASSWORD_NOT_MATCH);
@@ -105,28 +97,20 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
     @Override
     public void updateAccountInformation(AccountSetting accountSetting, String userId) {
         validate(accountSetting);
-        List<User> users = userRepository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
-        if (users.size() == 0) {
-            throw new ResourceAccessException(LanguageMessageKey.NOT_FOUND_EMAIL);
-        }
-        List<User> emailCheck = userRepository
-                .getUsers(Map.ofEntries(entry("email", accountSetting.getEmail())), userId, 0, 0, userId).get();
-        List<User> phoneCheck = userRepository
-                .getUsers(Map.ofEntries(entry("phone", accountSetting.getPhone())), userId, 0, 0, userId).get();
         Map<String, String> error = generateError(AccountSetting.class);
-        if (emailCheck.size() > 0) {
-            if (emailCheck.get(0).get_id().compareTo((users.get(0).get_id())) != 0) {
+        User user = userInventory.findUserById(userId).orElseThrow(() -> new ResourceAccessException(LanguageMessageKey.NOT_FOUND_EMAIL));
+        userInventory.findUserByEmail(accountSetting.getEmail()).ifPresent(thisEmail -> {
+            if (thisEmail.get_id().compareTo(user.get_id()) != 0) {
                 error.put("email", LanguageMessageKey.EMAIL_TAKEN);
                 throw new InvalidRequestException(error, LanguageMessageKey.EMAIL_TAKEN);
             }
-        }
-        if (phoneCheck.size() > 0) {
-            if (phoneCheck.get(0).get_id().compareTo((users.get(0).get_id())) != 0) {
+        });
+        userInventory.findUserByPhone(accountSetting.getPhone()).ifPresent(thisPhone -> {
+            if (thisPhone.get_id().compareTo((user.get_id())) != 0) {
                 error.put("phone", LanguageMessageKey.PHONE_TAKEN);
                 throw new InvalidRequestException(error, LanguageMessageKey.PHONE_TAKEN);
             }
-        }
-        User user = users.get(0);
+        });
         user.setPhone(accountSetting.getPhone());
         user.setEmail(accountSetting.getEmail());
         user.setUsername(accountSetting.getUsername());

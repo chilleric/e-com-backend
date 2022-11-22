@@ -1,6 +1,7 @@
 package com.example.ecom.service;
 
 import com.example.ecom.constant.LanguageMessageKey;
+import com.example.ecom.constant.ResponseType;
 import com.example.ecom.exception.InvalidRequestException;
 import com.example.ecom.utils.ObjectValidator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -60,12 +61,12 @@ public abstract class AbstractService<r> {
         return result;
     }
 
-//    protected String isPublic(String ownerId, String loginId, boolean skipAccessability) {
-//        if (skipAccessability)
-//            return "";
-//        if (ownerId.compareTo(loginId) == 0) {
-//            return "";
-//        } else
-//            return "public";
-//    }
+    protected ResponseType isPublic(String ownerId, String loginId, boolean skipAccessability) {
+        if (skipAccessability)
+            return ResponseType.PRIVATE;
+        if (ownerId.compareTo(loginId) == 0) {
+            return ResponseType.PRIVATE;
+        } else
+            return ResponseType.PUBLIC;
+    }
 }

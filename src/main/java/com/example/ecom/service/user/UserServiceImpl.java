@@ -7,17 +7,21 @@ import com.example.ecom.dto.user.UserRequest;
 import com.example.ecom.dto.user.UserResponse;
 import com.example.ecom.exception.InvalidRequestException;
 import com.example.ecom.exception.ResourceNotFoundException;
+import com.example.ecom.inventory.permission.PermissionInventory;
+import com.example.ecom.inventory.user.UserInventory;
+import com.example.ecom.repository.permission.Permission;
+import com.example.ecom.repository.permission.PermissionRepository;
 import com.example.ecom.repository.user.User;
 import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
 import com.example.ecom.utils.DateFormat;
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static java.util.Map.entry;
 
 @Service
 public class UserServiceImpl extends AbstractService<UserRepository> implements UserService {
@@ -25,71 +29,67 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
     @Value("${default.password}")
     protected String defaultPassword;
 
+    @Autowired
+    private PermissionRepository permissionRepository;
+
+    @Autowired
+    private PermissionInventory permissionInventory;
+    @Autowired
+    private UserInventory userInventory;
+
     @Override
     public void createNewUser(UserRequest userRequest) {
         validate(userRequest);
-        List<User> users = repository
-                .getUsers(Map.ofEntries(entry("username", userRequest.getUsername())), "", 0, 0, "")
-                .get();
-        if (users.size() != 0) {
-            Map<String, String> error = generateError(UserRequest.class);
+        Map<String, String> error = generateError(UserRequest.class);
+        userInventory.findUserByUsername(userRequest.getUsername()).ifPresent(thisName -> {
             error.put("username", LanguageMessageKey.USERNAME_EXISTED);
             throw new InvalidRequestException(error, LanguageMessageKey.USERNAME_EXISTED);
-        }
+        });
         Date currentTime = DateFormat.getCurrentTime();
         User user = objectMapper.convertValue(userRequest, User.class);
+        ObjectId newId = new ObjectId();
+        user.set_id(newId);
         user.setPassword(
                 bCryptPasswordEncoder().encode(Base64.getEncoder().encodeToString(defaultPassword.getBytes())));
         user.setTokens(new HashMap<>());
         user.setCreated(currentTime);
         user.setModified(currentTime);
+        Permission defaultPerm = permissionInventory.getPermissionByName("default_permission").orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.PERMISSION_NOT_FOUND));
+        List<ObjectId> userIds = defaultPerm.getUserId();
+        userIds.add(newId);
+        defaultPerm.setUserId(userIds);
+        permissionRepository.insertAndUpdate(defaultPerm);
         repository.insertAndUpdate(user);
     }
 
     public Optional<UserResponse> findOneUserById(String userId, ResponseType type) {
-        List<User> users = repository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
-        if (users.size() == 0) {
-            throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER);
-        }
-        User user = users.get(0);
+        User user = userInventory.findUserById(userId).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER));
         return Optional.of(new UserResponse(user, type));
     }
 
     @Override
     public void updateUserById(String userId, UserRequest userRequest) {
         validate(userRequest);
-        List<User> users = repository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
-        if (users.size() == 0) {
-            throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER);
-        }
-        List<User> emailCheck = repository
-                .getUsers(Map.ofEntries(entry("email", userRequest.getEmail())), userId, 0, 0, userId).get();
-        List<User> phoneCheck = repository
-                .getUsers(Map.ofEntries(entry("phone", userRequest.getPhone())), userId, 0, 0, userId).get();
+        User user = userInventory.findUserById(userId).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER));
         Map<String, String> error = generateError(UserRequest.class);
-        if (emailCheck.size() > 0) {
-            if (emailCheck.get(0).get_id().compareTo(users.get(0).get_id()) != 0) {
+        userInventory.findUserByEmail(userRequest.getEmail()).ifPresent(thisEmail -> {
+            if (thisEmail.get_id().compareTo(user.get_id()) != 0) {
                 error.put("email", LanguageMessageKey.EMAIL_TAKEN);
                 throw new InvalidRequestException(error, LanguageMessageKey.EMAIL_TAKEN);
-
             }
-        }
-        if (phoneCheck.size() > 0) {
-            if (phoneCheck.get(0).get_id().compareTo(users.get(0).get_id()) != 0) {
+        });
+        userInventory.findUserByPhone(userRequest.getPhone()).ifPresent(thisPhone -> {
+            if (thisPhone.get_id().compareTo(user.get_id()) != 0) {
                 error.put("phone", LanguageMessageKey.PHONE_TAKEN);
                 throw new InvalidRequestException(error, LanguageMessageKey.PHONE_TAKEN);
             }
-        }
-        List<User> usernameCheck = repository
-                .getUsers(Map.ofEntries(entry("username", userRequest.getUsername())), "", 0, 0, "")
-                .get();
-        if (usernameCheck.size() != 0) {
-            if (usernameCheck.get(0).get_id().compareTo(users.get(0).get_id()) != 0) {
+        });
+        userInventory.findUserByUsername(userRequest.getUsername()).ifPresent(thisUsername -> {
+            if (thisUsername.get_id().compareTo(user.get_id()) != 0) {
                 error.put("username", LanguageMessageKey.USERNAME_EXISTED);
                 throw new InvalidRequestException(error, LanguageMessageKey.USERNAME_EXISTED);
             }
-        }
-        User user = users.get(0);
+        });
         if (user.getUsername().compareTo("super_admin") == 0) {
             throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.FORBIDDEN);
         }
@@ -108,11 +108,7 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
 
     @Override
     public void changeStatusUser(String userId) {
-        List<User> users = repository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
-        if (users.size() == 0) {
-            throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER);
-        }
-        User user = users.get(0);
+        User user = userInventory.findUserById(userId).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER));
         if (user.getUsername().compareTo("super_admin") == 0) {
             throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.FORBIDDEN);
         }
