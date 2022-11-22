@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface PermissionService {
     Optional<ListWrapperResponse<PermissionResponse>> getPermissions(Map<String, String> allParams, String keySort,
                                                                      int page,
-                                                                     int pageSize, String sortField);
+                                                                     int pageSize, String sortField, boolean skipAccessability, String loginId);
 
     void addNewPermissions(PermissionRequest permissionRequest, String loginId);
 

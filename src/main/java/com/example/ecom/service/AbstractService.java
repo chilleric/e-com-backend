@@ -13,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractService<r> {
@@ -31,6 +32,17 @@ public abstract class AbstractService<r> {
     public void init() {
         objectMapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    protected String generateParamsValue(List<String> list) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            result.append(list.get(i));
+            if (i != list.size() - 1) {
+                result.append(",");
+            }
+        }
+        return result.toString();
     }
 
     protected BCryptPasswordEncoder bCryptPasswordEncoder() {

@@ -2,12 +2,10 @@ package com.example.ecom.service.permission;
 
 import com.example.ecom.constant.DateTime;
 import com.example.ecom.constant.LanguageMessageKey;
-import com.example.ecom.constant.ResponseType;
 import com.example.ecom.dto.common.ListWrapperResponse;
-import com.example.ecom.dto.feature.FeatureResponse;
 import com.example.ecom.dto.permission.PermissionRequest;
 import com.example.ecom.dto.permission.PermissionResponse;
-import com.example.ecom.dto.user.UserResponse;
+import com.example.ecom.exception.BadSqlException;
 import com.example.ecom.exception.ForbiddenException;
 import com.example.ecom.exception.InvalidRequestException;
 import com.example.ecom.exception.ResourceNotFoundException;
@@ -15,11 +13,13 @@ import com.example.ecom.inventory.permission.PermissionInventory;
 import com.example.ecom.inventory.user.UserInventory;
 import com.example.ecom.repository.accessability.Accessability;
 import com.example.ecom.repository.accessability.AccessabilityRepository;
+import com.example.ecom.repository.feature.Feature;
+import com.example.ecom.repository.feature.FeatureRepository;
 import com.example.ecom.repository.permission.Permission;
 import com.example.ecom.repository.permission.PermissionRepository;
+import com.example.ecom.repository.user.User;
+import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
-import com.example.ecom.service.feature.FeatureService;
-import com.example.ecom.service.user.UserService;
 import com.example.ecom.utils.DateFormat;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +36,10 @@ import static java.util.Map.entry;
 @Service
 public class PermissionServiceImpl extends AbstractService<PermissionRepository> implements PermissionService {
     @Autowired
-    private FeatureService featureService;
+    private FeatureRepository featureRepository;
 
     @Autowired
-    private UserService userService;
+    private UserRepository userRepository;
 
     @Autowired
     private PermissionInventory permissionInventory;
@@ -52,7 +52,22 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
 
     @Override
     public Optional<ListWrapperResponse<PermissionResponse>> getPermissions(Map<String, String> allParams,
-                                                                            String keySort, int page, int pageSize, String sortField) {
+                                                                            String keySort, int page, int pageSize, String sortField, boolean skipAccessability, String loginId) {
+        List<String> targets = accessabilityRepository.getListTargetId(loginId).orElseThrow(() -> new BadSqlException(LanguageMessageKey.SERVER_ERROR)).stream().map(access -> access.getTargetId().toString()).collect(Collectors.toList());
+        if (!skipAccessability && allParams.containsKey("_id")) {
+            String[] idList = allParams.get("_id").split(",");
+            for (int i = 0; i < idList.length; i++) {
+                if (!targets.contains(idList[i])) {
+                    throw new ForbiddenException(LanguageMessageKey.FORBIDDEN);
+                }
+            }
+        }
+        if (!skipAccessability && !allParams.containsKey("_id")) {
+            allParams.put("_id", generateParamsValue(targets));
+            System.out.println(generateParamsValue(targets));
+            if (targets.size() == 0)
+                return Optional.of(new ListWrapperResponse<PermissionResponse>(new ArrayList<>(), page, pageSize, 0));
+        }
         List<Permission> permissions = repository.getPermissions(allParams, keySort, page, pageSize, sortField).get();
         return Optional.of(new ListWrapperResponse<PermissionResponse>(
                 permissions.stream()
@@ -90,18 +105,18 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
         permission.setCreated(DateFormat.getCurrentTime());
         permission.setSkipAccessability(1);
         if (permissionRequest.getFeatureId().size() != 0) {
-            List<FeatureResponse> featureResponse = generateFeatureList(permissionRequest.getFeatureId());
+            List<Feature> featureResponse = generateFeatureList(permissionRequest.getFeatureId());
             permission.setFeatureId(
-                    featureResponse.stream().map(feature -> new ObjectId(feature.getId()))
+                    featureResponse.stream().map(Feature::get_id)
                             .collect(Collectors.toList()));
         } else {
             permission.setFeatureId(new ArrayList<>());
         }
         if (permissionRequest.getUserId().size() != 0) {
-            List<UserResponse> userResponse = generateUserList(permissionRequest.getUserId());
+            List<User> userResponse = generateUserList(permissionRequest.getUserId());
             permission
                     .setUserId(
-                            userResponse.stream().map(user -> new ObjectId(user.getId())).collect(Collectors.toList()));
+                            userResponse.stream().map(User::get_id).collect(Collectors.toList()));
         } else {
             permission.setUserId(new ArrayList<>());
         }
@@ -134,18 +149,18 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
         } else {
             permission.setName(permissionRequest.getName());
             if (permissionRequest.getFeatureId().size() != 0) {
-                List<FeatureResponse> featureResponse = generateFeatureList(permissionRequest.getFeatureId());
+                List<Feature> featureResponse = generateFeatureList(permissionRequest.getFeatureId());
                 permission.setFeatureId(
-                        featureResponse.stream().map(feature -> new ObjectId(feature.getId()))
+                        featureResponse.stream().map(Feature::get_id)
                                 .collect(Collectors.toList()));
             } else {
                 permission.setFeatureId(new ArrayList<>());
             }
             if (permissionRequest.getUserId().size() != 0) {
-                List<UserResponse> userResponse = generateUserList(permissionRequest.getUserId());
+                List<User> userResponse = generateUserList(permissionRequest.getUserId());
                 permission
                         .setUserId(
-                                userResponse.stream().map(user -> new ObjectId(user.getId()))
+                                userResponse.stream().map(User::get_id)
                                         .collect(Collectors.toList()));
             } else {
                 permission.setUserId(new ArrayList<>());
@@ -168,26 +183,14 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
         }
     }
 
-    private String generateParamsValue(List<String> features) {
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < features.size(); i++) {
-            result.append(features.get(i));
-            if (i != features.size() - 1) {
-                result.append(",");
-            }
-        }
-        return result.toString();
-    }
-
-    private List<FeatureResponse> generateFeatureList(List<String> features) {
+    private List<Feature> generateFeatureList(List<String> features) {
         String result = generateParamsValue(features);
-        return featureService.getFeatures(Map.ofEntries(entry("_id", result.toString())), "", 0, 0, "").get().getData();
+        return featureRepository.getFeatures(Map.ofEntries(entry("_id", result.toString())), "", 0, 0, "").get();
     }
 
-    private List<UserResponse> generateUserList(List<String> users) {
+    private List<User> generateUserList(List<String> users) {
         String result = generateParamsValue(users);
-        return userService.getUsers(Map.ofEntries(entry("_id", result.toString())), "", 0, 0, "", ResponseType.PRIVATE)
-                .get()
-                .getData();
+        return userRepository.getUsers(Map.ofEntries(entry("_id", result.toString())), "", 0, 0, "")
+                .get();
     }
 }

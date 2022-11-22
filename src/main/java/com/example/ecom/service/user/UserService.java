@@ -16,7 +16,7 @@ public interface UserService {
     Optional<UserResponse> findOneUserById(String userId, ResponseType type);
 
     Optional<ListWrapperResponse<UserResponse>> getUsers(Map<String, String> allParams, String keySort, int page,
-                                                         int pageSize, String sortField, ResponseType type);
+                                                         int pageSize, String sortField, ResponseType type, boolean skipAccessAbility, String loginId);
 
     void changeStatusUser(String userId);
 }

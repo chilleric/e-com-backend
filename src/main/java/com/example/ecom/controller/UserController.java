@@ -52,7 +52,7 @@ public class UserController extends AbstractController<UserService> {
             @RequestParam(defaultValue = "modified") String sortField, HttpServletRequest request) {
         ValidationResult result = validateToken(request, false);
         return response(service.getUsers(allParams, keySort, page, pageSize, "",
-                getResponseType("", result.getLoginId(), result.isSkipAccessability())), LanguageMessageKey.SUCCESS);
+                getResponseType("", result.getLoginId(), result.isSkipAccessability()), result.isSkipAccessability(), result.getLoginId()), LanguageMessageKey.SUCCESS);
     }
 
     @SecurityRequirement(name = "Bearer Authentication")

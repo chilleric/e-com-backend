@@ -31,7 +31,7 @@ public class PermissionController extends AbstractController<PermissionService> 
         if (allParams.containsKey("_id")) {
             checkAccessability(result.getLoginId(), allParams.get("_id"), result.isSkipAccessability());
         }
-        return response(service.getPermissions(allParams, keySort, page, pageSize, sortField),
+        return response(service.getPermissions(allParams, keySort, page, pageSize, sortField, result.isSkipAccessability(), result.getLoginId()),
                 LanguageMessageKey.SUCCESS);
     }
 

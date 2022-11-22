@@ -5,6 +5,8 @@ import com.example.ecom.constant.ResponseType;
 import com.example.ecom.dto.common.ListWrapperResponse;
 import com.example.ecom.dto.user.UserRequest;
 import com.example.ecom.dto.user.UserResponse;
+import com.example.ecom.exception.BadSqlException;
+import com.example.ecom.exception.ForbiddenException;
 import com.example.ecom.exception.InvalidRequestException;
 import com.example.ecom.exception.ResourceNotFoundException;
 import com.example.ecom.inventory.permission.PermissionInventory;
@@ -126,9 +128,23 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
 
     @Override
     public Optional<ListWrapperResponse<UserResponse>> getUsers(Map<String, String> allParams, String keySort, int page,
-                                                                int pageSize, String sortField, ResponseType type) {
+                                                                int pageSize, String sortField, ResponseType type, boolean skipAccessAbility, String loginId) {
         if (type.compareTo(ResponseType.PUBLIC) == 0) {
             allParams.put("deleted", "0");
+        }
+        List<String> targets = accessabilityRepository.getListTargetId(loginId).orElseThrow(() -> new BadSqlException(LanguageMessageKey.SERVER_ERROR)).stream().map(access -> access.getTargetId().toString()).collect(Collectors.toList());
+        if (!skipAccessAbility && allParams.containsKey("_id")) {
+            String[] idList = allParams.get("_id").split(",");
+            for (int i = 0; i < idList.length; i++) {
+                if (!targets.contains(idList[i])) {
+                    throw new ForbiddenException(LanguageMessageKey.FORBIDDEN);
+                }
+            }
+        }
+        if (!skipAccessAbility && !allParams.containsKey("_id")) {
+            allParams.put("_id", generateParamsValue(targets));
+            if (targets.size() == 0)
+                return Optional.of(new ListWrapperResponse<UserResponse>(new ArrayList<>(), page, pageSize, 0));
         }
         List<User> users = repository.getUsers(allParams, "", page, pageSize, sortField).get();
         return Optional.of(new ListWrapperResponse<UserResponse>(

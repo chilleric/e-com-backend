@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -20,6 +21,19 @@ public class AccessabilityRepositoryImpl extends AbstractMongoRepo implements Ac
             Query query = new Query();
             query.addCriteria(Criteria.where("userId").is(user_id).and("targetId").in(target_id));
             return replaceFindOne(query, Accessability.class);
+        } catch (IllegalArgumentException e) {
+            APP_LOGGER.error("wrong type user id");
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<List<Accessability>> getListTargetId(String userId) {
+        try {
+            ObjectId user_id = new ObjectId(userId);
+            Query query = new Query();
+            query.addCriteria(Criteria.where("userId").is(user_id));
+            return replaceFind(query, Accessability.class);
         } catch (IllegalArgumentException e) {
             APP_LOGGER.error("wrong type user id");
             return Optional.empty();
