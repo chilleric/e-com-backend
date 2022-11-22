@@ -7,6 +7,7 @@ import com.example.ecom.dto.message.MessageRequest;
 import com.example.ecom.dto.message.MessageResponse;
 import com.example.ecom.dto.message.OnlineUserResponse;
 import com.example.ecom.exception.ResourceNotFoundException;
+import com.example.ecom.inventory.user.UserInventory;
 import com.example.ecom.repository.message.Message;
 import com.example.ecom.repository.message.MessageRepository;
 import com.example.ecom.repository.user.User;
@@ -32,6 +33,9 @@ public class MessageServiceImpl extends AbstractService<MessageRepository> imple
     private final List<MessageResponse> messages = new ArrayList<>();
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserInventory userInventory;
 
     @Override
     public Optional<ListWrapperResponse<MessageResponse>> getOldMessage(String userId, String sendId, int page) {
@@ -79,24 +83,21 @@ public class MessageServiceImpl extends AbstractService<MessageRepository> imple
 
     @Override
     public void addOnlineUser(String userId) {
-        List<User> users = userRepository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "").get();
-        if (users.size() == 0) {
-            throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER);
-        }
+        User user = userInventory.findUserById(userId).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER));
         if (onlineUsers.size() == 0) {
             onlineUsers.add(new OnlineUserResponse(
-                    users.get(0).getFirstName() + " " + users.get(0).getLastName(), userId));
+                    user.getFirstName() + " " + user.getLastName(), userId));
         } else {
             boolean isOnline = false;
-            for (OnlineUserResponse user : onlineUsers) {
-                if (user.getId().compareTo(userId) == 0) {
+            for (OnlineUserResponse userOnline : onlineUsers) {
+                if (userOnline.getId().compareTo(userId) == 0) {
                     isOnline = true;
                     break;
                 }
             }
             if (!isOnline) {
                 onlineUsers.add(new OnlineUserResponse(
-                        users.get(0).getFirstName() + " " + users.get(0).getLastName(),
+                        user.getFirstName() + " " + user.getLastName(),
                         userId));
             }
         }
@@ -104,11 +105,7 @@ public class MessageServiceImpl extends AbstractService<MessageRepository> imple
 
     @Override
     public void removeOnlineUser(String userId) {
-        List<User> users = userRepository.getUsers(Map.ofEntries(entry("_id", userId)), "", 0, 0, "")
-                .get();
-        if (users.size() == 0) {
-            throw new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER);
-        }
+        userInventory.findUserById(userId).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER));
         if (onlineUsers.size() != 0) {
             boolean isOnline = false;
             int deleteIndex = 0;

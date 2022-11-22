@@ -1,15 +1,15 @@
 package com.example.ecom.repository.accessability;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
+import com.example.ecom.repository.AbstractMongoRepo;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
-import com.example.ecom.repository.AbstractMongoRepo;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public class AccessabilityRepositoryImpl extends AbstractMongoRepo implements AccessabilityRepository {
@@ -28,8 +28,21 @@ public class AccessabilityRepositoryImpl extends AbstractMongoRepo implements Ac
     }
 
     @Override
+    public Optional<List<Accessability>> getListTargetId(String userId) {
+        try {
+            ObjectId user_id = new ObjectId(userId);
+            Query query = new Query();
+            query.addCriteria(Criteria.where("userId").is(user_id));
+            return replaceFind(query, Accessability.class);
+        } catch (IllegalArgumentException e) {
+            APP_LOGGER.error("wrong type user id");
+            return Optional.empty();
+        }
+    }
+
+    @Override
     public void addNewAccessability(Accessability accessability) {
-        authenticationTemplate.save(accessability);
+        authenticationTemplate.save(accessability, "accessability");
     }
 
     @Override

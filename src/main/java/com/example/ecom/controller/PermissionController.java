@@ -3,6 +3,7 @@ package com.example.ecom.controller;
 import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.dto.common.CommonResponse;
 import com.example.ecom.dto.common.ListWrapperResponse;
+import com.example.ecom.dto.common.ValidationResult;
 import com.example.ecom.dto.permission.PermissionRequest;
 import com.example.ecom.dto.permission.PermissionResponse;
 import com.example.ecom.service.permission.PermissionService;
@@ -26,8 +27,11 @@ public class PermissionController extends AbstractController<PermissionService> 
             @RequestParam Map<String, String> allParams,
             @RequestParam(defaultValue = "asc") String keySort,
             @RequestParam(defaultValue = "modified") String sortField, HttpServletRequest request) {
-        validateToken(request, false);
-        return response(service.getPermissions(allParams, keySort, page, pageSize, sortField),
+        ValidationResult result = validateToken(request, false);
+        if (allParams.containsKey("_id")) {
+            checkAccessability(result.getLoginId(), allParams.get("_id"), result.isSkipAccessability());
+        }
+        return response(service.getPermissions(allParams, keySort, page, pageSize, sortField, result.isSkipAccessability(), result.getLoginId()),
                 LanguageMessageKey.SUCCESS);
     }
 
@@ -35,8 +39,8 @@ public class PermissionController extends AbstractController<PermissionService> 
     @PostMapping(value = "add-new-permission")
     public ResponseEntity<CommonResponse<String>> addNewPermission(
             @RequestBody PermissionRequest permissionRequest, HttpServletRequest request) {
-        validateToken(request, false);
-        service.addNewPermissions(permissionRequest);
+        ValidationResult result = validateToken(request, false);
+        service.addNewPermissions(permissionRequest, result.getLoginId());
         return new ResponseEntity<CommonResponse<String>>(
                 new CommonResponse<String>(true, null, LanguageMessageKey.ADD_PERMISSION_SUCCESS,
                         HttpStatus.OK.value()),
@@ -49,7 +53,8 @@ public class PermissionController extends AbstractController<PermissionService> 
     public ResponseEntity<CommonResponse<String>> updatePermission(
             @RequestBody PermissionRequest permissionRequest, @RequestParam(required = true) String id,
             HttpServletRequest request) {
-        validateToken(request, false);
+        ValidationResult result = validateToken(request, false);
+        checkAccessability(result.getLoginId(), id, result.isSkipAccessability());
         service.editPermission(permissionRequest, id);
         return new ResponseEntity<CommonResponse<String>>(
                 new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_PERMISSION_SUCCESS,
@@ -62,7 +67,8 @@ public class PermissionController extends AbstractController<PermissionService> 
     @PutMapping(value = "delete-permission")
     public ResponseEntity<CommonResponse<String>> deletePermission(
             @RequestParam(required = true) String id, HttpServletRequest request) {
-        validateToken(request, false);
+        ValidationResult result = validateToken(request, false);
+        checkAccessability(result.getLoginId(), id, result.isSkipAccessability());
         service.deletePermission(id);
         return new ResponseEntity<CommonResponse<String>>(
                 new CommonResponse<String>(true, null, LanguageMessageKey.DELETE_PERMISSION_SUCCESS,

@@ -2,20 +2,24 @@ package com.example.ecom.service.permission;
 
 import com.example.ecom.constant.DateTime;
 import com.example.ecom.constant.LanguageMessageKey;
-import com.example.ecom.constant.ResponseType;
 import com.example.ecom.dto.common.ListWrapperResponse;
-import com.example.ecom.dto.feature.FeatureResponse;
 import com.example.ecom.dto.permission.PermissionRequest;
 import com.example.ecom.dto.permission.PermissionResponse;
-import com.example.ecom.dto.user.UserResponse;
+import com.example.ecom.exception.BadSqlException;
 import com.example.ecom.exception.ForbiddenException;
 import com.example.ecom.exception.InvalidRequestException;
 import com.example.ecom.exception.ResourceNotFoundException;
+import com.example.ecom.inventory.permission.PermissionInventory;
+import com.example.ecom.inventory.user.UserInventory;
+import com.example.ecom.repository.accessability.Accessability;
+import com.example.ecom.repository.accessability.AccessabilityRepository;
+import com.example.ecom.repository.feature.Feature;
+import com.example.ecom.repository.feature.FeatureRepository;
 import com.example.ecom.repository.permission.Permission;
 import com.example.ecom.repository.permission.PermissionRepository;
+import com.example.ecom.repository.user.User;
+import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
-import com.example.ecom.service.feature.FeatureService;
-import com.example.ecom.service.user.UserService;
 import com.example.ecom.utils.DateFormat;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,24 +36,48 @@ import static java.util.Map.entry;
 @Service
 public class PermissionServiceImpl extends AbstractService<PermissionRepository> implements PermissionService {
     @Autowired
-    private FeatureService featureService;
+    private FeatureRepository featureRepository;
 
     @Autowired
-    private UserService userService;
+    private UserRepository userRepository;
+
+    @Autowired
+    private PermissionInventory permissionInventory;
+
+    @Autowired
+    private UserInventory userInventory;
+
+    @Autowired
+    private AccessabilityRepository accessabilityRepository;
 
     @Override
     public Optional<ListWrapperResponse<PermissionResponse>> getPermissions(Map<String, String> allParams,
-                                                                            String keySort, int page, int pageSize, String sortField) {
+                                                                            String keySort, int page, int pageSize, String sortField, boolean skipAccessability, String loginId) {
+        List<String> targets = accessabilityRepository.getListTargetId(loginId).orElseThrow(() -> new BadSqlException(LanguageMessageKey.SERVER_ERROR)).stream().map(access -> access.getTargetId().toString()).collect(Collectors.toList());
+        if (!skipAccessability && allParams.containsKey("_id")) {
+            String[] idList = allParams.get("_id").split(",");
+            for (int i = 0; i < idList.length; i++) {
+                if (!targets.contains(idList[i])) {
+                    throw new ForbiddenException(LanguageMessageKey.FORBIDDEN);
+                }
+            }
+        }
+        if (!skipAccessability && !allParams.containsKey("_id")) {
+            allParams.put("_id", generateParamsValue(targets));
+            System.out.println(generateParamsValue(targets));
+            if (targets.size() == 0)
+                return Optional.of(new ListWrapperResponse<PermissionResponse>(new ArrayList<>(), page, pageSize, 0));
+        }
         List<Permission> permissions = repository.getPermissions(allParams, keySort, page, pageSize, sortField).get();
         return Optional.of(new ListWrapperResponse<PermissionResponse>(
                 permissions.stream()
                         .map(permission -> new PermissionResponse(permission.get_id().toString(), permission.getName(),
                                 permission.getFeatureId().size() > 0
                                         ? permission.getFeatureId().stream()
-                                        .map(feature -> feature.toString()).collect(Collectors.toList())
+                                        .map(ObjectId::toString).collect(Collectors.toList())
                                         : new ArrayList<>(),
                                 permission.getUserId().size() > 0
-                                        ? permission.getUserId().stream().map(userId -> userId.toString())
+                                        ? permission.getUserId().stream().map(ObjectId::toString)
                                         .collect(Collectors.toList())
                                         : new ArrayList<>(),
                                 DateFormat.toDateString(permission.getCreated(), DateTime.YYYY_MM_DD),
@@ -60,36 +88,39 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
     }
 
     @Override
-    public void addNewPermissions(PermissionRequest permissionRequest) {
+    public void addNewPermissions(PermissionRequest permissionRequest, String loginId) {
         validate(permissionRequest);
+        Map<String, String> error = generateError(PermissionRequest.class);
         List<Permission> permissions = repository
                 .getPermissions(Map.ofEntries(entry("name", permissionRequest.getName())), "", 0, 0, "").get();
         if (permissions.size() != 0) {
-            Map<String, String> error = generateError(PermissionRequest.class);
             error.put("name", LanguageMessageKey.INVALID_NAME_PERMISSION);
             throw new InvalidRequestException(error, LanguageMessageKey.INVALID_NAME_PERMISSION);
         }
         Permission permission = new Permission();
+        ObjectId newId = new ObjectId();
+        permission.set_id(newId);
         permission.setCanDelete(true);
         permission.setName(permissionRequest.getName());
         permission.setCreated(DateFormat.getCurrentTime());
         permission.setSkipAccessability(1);
         if (permissionRequest.getFeatureId().size() != 0) {
-            List<FeatureResponse> featureResponse = generateFeatureList(permissionRequest.getFeatureId());
+            List<Feature> featureResponse = generateFeatureList(permissionRequest.getFeatureId());
             permission.setFeatureId(
-                    featureResponse.stream().map(feature -> new ObjectId(feature.getId()))
+                    featureResponse.stream().map(Feature::get_id)
                             .collect(Collectors.toList()));
         } else {
             permission.setFeatureId(new ArrayList<>());
         }
         if (permissionRequest.getUserId().size() != 0) {
-            List<UserResponse> userResponse = generateUserList(permissionRequest.getUserId());
+            List<User> userResponse = generateUserList(permissionRequest.getUserId());
             permission
                     .setUserId(
-                            userResponse.stream().map(user -> new ObjectId(user.getId())).collect(Collectors.toList()));
+                            userResponse.stream().map(User::get_id).collect(Collectors.toList()));
         } else {
             permission.setUserId(new ArrayList<>());
         }
+        accessabilityRepository.addNewAccessability(new Accessability(null, new ObjectId(loginId), newId));
         repository.insertAndUpdate(permission);
     }
 
@@ -98,44 +129,38 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
         Permission permission = repository.getPermissionById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.PERMISSION_NOT_FOUND));
         validate(permissionRequest);
-        List<Permission> permissions = repository
-                .getPermissions(Map.ofEntries(entry("name", permissionRequest.getName())), "", 0, 0, "").get();
-        if (permissions.size() != 0) {
-            if (permissions.get(0).get_id().compareTo(permission.get_id()) != 0) {
-                Map<String, String> error = generateError(PermissionRequest.class);
+        Map<String, String> error = generateError(PermissionRequest.class);
+        permissionInventory.getPermissionByName(permissionRequest.getName()).ifPresent(perm -> {
+            if (perm.get_id().compareTo(permission.get_id()) != 0) {
                 error.put("name", LanguageMessageKey.INVALID_NAME_PERMISSION);
                 throw new InvalidRequestException(error, LanguageMessageKey.INVALID_NAME_PERMISSION);
             }
-        }
+        });
         if (permission.getName().compareTo("super_admin_permission") == 0) {
-            UserResponse adminUser = userService
-                    .getUsers(Map.ofEntries(entry("username", "super_admin")), "", 0, 0, "", ResponseType.PRIVATE)
-                    .get()
-                    .getData().get(0);
-            if (!permissionRequest.getUserId().contains(adminUser.getId())) {
-                Map<String, String> error = generateError(PermissionRequest.class);
+            if (!permissionRequest.getUserId().contains(userInventory.findUserByUsername("super_admin")
+                    .orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER)).get_id().toString())) {
                 error.put("userId", LanguageMessageKey.MUST_CONTAIN_ADMIN_ACCOUNT);
                 throw new InvalidRequestException(error, LanguageMessageKey.MUST_CONTAIN_ADMIN_ACCOUNT);
             }
-            permission.setUserId(permissionRequest.getUserId().stream().map(userId -> new ObjectId(userId))
+            permission.setUserId(permissionRequest.getUserId().stream().map(ObjectId::new)
                     .collect(Collectors.toList()));
             permission.setModified(DateFormat.getCurrentTime());
             repository.insertAndUpdate(permission);
         } else {
             permission.setName(permissionRequest.getName());
             if (permissionRequest.getFeatureId().size() != 0) {
-                List<FeatureResponse> featureResponse = generateFeatureList(permissionRequest.getFeatureId());
+                List<Feature> featureResponse = generateFeatureList(permissionRequest.getFeatureId());
                 permission.setFeatureId(
-                        featureResponse.stream().map(feature -> new ObjectId(feature.getId()))
+                        featureResponse.stream().map(Feature::get_id)
                                 .collect(Collectors.toList()));
             } else {
                 permission.setFeatureId(new ArrayList<>());
             }
             if (permissionRequest.getUserId().size() != 0) {
-                List<UserResponse> userResponse = generateUserList(permissionRequest.getUserId());
+                List<User> userResponse = generateUserList(permissionRequest.getUserId());
                 permission
                         .setUserId(
-                                userResponse.stream().map(user -> new ObjectId(user.getId()))
+                                userResponse.stream().map(User::get_id)
                                         .collect(Collectors.toList()));
             } else {
                 permission.setUserId(new ArrayList<>());
@@ -158,26 +183,14 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
         }
     }
 
-    private String generateParamsValue(List<String> features) {
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < features.size(); i++) {
-            result.append(features.get(i));
-            if (i != features.size() - 1) {
-                result.append(",");
-            }
-        }
-        return result.toString();
-    }
-
-    private List<FeatureResponse> generateFeatureList(List<String> features) {
+    private List<Feature> generateFeatureList(List<String> features) {
         String result = generateParamsValue(features);
-        return featureService.getFeatures(Map.ofEntries(entry("_id", result.toString())), "", 0, 0, "").get().getData();
+        return featureRepository.getFeatures(Map.ofEntries(entry("_id", result.toString())), "", 0, 0, "").get();
     }
 
-    private List<UserResponse> generateUserList(List<String> users) {
+    private List<User> generateUserList(List<String> users) {
         String result = generateParamsValue(users);
-        return userService.getUsers(Map.ofEntries(entry("_id", result.toString())), "", 0, 0, "", ResponseType.PRIVATE)
-                .get()
-                .getData();
+        return userRepository.getUsers(Map.ofEntries(entry("_id", result.toString())), "", 0, 0, "")
+                .get();
     }
 }

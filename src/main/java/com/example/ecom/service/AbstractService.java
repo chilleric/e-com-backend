@@ -1,6 +1,7 @@
 package com.example.ecom.service;
 
 import com.example.ecom.constant.LanguageMessageKey;
+import com.example.ecom.constant.ResponseType;
 import com.example.ecom.exception.InvalidRequestException;
 import com.example.ecom.utils.ObjectValidator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -12,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractService<r> {
@@ -30,6 +32,17 @@ public abstract class AbstractService<r> {
     public void init() {
         objectMapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    protected String generateParamsValue(List<String> list) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            result.append(list.get(i));
+            if (i != list.size() - 1) {
+                result.append(",");
+            }
+        }
+        return result.toString();
     }
 
     protected BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -60,12 +73,12 @@ public abstract class AbstractService<r> {
         return result;
     }
 
-//    protected String isPublic(String ownerId, String loginId, boolean skipAccessability) {
-//        if (skipAccessability)
-//            return "";
-//        if (ownerId.compareTo(loginId) == 0) {
-//            return "";
-//        } else
-//            return "public";
-//    }
+    protected ResponseType isPublic(String ownerId, String loginId, boolean skipAccessability) {
+        if (skipAccessability)
+            return ResponseType.PRIVATE;
+        if (ownerId.compareTo(loginId) == 0) {
+            return ResponseType.PRIVATE;
+        } else
+            return ResponseType.PUBLIC;
+    }
 }
