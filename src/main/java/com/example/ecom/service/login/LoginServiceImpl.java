@@ -84,7 +84,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             if (codes.isPresent()) {
                 Code code = codes.get();
                 code.setCode(verify2FACode);
-                code.setExpiredDate(null);
+                code.setExpiredDate(expiredDate);
                 codeRepository.insertAndUpdateCode(code);
             } else {
                 Code code = new Code(null, user.get_id(), TypeCode.VERIFY2FA, verify2FACode, expiredDate);
@@ -226,7 +226,14 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
 
     @Override
     public Optional<LoginResponse> verify2FA(String email, String inputCode) {
-        User user = userInventory.findUserByEmail(email).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL));
+        User user = new User();
+        if(email.matches(TypeValidation.EMAIL)){
+            user = userInventory.findUserByEmail(email).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL));
+        } else if(email.matches(TypeValidation.PHONE)){
+            user = userInventory.findUserByPhone(email).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL));
+        } else {
+            user = userInventory.findUserByUsername(email).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL));
+        }
         Date now = new Date();
         Optional<Code> codes = codeRepository.getCodesByType(user.get_id().toString(),
                 TypeCode.VERIFY2FA.name());
