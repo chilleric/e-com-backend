@@ -74,7 +74,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         }
         Date now = new Date();
         if (user.isVerify2FA()) {
-            String verify2FACode = RandomStringUtils.randomAlphabetic(6);
+            String verify2FACode = RandomStringUtils.randomAlphabetic(6).toUpperCase();
             emailService
                     .sendSimpleMail(new EmailDetail(user.getEmail(), verify2FACode,
                             "OTP"));
@@ -147,7 +147,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         defaultPerm.setUserId(userIds);
         permissionRepository.insertAndUpdate(defaultPerm);
         repository.insertAndUpdate(user);
-        String newCode = RandomStringUtils.randomAlphabetic(6);
+        String newCode = RandomStringUtils.randomAlphabetic(6).toUpperCase();
         Date now = new Date();
         Date expiredDate = new Date(now.getTime() + 5 * 60 * 1000L);
         Optional<Code> codes = codeRepository.getCodesByType(user.get_id().toString(),
@@ -192,7 +192,7 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
     @Override
     public void resendVerifyRegister(String email) {
         User userCheckMail = userInventory.findUserByEmail(email).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL));
-        String newCode = RandomStringUtils.randomAlphabetic(6);
+        String newCode = RandomStringUtils.randomAlphabetic(6).toUpperCase();
         Date now = new Date();
         Date expiredDate = new Date(now.getTime() + 5 * 60 * 1000L);
         Optional<Code> codes = codeRepository.getCodesByType(userCheckMail.get_id().toString(),
@@ -214,13 +214,20 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
 
     @Override
     public void forgotPassword(String email) {
-        User userCheckMail = userInventory.findUserByEmail(email).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL));
-        userCheckMail
+        User user = new User();
+        if(email.matches(TypeValidation.EMAIL)){
+            user = userInventory.findUserByEmail(email).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL));
+        } else if(email.matches(TypeValidation.PHONE)){
+            user = userInventory.findUserByPhone(email).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL));
+        } else {
+            user = userInventory.findUserByUsername(email).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL));
+        }
+        user
                 .setPassword(
                         bCryptPasswordEncoder().encode(Base64.getEncoder().encodeToString(defaultPassword.getBytes())));
-        repository.insertAndUpdate(userCheckMail);
-        emailService.sendSimpleMail(new EmailDetail(userCheckMail.getEmail(),
-                "Username: " + userCheckMail.getUsername() + " \n" + "Password: " + defaultPassword,
+        repository.insertAndUpdate(user);
+        emailService.sendSimpleMail(new EmailDetail(user.getEmail(),
+                "Username: " + user.getUsername() + " \n" + "Password: " + defaultPassword,
                 "New password!"));
     }
 
@@ -249,18 +256,25 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         }
         String deviceId = UUID.randomUUID().toString();
         Map<String, Date> devices = user.getTokens();
-        devices.put(deviceId, DateFormat.getCurrentTime());
+        Date expiredDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000L);
+        devices.put(deviceId, expiredDate);
         repository.insertAndUpdate(user);
         return Optional.of(new LoginResponse(user.get_id().toString(), deviceId, false, false));
     }
 
     @Override
     public void resend2FACode(String email) {
-        User userCheckMail = userInventory.findUserByEmail(email).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL));
-        String newCode = RandomStringUtils.randomAlphabetic(6);
+        User user = new User();
+        if(email.matches(TypeValidation.EMAIL)){
+            user = userInventory.findUserByEmail(email).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL));
+        } else if(email.matches(TypeValidation.PHONE)){
+            user = userInventory.findUserByPhone(email).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL));
+        } else {
+            user = userInventory.findUserByUsername(email).orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_EMAIL));
+        }String newCode = RandomStringUtils.randomAlphabetic(6).toUpperCase();
         Date now = new Date();
         Date expiredDate = new Date(now.getTime() + 5 * 60 * 1000L);
-        Optional<Code> codes = codeRepository.getCodesByType(userCheckMail.get_id().toString(),
+        Optional<Code> codes = codeRepository.getCodesByType(user.get_id().toString(),
                 TypeCode.VERIFY2FA.name());
         if (codes.isPresent()) {
             Code code = codes.get();
@@ -268,11 +282,11 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
             code.setExpiredDate(expiredDate);
             codeRepository.insertAndUpdateCode(code);
         } else {
-            Code code = new Code(null, userCheckMail.get_id(), TypeCode.VERIFY2FA, newCode, expiredDate);
+            Code code = new Code(null, user.get_id(), TypeCode.VERIFY2FA, newCode, expiredDate);
             codeRepository.insertAndUpdateCode(code);
         }
         emailService
-                .sendSimpleMail(new EmailDetail(userCheckMail.getEmail(), newCode,
+                .sendSimpleMail(new EmailDetail(user.getEmail(), newCode,
                         "OTP"));
     }
 
