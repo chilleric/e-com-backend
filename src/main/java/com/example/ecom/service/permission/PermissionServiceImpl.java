@@ -70,7 +70,6 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
     }
     if (!skipAccessability && !allParams.containsKey("_id")) {
       allParams.put("_id", generateParamsValue(targets));
-      System.out.println(generateParamsValue(targets));
       if (targets.size() == 0) {
         return Optional.of(
             new ListWrapperResponse<PermissionResponse>(new ArrayList<>(), page, pageSize, 0));
@@ -109,7 +108,7 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
       throw new InvalidRequestException(error, LanguageMessageKey.INVALID_NAME_PERMISSION);
     }
     permissionRequest.getUserId().forEach(userId -> {
-      repository.getPermissionByUserId(userId).ifPresent(thisUser -> {
+      repository.getPermissionByUserId(userId).ifPresent(thisPerm -> {
         error.put("userId", LanguageMessageKey.UNIQUE_USER_PERMISSION);
         throw new InvalidRequestException(error, LanguageMessageKey.UNIQUE_USER_PERMISSION);
       });
@@ -156,9 +155,11 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
       }
     });
     permissionRequest.getUserId().forEach(userId -> {
-      repository.getPermissionByUserId(userId).ifPresent(thisUser -> {
-        error.put("userId", LanguageMessageKey.UNIQUE_USER_PERMISSION);
-        throw new InvalidRequestException(error, LanguageMessageKey.UNIQUE_USER_PERMISSION);
+      repository.getPermissionByUserId(userId).ifPresent(thisPerm -> {
+        if (thisPerm.get_id().compareTo(permission.get_id()) != 0) {
+          error.put("userId", LanguageMessageKey.UNIQUE_USER_PERMISSION);
+          throw new InvalidRequestException(error, LanguageMessageKey.UNIQUE_USER_PERMISSION);
+        }
       });
     });
     if (permission.getName().compareTo("super_admin_permission") == 0) {

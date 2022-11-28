@@ -1,6 +1,8 @@
 package com.example.ecom.repository.permission;
 
+import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.dto.user.UserResponse;
+import com.example.ecom.exception.BadSqlException;
 import com.example.ecom.repository.AbstractMongoRepo;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -27,10 +29,15 @@ public class PermissionRepositoryImpl extends AbstractMongoRepo implements Permi
 
   @Override
   public Optional<Permission> getPermissionById(String id) {
-    Map<String, String> params = new HashMap<>();
-    params.put("_id", id);
-    Query query = generateQueryMongoDB(params, Permission.class, "", "", 0, 0);
-    return replaceFindOne(query, Permission.class);
+    try {
+      ObjectId _id = new ObjectId(id);
+      Query query = new Query();
+      query.addCriteria(Criteria.where("_id").is(_id));
+      return replaceFindOne(query, Permission.class);
+    } catch (IllegalArgumentException e) {
+      APP_LOGGER.error("wrong type_id");
+      return Optional.empty();
+    }
   }
 
   @Override
@@ -40,10 +47,15 @@ public class PermissionRepositoryImpl extends AbstractMongoRepo implements Permi
 
   @Override
   public void deletePermission(String id) {
-    Map<String, String> params = new HashMap<>();
-    params.put("_id", id);
-    Query query = generateQueryMongoDB(params, Permission.class, "", "", 0, 0);
-    authenticationTemplate.remove(query, Permission.class);
+    try {
+      ObjectId _id = new ObjectId(id);
+      Query query = new Query();
+      query.addCriteria(Criteria.where("_id").is(_id));
+      authenticationTemplate.remove(query, Permission.class);
+    } catch (IllegalArgumentException e) {
+      APP_LOGGER.error("wrong type_id");
+      throw new BadSqlException(LanguageMessageKey.SERVER_ERROR);
+    }
   }
 
   @Override
