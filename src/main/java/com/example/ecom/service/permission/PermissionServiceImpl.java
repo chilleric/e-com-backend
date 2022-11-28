@@ -70,7 +70,6 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
     }
     if (!skipAccessability && !allParams.containsKey("_id")) {
       allParams.put("_id", generateParamsValue(targets));
-      System.out.println(generateParamsValue(targets));
       if (targets.size() == 0) {
         return Optional.of(
             new ListWrapperResponse<PermissionResponse>(new ArrayList<>(), page, pageSize, 0));
