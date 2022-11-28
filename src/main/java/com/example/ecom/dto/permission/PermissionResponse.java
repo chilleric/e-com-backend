@@ -1,6 +1,7 @@
 package com.example.ecom.dto.permission;
 
 import java.util.List;
+import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,4 +18,5 @@ public class PermissionResponse {
     private String created;
     private String modified;
     private int skipAccessability;
+    private Map<String, List<String>> viewPoints;
 }

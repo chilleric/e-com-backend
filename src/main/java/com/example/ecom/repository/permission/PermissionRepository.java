@@ -5,18 +5,22 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface PermissionRepository {
-    Optional<List<Permission>> getPermissions(Map<String, String> allParams, String keySort, int page, int pageSize,
-            String sortField);
 
-    Optional<Permission> getPermissionById(String id);
+  Optional<List<Permission>> getPermissions(Map<String, String> allParams, String keySort, int page,
+      int pageSize,
+      String sortField);
 
-    Optional<List<Permission>> getPermissionByUser(String userId, String featureId);
+  Optional<Permission> getPermissionById(String id);
 
-    Optional<List<Permission>> getPermissionByUserId(String userId);
+  Optional<Permission> getPermissionByUser(String userId, String featureId);
 
-    void insertAndUpdate(Permission permission);
+  Optional<Permission> getPermissionByUserId(String userId);
 
-    void deletePermission(String id);
+  void insertAndUpdate(Permission permission);
 
-    long getTotal(Map<String, String> allParams);
+  void deletePermission(String id);
+
+  Map<String, List<String>> getViewPointSelect();
+
+  long getTotal(Map<String, String> allParams);
 }
