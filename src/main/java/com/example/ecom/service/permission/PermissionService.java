@@ -8,16 +8,21 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface PermissionService {
+
   Optional<ListWrapperResponse<PermissionResponse>> getPermissions(Map<String, String> allParams,
       String keySort,
       int page,
       int pageSize, String sortField, boolean skipAccessability, String loginId);
+
+  Optional<PermissionResponse> getPermissionById(String id, boolean skipAccessability,
+      String loginId);
 
   void addNewPermissions(PermissionRequest permissionRequest, String loginId);
 
   void editPermission(PermissionRequest permissionRequest, String id);
 
   void deletePermission(String id);
+
   Map<String, List<String>> getViewPointSelect();
 
 }

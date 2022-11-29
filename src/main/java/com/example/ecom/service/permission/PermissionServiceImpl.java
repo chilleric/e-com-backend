@@ -24,6 +24,7 @@ import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
 import com.example.ecom.utils.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,19 +61,26 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
     List<String> targets = accessabilityRepository.getListTargetId(loginId)
         .orElseThrow(() -> new BadSqlException(LanguageMessageKey.SERVER_ERROR))
         .stream().map(access -> access.getTargetId().toString()).collect(Collectors.toList());
-    if (!skipAccessability && allParams.containsKey("_id")) {
-      String[] idList = allParams.get("_id").split(",");
-      for (int i = 0; i < idList.length; i++) {
-        if (!targets.contains(idList[i])) {
-          throw new ForbiddenException(LanguageMessageKey.FORBIDDEN);
-        }
-      }
+    if (targets.size() == 0) {
+      return Optional.of(
+          new ListWrapperResponse<PermissionResponse>(new ArrayList<>(), page, pageSize, 0));
     }
-    if (!skipAccessability && !allParams.containsKey("_id")) {
-      allParams.put("_id", generateParamsValue(targets));
-      if (targets.size() == 0) {
-        return Optional.of(
-            new ListWrapperResponse<PermissionResponse>(new ArrayList<>(), page, pageSize, 0));
+    if (!skipAccessability) {
+      if (allParams.containsKey("_id")) {
+        String[] idList = allParams.get("_id").split(",");
+        ArrayList<String> check = new ArrayList<>(Arrays.asList(idList));
+        for (int i = 0; i < check.size(); i++) {
+          if (targets.contains(idList[i])) {
+            check.add(idList[i]);
+          }
+        }
+        if (check.size() == 0) {
+          return Optional.of(
+              new ListWrapperResponse<PermissionResponse>(new ArrayList<>(), page, pageSize, 0));
+        }
+        allParams.put("_id", generateParamsValue(check));
+      } else {
+        allParams.put("_id", generateParamsValue(targets));
       }
     }
     List<Permission> permissions = repository.getPermissions(allParams, keySort, page, pageSize,
@@ -94,6 +102,25 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
                 permission.getSkipAccessability(), permission.getViewPoints()))
             .collect(Collectors.toList()),
         page, pageSize, repository.getTotal(allParams)));
+  }
+
+  @Override
+  public Optional<PermissionResponse> getPermissionById(String id, boolean skipAccessability,
+      String loginId) {
+    Permission permission = permissionInventory.getPermissionById(id)
+        .orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.PERMISSION_NOT_FOUND));
+    return Optional.of(new PermissionResponse(permission.get_id().toString(), permission.getName(),
+        permission.getFeatureId().size() > 0
+            ? permission.getFeatureId().stream()
+            .map(ObjectId::toString).collect(Collectors.toList())
+            : new ArrayList<>(),
+        permission.getUserId().size() > 0
+            ? permission.getUserId().stream().map(ObjectId::toString)
+            .collect(Collectors.toList())
+            : new ArrayList<>(),
+        DateFormat.toDateString(permission.getCreated(), DateTime.YYYY_MM_DD),
+        DateFormat.toDateString(permission.getModified(), DateTime.YYYY_MM_DD),
+        permission.getSkipAccessability(), permission.getViewPoints()));
   }
 
   @Override
@@ -171,8 +198,6 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
       }
       permission.setUserId(permissionRequest.getUserId().stream().map(ObjectId::new)
           .collect(Collectors.toList()));
-      permission.setModified(DateFormat.getCurrentTime());
-      repository.insertAndUpdate(permission);
     } else {
       permission.setName(permissionRequest.getName());
       if (permissionRequest.getFeatureId().size() != 0) {
@@ -194,9 +219,9 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
       }
       permission.setViewPoints(permissionRequest.getViewPoints());
       permission.setSkipAccessability(permissionRequest.getSkipAccessability());
-      permission.setModified(DateFormat.getCurrentTime());
-      repository.insertAndUpdate(permission);
     }
+    permission.setModified(DateFormat.getCurrentTime());
+    repository.insertAndUpdate(permission);
 
   }
 
