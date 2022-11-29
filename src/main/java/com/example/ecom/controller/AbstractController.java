@@ -88,6 +88,8 @@ public abstract class AbstractController<s> {
     }
     if (!user.get(0).getTokens().containsKey(info.getDeviceId())) {
       APP_LOGGER.error("not found deviceid authen");
+      APP_LOGGER.error("info" + info);
+      APP_LOGGER.error("user" + user);
       throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
     }
     Date now = new Date();
