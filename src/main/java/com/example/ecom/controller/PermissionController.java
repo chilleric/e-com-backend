@@ -51,7 +51,6 @@ public class PermissionController extends AbstractController<PermissionService> 
       @RequestParam(required = true) String id,
       HttpServletRequest request) {
     ValidationResult result = validateToken(request, false);
-    System.out.println(result.isSkipAccessability());
     checkAccessability(result.getLoginId(), id, result.isSkipAccessability());
     return response(
         Optional.of(filterResponse(service.getPermissionById(id, result.isSkipAccessability(),
