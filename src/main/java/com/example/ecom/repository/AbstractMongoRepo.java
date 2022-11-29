@@ -1,5 +1,7 @@
 package com.example.ecom.repository;
 
+import com.example.ecom.constant.LanguageMessageKey;
+import com.example.ecom.exception.BadSqlException;
 import com.example.ecom.log.AppLogger;
 import com.example.ecom.log.LoggerFactory;
 import com.example.ecom.log.LoggerType;
@@ -24,7 +26,6 @@ public abstract class AbstractMongoRepo {
 
   protected AppLogger APP_LOGGER = LoggerFactory.getLogger(LoggerType.APPLICATION);
 
-  protected static boolean isHasOperator = false;
 
   protected Query generateQueryMongoDB(Map<String, String> allParams, Class<?> clazz,
       String keySort,
@@ -46,9 +47,9 @@ public abstract class AbstractMongoRepo {
               try {
                 multipleCriteria.add(
                     Criteria.where(items.getKey()).is(new ObjectId(value)));
-                isHasOperator = true;
               } catch (IllegalArgumentException e) {
                 APP_LOGGER.error(e.getMessage());
+                throw new BadSqlException(LanguageMessageKey.SERVER_ERROR);
               }
             }
           }
@@ -57,9 +58,9 @@ public abstract class AbstractMongoRepo {
               try {
                 boolean value = Boolean.parseBoolean(s);
                 multipleCriteria.add(Criteria.where(items.getKey()).is(value));
-                isHasOperator = true;
               } catch (Exception e) {
                 APP_LOGGER.error("error parsing value boolean");
+                throw new BadSqlException(LanguageMessageKey.SERVER_ERROR);
               }
             }
           }
@@ -68,25 +69,22 @@ public abstract class AbstractMongoRepo {
               try {
                 int value = Integer.parseInt(s);
                 multipleCriteria.add(Criteria.where(items.getKey()).is(value));
-                isHasOperator = true;
               } catch (Exception e) {
                 APP_LOGGER.error("error parsing value int");
+                throw new BadSqlException(LanguageMessageKey.SERVER_ERROR);
               }
             }
           }
           if (field.getType() == String.class) {
             for (String value : values) {
               multipleCriteria.add(Criteria.where(items.getKey()).is(value));
-              isHasOperator = true;
             }
           }
-          if (isHasOperator) {
-            allCriteria.add(new Criteria().orOperator(multipleCriteria));
-          }
+          allCriteria.add(new Criteria().orOperator(multipleCriteria));
         }
       }
     }
-    if (allCriteria.size() > 0 && isHasOperator) {
+    if (allCriteria.size() > 0) {
       query.addCriteria(new Criteria().andOperator(allCriteria));
     }
     if (isSort == 1 && keySort.trim().compareTo("") != 0 && keySort.trim().compareTo("ASC") == 0) {
@@ -98,7 +96,6 @@ public abstract class AbstractMongoRepo {
     if (page > 0 && pageSize > 0) {
       query.skip((long) (page - 1) * pageSize).limit(pageSize);
     }
-    isHasOperator = false;
     return query;
   }
 
@@ -106,10 +103,7 @@ public abstract class AbstractMongoRepo {
     try {
       List<T> result = authenticationTemplate.find(query, clazz);
       return Optional.of(result);
-    } catch (IllegalArgumentException e) {
-      APP_LOGGER.error(e.getMessage());
-      return Optional.empty();
-    } catch (NullPointerException e) {
+    } catch (IllegalArgumentException | NullPointerException e) {
       APP_LOGGER.error(e.getMessage());
       return Optional.empty();
     }
@@ -119,10 +113,7 @@ public abstract class AbstractMongoRepo {
     try {
       T result = authenticationTemplate.findOne(query, clazz);
       return Optional.of(result);
-    } catch (IllegalArgumentException e) {
-      APP_LOGGER.error(e.getMessage());
-      return Optional.empty();
-    } catch (NullPointerException e) {
+    } catch (IllegalArgumentException | NullPointerException e) {
       APP_LOGGER.error(e.getMessage());
       return Optional.empty();
     }
