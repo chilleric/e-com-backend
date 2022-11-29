@@ -12,6 +12,9 @@ import com.example.ecom.exception.ResourceNotFoundException;
 import com.example.ecom.exception.UnauthorizedException;
 import com.example.ecom.jwt.JwtValidation;
 import com.example.ecom.jwt.TokenContent;
+import com.example.ecom.log.AppLogger;
+import com.example.ecom.log.LoggerFactory;
+import com.example.ecom.log.LoggerType;
 import com.example.ecom.repository.accessability.AccessabilityRepository;
 import com.example.ecom.repository.feature.Feature;
 import com.example.ecom.repository.feature.FeatureRepository;
@@ -52,6 +55,8 @@ public abstract class AbstractController<s> {
   @Autowired
   private AccessabilityRepository accessabilityRepository;
 
+  protected AppLogger APP_LOGGER = LoggerFactory.getLogger(LoggerType.APPLICATION);
+
   protected ValidationResult validateToken(HttpServletRequest request, boolean hasPublic) {
     String token = jwtValidation.getJwtFromRequest(request);
     if (token == null) {
@@ -78,13 +83,16 @@ public abstract class AbstractController<s> {
         .getUsers(Map.ofEntries(entry("_id", info.getUserId()), entry("deleted", "0")), "", 0, 0,
             "").get();
     if (user.size() == 0) {
+      APP_LOGGER.error("not found user authen");
       throw new UnauthorizedException(LanguageMessageKey.NOT_FOUND_USER);
     }
     if (!user.get(0).getTokens().containsKey(info.getDeviceId())) {
+      APP_LOGGER.error("not found deviceid authen");
       throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
     }
     Date now = new Date();
     if (user.get(0).getTokens().get(info.getDeviceId()).compareTo(now) <= 0) {
+      APP_LOGGER.error("not found expired device authen");
       throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
     }
     if (checkPath) {
