@@ -10,6 +10,7 @@ import com.example.ecom.exception.BadSqlException;
 import com.example.ecom.exception.ForbiddenException;
 import com.example.ecom.exception.ResourceNotFoundException;
 import com.example.ecom.exception.UnauthorizedException;
+import com.example.ecom.inventory.user.UserInventory;
 import com.example.ecom.jwt.JwtValidation;
 import com.example.ecom.jwt.TokenContent;
 import com.example.ecom.log.AppLogger;
@@ -21,7 +22,6 @@ import com.example.ecom.repository.feature.FeatureRepository;
 import com.example.ecom.repository.permission.Permission;
 import com.example.ecom.repository.permission.PermissionRepository;
 import com.example.ecom.repository.user.User;
-import com.example.ecom.repository.user.UserRepository;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,7 +50,7 @@ public abstract class AbstractController<s> {
   protected PermissionRepository permissionRepository;
 
   @Autowired
-  protected UserRepository userRepository;
+  protected UserInventory userInventory;
 
   @Autowired
   private AccessabilityRepository accessabilityRepository;
@@ -79,21 +79,16 @@ public abstract class AbstractController<s> {
 
   protected ValidationResult checkAuthentication(String token, String path, boolean checkPath) {
     TokenContent info = jwtValidation.getUserIdFromJwt(token);
-    List<User> user = userRepository
-        .getUsers(Map.ofEntries(entry("_id", info.getUserId()), entry("deleted", "0")), "", 0, 0,
-            "").get();
-    if (user.size() == 0) {
-      APP_LOGGER.error("not found user authen");
-      throw new UnauthorizedException(LanguageMessageKey.NOT_FOUND_USER);
-    }
-    if (!user.get(0).getTokens().containsKey(info.getDeviceId())) {
+    User user = userInventory.getActiveUserById(info.getUserId())
+        .orElseThrow(() -> new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED));
+    if (!user.getTokens().containsKey(info.getDeviceId())) {
       APP_LOGGER.error("not found deviceid authen");
       APP_LOGGER.error("info" + info);
       APP_LOGGER.error("user" + user);
       throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
     }
     Date now = new Date();
-    if (user.get(0).getTokens().get(info.getDeviceId()).compareTo(now) <= 0) {
+    if (user.getTokens().get(info.getDeviceId()).compareTo(now) <= 0) {
       APP_LOGGER.error("not found expired device authen");
       throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
     }
@@ -104,13 +99,13 @@ public abstract class AbstractController<s> {
         throw new ResourceNotFoundException(LanguageMessageKey.DISABLED_FEATURE);
       }
       Permission permissions = permissionRepository
-          .getPermissionByUser(user.get(0).get_id().toString(), feature.get(0).get_id().toString())
+          .getPermissionByUser(user.get_id().toString(), feature.get(0).get_id().toString())
           .orElseThrow(() -> new ForbiddenException(LanguageMessageKey.FORBIDDEN));
       return new ValidationResult(permissions.getSkipAccessability() == 0,
-          user.get(0).get_id().toString(),
+          user.get_id().toString(),
           permissions.getViewPoints());
     }
-    return new ValidationResult(false, user.get(0).get_id().toString(), new HashMap<>());
+    return new ValidationResult(false, user.get_id().toString(), new HashMap<>());
 
   }
 
