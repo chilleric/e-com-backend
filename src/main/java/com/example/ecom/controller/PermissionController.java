@@ -46,6 +46,21 @@ public class PermissionController extends AbstractController<PermissionService> 
   }
 
   @SecurityRequirement(name = "Bearer Authentication")
+  @GetMapping(value = "get-detail-permission")
+  public ResponseEntity<CommonResponse<PermissionResponse>> getPermissionDetail(
+      @RequestParam(required = true) String id,
+      HttpServletRequest request) {
+    ValidationResult result = validateToken(request, false);
+    System.out.println(result.isSkipAccessability());
+    checkAccessability(result.getLoginId(), id, result.isSkipAccessability());
+    return response(
+        Optional.of(filterResponse(service.getPermissionById(id, result.isSkipAccessability(),
+                result.getLoginId()).get(),
+            result.getViewPoints())), LanguageMessageKey.SUCCESS, result.getViewPoints()
+            .get(PermissionResponse.class.getSimpleName()));
+  }
+
+  @SecurityRequirement(name = "Bearer Authentication")
   @GetMapping(value = "get-view-points-select")
   public ResponseEntity<CommonResponse<Map<String, List<String>>>> getViewPointSelect() {
     return response(Optional.of(service.getViewPointSelect()), LanguageMessageKey.SUCCESS,
