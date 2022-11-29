@@ -81,10 +81,10 @@ public abstract class AbstractController<s> {
     TokenContent info = jwtValidation.getUserIdFromJwt(token);
     User user = userInventory.getActiveUserById(info.getUserId())
         .orElseThrow(() -> new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED));
+    APP_LOGGER.error("info" + info);
+    APP_LOGGER.error("user" + user);
     if (!user.getTokens().containsKey(info.getDeviceId())) {
       APP_LOGGER.error("not found deviceid authen");
-      APP_LOGGER.error("info" + info);
-      APP_LOGGER.error("user" + user);
       throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
     }
     Date now = new Date();
