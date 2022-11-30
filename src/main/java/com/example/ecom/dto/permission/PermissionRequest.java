@@ -21,9 +21,6 @@ public class PermissionRequest {
   @NotEmpty(message = LanguageMessageKey.PERMISSION_NAME_REQUIRED)
   private String name;
 
-  @NotNull(message = LanguageMessageKey.FEATURE_LIST_REQUIRED)
-  private List<String> featureId;
-
   @NotNull(message = LanguageMessageKey.USER_LIST_REQUIRED)
   private List<String> userId;
 

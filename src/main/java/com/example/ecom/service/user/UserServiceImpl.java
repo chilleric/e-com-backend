@@ -13,7 +13,6 @@ import com.example.ecom.inventory.user.UserInventory;
 import com.example.ecom.repository.accessability.Accessability;
 import com.example.ecom.repository.accessability.AccessabilityRepository;
 import com.example.ecom.repository.common_entity.ViewPoint;
-import com.example.ecom.repository.permission.Permission;
 import com.example.ecom.repository.permission.PermissionRepository;
 import com.example.ecom.repository.user.User;
 import com.example.ecom.repository.user.UserRepository;
@@ -68,14 +67,8 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
     user.setTokens(new HashMap<>());
     user.setCreated(currentTime);
     user.setModified(currentTime);
-    Permission defaultPerm = permissionInventory.getPermissionByName("default_permission")
-        .orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.PERMISSION_NOT_FOUND));
-    List<ObjectId> userIds = defaultPerm.getUserId();
-    userIds.add(newId);
-    defaultPerm.setUserId(userIds);
     accessabilityRepository.addNewAccessability(
         new Accessability(null, new ObjectId(loginId), newId));
-    permissionRepository.insertAndUpdate(defaultPerm);
     repository.insertAndUpdate(user);
   }
 

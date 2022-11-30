@@ -15,7 +15,6 @@ import com.example.ecom.inventory.user.UserInventory;
 import com.example.ecom.repository.code.Code;
 import com.example.ecom.repository.code.CodeRepository;
 import com.example.ecom.repository.code.TypeCode;
-import com.example.ecom.repository.permission.Permission;
 import com.example.ecom.repository.permission.PermissionRepository;
 import com.example.ecom.repository.user.User;
 import com.example.ecom.repository.user.UserRepository;
@@ -24,7 +23,6 @@ import com.example.ecom.utils.PasswordValidator;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -77,9 +75,9 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
     if (user.getDeleted() == 1) {
       throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
     }
-      if (!user.isVerified()) {
-          return Optional.of(new LoginResponse("", "", false, true));
-      }
+    if (!user.isVerified()) {
+      return Optional.of(new LoginResponse("", "", false, true));
+    }
     if (!bCryptPasswordEncoder().matches(loginRequest.getPassword(),
         user.getPassword())) {
       error.put("password", LanguageMessageKey.PASSWORD_NOT_MATCH);
@@ -154,12 +152,6 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
     user.setTokens(new HashMap<>());
     user.setGender(0);
     user.setDob("");
-    Permission defaultPerm = permissionInventory.getPermissionByName("default_permission")
-        .orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.PERMISSION_NOT_FOUND));
-    List<ObjectId> userIds = defaultPerm.getUserId();
-    userIds.add(newId);
-    defaultPerm.setUserId(userIds);
-    permissionRepository.insertAndUpdate(defaultPerm);
     repository.insertAndUpdate(user);
     String newCode = RandomStringUtils.randomAlphabetic(6).toUpperCase();
     Date now = new Date();
@@ -192,11 +184,11 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         TypeCode.REGISTER.name());
     if (codes.isPresent()) {
       Code code = codes.get();
-        if (code.getCode().compareTo(inputCode) != 0) {
-            throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.INVALID_CODE);
-        } else if (code.getExpiredDate().compareTo(now) < 0) {
-            throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.CODE_EXPIRED);
-        }
+      if (code.getCode().compareTo(inputCode) != 0) {
+        throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.INVALID_CODE);
+      } else if (code.getExpiredDate().compareTo(now) < 0) {
+        throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.CODE_EXPIRED);
+      }
     } else {
       throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.INVALID_CODE);
     }
@@ -269,11 +261,11 @@ public class LoginServiceImpl extends AbstractService<UserRepository> implements
         TypeCode.VERIFY2FA.name());
     if (codes.isPresent()) {
       Code code = codes.get();
-        if (code.getCode().compareTo(inputCode) != 0) {
-            throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.INVALID_CODE);
-        } else if (code.getExpiredDate().compareTo(now) < 0) {
-            throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.CODE_EXPIRED);
-        }
+      if (code.getCode().compareTo(inputCode) != 0) {
+        throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.INVALID_CODE);
+      } else if (code.getExpiredDate().compareTo(now) < 0) {
+        throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.CODE_EXPIRED);
+      }
     } else {
       throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.INVALID_CODE);
     }
