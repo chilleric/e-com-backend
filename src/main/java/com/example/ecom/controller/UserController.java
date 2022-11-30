@@ -51,6 +51,11 @@ public class UserController extends AbstractController<UserService> {
       HttpServletRequest request) {
     ValidationResult result = validateToken(request);
     checkAccessability(result.getLoginId(), id);
+    if (id.compareTo(result.getLoginId()) == 0) {
+      return response(service.findOneUserById(id), LanguageMessageKey.SUCCESS,
+          result.getViewPoints()
+              .get(UserResponse.class.getSimpleName()));
+    }
     return response(Optional.of(filterResponse(service.findOneUserById(id).get(),
         result.getViewPoints())), LanguageMessageKey.SUCCESS, result.getViewPoints()
         .get(UserResponse.class.getSimpleName()));
