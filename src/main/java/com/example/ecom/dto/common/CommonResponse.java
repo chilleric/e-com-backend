@@ -1,5 +1,6 @@
 package com.example.ecom.dto.common;
 
+import com.example.ecom.repository.common_entity.ViewPoint;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,5 +15,5 @@ public class CommonResponse<T> {
   private T result;
   private String message;
   private int statusCode;
-  private List<String> viewPoints;
+  private List<ViewPoint> viewPoints;
 }

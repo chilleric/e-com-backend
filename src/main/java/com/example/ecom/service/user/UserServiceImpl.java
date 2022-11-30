@@ -1,7 +1,7 @@
 package com.example.ecom.service.user;
 
+import com.example.ecom.constant.DateTime;
 import com.example.ecom.constant.LanguageMessageKey;
-import com.example.ecom.constant.ResponseType;
 import com.example.ecom.dto.common.ListWrapperResponse;
 import com.example.ecom.dto.user.UserRequest;
 import com.example.ecom.dto.user.UserResponse;
@@ -12,6 +12,7 @@ import com.example.ecom.inventory.permission.PermissionInventory;
 import com.example.ecom.inventory.user.UserInventory;
 import com.example.ecom.repository.accessability.Accessability;
 import com.example.ecom.repository.accessability.AccessabilityRepository;
+import com.example.ecom.repository.common_entity.ViewPoint;
 import com.example.ecom.repository.permission.Permission;
 import com.example.ecom.repository.permission.PermissionRepository;
 import com.example.ecom.repository.user.User;
@@ -78,17 +79,25 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
     repository.insertAndUpdate(user);
   }
 
-  public Optional<UserResponse> findOneUserById(String userId, ResponseType type) {
+  public Optional<UserResponse> findOneUserById(String userId) {
     User user = userInventory.findUserById(userId)
         .orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER));
-    return Optional.of(new UserResponse(user, type));
+    return Optional.of(
+        new UserResponse(user.get_id().toString(), user.getUsername(), user.getPassword(),
+            user.getGender(), user.getDob(), user.getAddress(), user.getFirstName(),
+            user.getLastName(), user.getEmail(), user.getPhone(), user.getTokens(),
+            DateFormat.toDateString(user.getCreated(),
+                DateTime.YYYY_MM_DD),
+            DateFormat.toDateString(user.getModified(), DateTime.YYYY_MM_DD), user.isVerified(),
+            user.isVerify2FA(), user.getDeleted()));
   }
 
   @Override
-  public void updateUserById(String userId, UserRequest userRequest) {
-    validate(userRequest);
+  public void updateUserById(String userId, UserRequest userRequest, List<ViewPoint> viewPoints) {
     User user = userInventory.findUserById(userId)
         .orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER));
+    viewPointToRequest(userRequest, viewPoints, user);
+    validate(userRequest);
     Map<String, String> error = generateError(UserRequest.class);
     userInventory.findUserByEmail(userRequest.getEmail()).ifPresent(thisEmail -> {
       if (thisEmail.get_id().compareTo(user.get_id()) != 0) {
@@ -140,11 +149,8 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
   @Override
   public Optional<ListWrapperResponse<UserResponse>> getUsers(Map<String, String> allParams,
       String keySort, int page,
-      int pageSize, String sortField, ResponseType type, boolean skipAccessAbility,
+      int pageSize, String sortField,
       String loginId) {
-    if (type.compareTo(ResponseType.PUBLIC) == 0) {
-      allParams.put("deleted", "0");
-    }
     List<String> targets = accessabilityRepository.getListTargetId(loginId)
         .orElseThrow(() -> new BadSqlException(LanguageMessageKey.SERVER_ERROR)).stream()
         .map(access -> access.getTargetId().toString()).collect(Collectors.toList());
@@ -152,27 +158,31 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
       return Optional.of(
           new ListWrapperResponse<UserResponse>(new ArrayList<>(), page, pageSize, 0));
     }
-    if (!skipAccessAbility) {
-      if (allParams.containsKey("_id")) {
-        String[] idList = allParams.get("_id").split(",");
-        ArrayList<String> check = new ArrayList<>(Arrays.asList(idList));
-        for (int i = 0; i < check.size(); i++) {
-          if (targets.contains(idList[i])) {
-            check.add(idList[i]);
-          }
+    if (allParams.containsKey("_id")) {
+      String[] idList = allParams.get("_id").split(",");
+      ArrayList<String> check = new ArrayList<>(Arrays.asList(idList));
+      for (int i = 0; i < check.size(); i++) {
+        if (targets.contains(idList[i])) {
+          check.add(idList[i]);
         }
-        if (check.size() == 0) {
-          return Optional.of(
-              new ListWrapperResponse<UserResponse>(new ArrayList<>(), page, pageSize, 0));
-        }
-        allParams.put("_id", generateParamsValue(check));
-      } else {
-        allParams.put("_id", generateParamsValue(targets));
       }
+      if (check.size() == 0) {
+        return Optional.of(
+            new ListWrapperResponse<UserResponse>(new ArrayList<>(), page, pageSize, 0));
+      }
+      allParams.put("_id", generateParamsValue(check));
+    } else {
+      allParams.put("_id", generateParamsValue(targets));
     }
+
     List<User> users = repository.getUsers(allParams, "", page, pageSize, sortField).get();
     return Optional.of(new ListWrapperResponse<UserResponse>(
-        users.stream().map(user -> new UserResponse(user, type)).collect(Collectors.toList()),
+        users.stream().map(user -> new UserResponse(user.get_id().toString(), user.getUsername(),
+            user.getPassword(), user.getGender(), user.getDob(), user.getAddress(),
+            user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhone(),
+            user.getTokens(), DateFormat.toDateString(user.getCreated(),
+            DateTime.YYYY_MM_DD), DateFormat.toDateString(user.getModified(), DateTime.YYYY_MM_DD),
+            user.isVerified(), user.isVerify2FA(), user.getDeleted())).collect(Collectors.toList()),
         page,
         pageSize,
         repository.getTotalPage(allParams)));

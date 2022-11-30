@@ -31,7 +31,7 @@ public class MessageController extends AbstractController<MessageService> {
   @SecurityRequirement(name = "Bearer Authentication")
   @PostMapping("/to-chat-room")
   public ResponseEntity<CommonResponse<String>> toChatRoom(HttpServletRequest request) {
-    ValidationResult result = validateToken(request, false);
+    ValidationResult result = validateToken(request);
     service.addOnlineUser(result.getLoginId());
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.CONNECTED_TO_CHAT,
@@ -43,7 +43,7 @@ public class MessageController extends AbstractController<MessageService> {
   @SecurityRequirement(name = "Bearer Authentication")
   @PostMapping("/out-chat-room")
   public ResponseEntity<CommonResponse<String>> outChatRoom(HttpServletRequest request) {
-    ValidationResult result = validateToken(request, false);
+    ValidationResult result = validateToken(request);
     service.removeOnlineUser(result.getLoginId());
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.DISCONNECT_CHAT,
@@ -58,7 +58,7 @@ public class MessageController extends AbstractController<MessageService> {
       @RequestBody MessageRequest messageRequest,
       @RequestParam("id") String receiveId,
       HttpServletRequest request) {
-    ValidationResult result = validateToken(request, false);
+    ValidationResult result = validateToken(request);
     return response(service.sendMessage(messageRequest, result.getLoginId(), receiveId),
         LanguageMessageKey.SUCCESS, new ArrayList<>());
 
@@ -81,7 +81,7 @@ public class MessageController extends AbstractController<MessageService> {
   public ResponseEntity<CommonResponse<ListWrapperResponse<MessageResponse>>> getOldSendMessage(
       @RequestParam(defaultValue = "1") int page,
       @RequestParam("id") String sendId, HttpServletRequest request) {
-    ValidationResult result = validateToken(request, false);
+    ValidationResult result = validateToken(request);
     return response(service.getOldMessage(result.getLoginId(), sendId, page),
         LanguageMessageKey.SUCCESS, new ArrayList<>());
   }
@@ -91,7 +91,7 @@ public class MessageController extends AbstractController<MessageService> {
   public ResponseEntity<CommonResponse<List<ChatRoom>>> getChatRoom(
       @RequestParam(defaultValue = "1") int page,
       HttpServletRequest request) {
-    ValidationResult result = validateToken(request, false);
+    ValidationResult result = validateToken(request);
     return response(service.getChatroom(result.getLoginId(), page), LanguageMessageKey.SUCCESS,
         new ArrayList<>());
   }

@@ -26,7 +26,7 @@ public class SettingsController extends AbstractController<SettingService> {
   @GetMapping(value = "get-general-settings")
   public ResponseEntity<CommonResponse<SettingsResponse>> getGeneralSettings(
       HttpServletRequest request) {
-    ValidationResult result = validateToken(request, false);
+    ValidationResult result = validateToken(request);
     return response(service.getSettingsByUserId(result.getLoginId()), LanguageMessageKey.SUCCESS,
         result.getViewPoints()
             .get(SettingsResponse.class.getSimpleName()));
@@ -36,7 +36,7 @@ public class SettingsController extends AbstractController<SettingService> {
   @PutMapping(value = "update-general-settings")
   public ResponseEntity<CommonResponse<String>> updateGeneralSettings(HttpServletRequest request,
       @RequestBody SettingsRequest settingsRequest) {
-    ValidationResult result = validateToken(request, false);
+    ValidationResult result = validateToken(request);
     service.updateSettings(settingsRequest, result.getLoginId());
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_GENERAL_SETTINGS_SUCCESS,
@@ -50,7 +50,7 @@ public class SettingsController extends AbstractController<SettingService> {
   @PutMapping(value = "update-account-settings")
   public ResponseEntity<CommonResponse<String>> updateAccountInformation(HttpServletRequest request,
       @RequestBody AccountSetting accountSetting) {
-    ValidationResult result = validateToken(request, false);
+    ValidationResult result = validateToken(request);
     service.updateAccountInformation(accountSetting, result.getLoginId());
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_ACCOUNT_SETTINGS_SUCCESS,
@@ -64,7 +64,7 @@ public class SettingsController extends AbstractController<SettingService> {
   @PutMapping(value = "update-password")
   public ResponseEntity<CommonResponse<String>> updatePassword(HttpServletRequest request,
       @RequestBody ChangePasswordRequest changePasswordRequest) {
-    ValidationResult result = validateToken(request, false);
+    ValidationResult result = validateToken(request);
     service.updatePassword(changePasswordRequest, result.getLoginId());
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_PASSWORD_SUCCESS,

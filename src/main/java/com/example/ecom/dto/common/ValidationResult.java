@@ -1,5 +1,6 @@
 package com.example.ecom.dto.common;
 
+import com.example.ecom.repository.common_entity.ViewPoint;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -11,7 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ValidationResult {
 
-  private boolean skipAccessability;
   private String loginId;
-  private Map<String, List<String>> viewPoints;
+  private Map<String, List<ViewPoint>> viewPoints;
+  private Map<String, List<ViewPoint>> editable;
+
 }

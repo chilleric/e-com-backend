@@ -29,7 +29,7 @@ public class UserController extends AbstractController<UserService> {
   @PostMapping(value = "add-new-user")
   public ResponseEntity<CommonResponse<String>> addNewUser(@RequestBody UserRequest userRequest,
       HttpServletRequest request) {
-    ValidationResult result = validateToken(request, false);
+    ValidationResult result = validateToken(request);
     service.createNewUser(userRequest, result.getLoginId());
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.CREATE_USER_SUCCESS,
@@ -44,10 +44,9 @@ public class UserController extends AbstractController<UserService> {
   public ResponseEntity<CommonResponse<UserResponse>> getUserDetail(
       @RequestParam(required = true) String id,
       HttpServletRequest request) {
-    ValidationResult result = validateToken(request, false);
-    checkAccessability(result.getLoginId(), id, result.isSkipAccessability());
-    return response(Optional.of(filterResponse(service.findOneUserById(id,
-            getResponseType(id, result.getLoginId(), result.isSkipAccessability())).get(),
+    ValidationResult result = validateToken(request);
+    checkAccessability(result.getLoginId(), id);
+    return response(Optional.of(filterResponse(service.findOneUserById(id).get(),
         result.getViewPoints())), LanguageMessageKey.SUCCESS, result.getViewPoints()
         .get(UserResponse.class.getSimpleName()));
   }
@@ -60,10 +59,9 @@ public class UserController extends AbstractController<UserService> {
       @RequestParam Map<String, String> allParams,
       @RequestParam(defaultValue = "asc") String keySort,
       @RequestParam(defaultValue = "modified") String sortField, HttpServletRequest request) {
-    ValidationResult result = validateToken(request, false);
+    ValidationResult result = validateToken(request);
     return response(service.getUsers(allParams, keySort, page, pageSize, "",
-            getResponseType("", result.getLoginId(), result.isSkipAccessability()),
-            result.isSkipAccessability(), result.getLoginId()), LanguageMessageKey.SUCCESS,
+            result.getLoginId()), LanguageMessageKey.SUCCESS,
         result.getViewPoints()
             .get(UserResponse.class.getSimpleName()));
   }
@@ -72,10 +70,10 @@ public class UserController extends AbstractController<UserService> {
   @PutMapping(value = "update-user")
   public ResponseEntity<CommonResponse<String>> updateUser(@RequestBody UserRequest userRequest,
       @RequestParam(required = true) String id, HttpServletRequest request) {
-    ValidationResult result = validateToken(request, false);
-    checkUserId(id, result.getLoginId(), result.isSkipAccessability());
-    checkAccessability(result.getLoginId(), id, result.isSkipAccessability());
-    service.updateUserById(id, userRequest);
+    ValidationResult result = validateToken(request);
+    checkAccessability(result.getLoginId(), id);
+    service.updateUserById(id, userRequest,
+        result.getEditable().get(UserResponse.class.getSimpleName()));
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_USER_SUCCESS,
             HttpStatus.OK.value(), result.getViewPoints()
@@ -88,9 +86,8 @@ public class UserController extends AbstractController<UserService> {
   @PutMapping(value = "change-status-user")
   public ResponseEntity<CommonResponse<String>> changeStatusUser(@RequestParam String id,
       HttpServletRequest request) {
-    ValidationResult result = validateToken(request, false);
-    checkUserId(id, result.getLoginId(), result.isSkipAccessability());
-    checkAccessability(result.getLoginId(), id, result.isSkipAccessability());
+    ValidationResult result = validateToken(request);
+    checkAccessability(result.getLoginId(), id);
     service.changeStatusUser(id);
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.CHANGE_STATUS_USER_SUCCESS,
