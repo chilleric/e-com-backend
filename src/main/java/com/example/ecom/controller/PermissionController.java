@@ -62,8 +62,11 @@ public class PermissionController extends AbstractController<PermissionService> 
 
   @SecurityRequirement(name = "Bearer Authentication")
   @GetMapping(value = "get-view-points-select")
-  public ResponseEntity<CommonResponse<Map<String, List<ViewPoint>>>> getViewPointSelect() {
-    return response(Optional.of(service.getViewPointSelect()), LanguageMessageKey.SUCCESS,
+  public ResponseEntity<CommonResponse<Map<String, List<ViewPoint>>>> getViewPointSelect(
+      HttpServletRequest request) {
+    ValidationResult result = validateToken(request);
+    return response(Optional.of(service.getViewPointSelect(result.getLoginId())),
+        LanguageMessageKey.SUCCESS,
         new ArrayList<>(), new ArrayList<>());
   }
 
