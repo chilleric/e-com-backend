@@ -39,7 +39,8 @@ public class LanguageController extends AbstractController<LanguageService> {
     ValidationResult result = validateToken(request);
     return response(service.getLanguages(allParams, keySort, page, pageSize, sortField),
         LanguageMessageKey.SUCCESS, result.getViewPoints()
-            .get(LanguageResponse.class.getSimpleName()));
+            .get(LanguageResponse.class.getSimpleName()),
+        result.getEditable().get(LanguageResponse.class.getSimpleName()));
   }
 
   @SecurityRequirement(name = "Bearer Authentication")
@@ -48,7 +49,8 @@ public class LanguageController extends AbstractController<LanguageService> {
       HttpServletRequest request) {
     ValidationResult result = validateToken(request);
     return response(service.getSelectLanguage(), LanguageMessageKey.SUCCESS, result.getViewPoints()
-        .get(LanguageResponse.class.getSimpleName()));
+            .get(LanguageResponse.class.getSimpleName()),
+        result.getEditable().get(LanguageResponse.class.getSimpleName()));
   }
 
   @SecurityRequirement(name = "Bearer Authentication")
@@ -58,14 +60,16 @@ public class LanguageController extends AbstractController<LanguageService> {
     ValidationResult result = validateToken(request);
     return response(service.getDefaultValueSample(), LanguageMessageKey.SUCCESS,
         result.getViewPoints()
-            .get(LanguageResponse.class.getSimpleName()));
+            .get(LanguageResponse.class.getSimpleName()),
+        result.getEditable().get(LanguageResponse.class.getSimpleName()));
   }
 
   @GetMapping(value = "get-language-by-key")
   public ResponseEntity<CommonResponse<LanguageResponse>> getLanguageByKey(
       @RequestParam("key") String key,
       HttpServletRequest request) {
-    return response(service.getLanguageByKey(key), LanguageMessageKey.SUCCESS, new ArrayList<>());
+    return response(service.getLanguageByKey(key), LanguageMessageKey.SUCCESS, new ArrayList<>(),
+        new ArrayList<>());
   }
 
   @SecurityRequirement(name = "Bearer Authentication")
@@ -78,7 +82,8 @@ public class LanguageController extends AbstractController<LanguageService> {
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.ADD_LANGUAGE_SUCCESS,
             HttpStatus.OK.value(), result.getViewPoints()
-            .get(LanguageResponse.class.getSimpleName())),
+            .get(LanguageResponse.class.getSimpleName()),
+            result.getEditable().get(LanguageResponse.class.getSimpleName())),
         null,
         HttpStatus.OK.value());
   }
@@ -93,7 +98,8 @@ public class LanguageController extends AbstractController<LanguageService> {
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.ADD_LANGUAGE_KEY_SUCCESS,
             HttpStatus.OK.value(), result.getViewPoints()
-            .get(LanguageResponse.class.getSimpleName())),
+            .get(LanguageResponse.class.getSimpleName()),
+            result.getEditable().get(LanguageResponse.class.getSimpleName())),
         null,
         HttpStatus.OK.value());
   }
@@ -108,7 +114,8 @@ public class LanguageController extends AbstractController<LanguageService> {
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.DELETE_LANGUAGE_KEY_SUCCESS,
             HttpStatus.OK.value(), result.getViewPoints()
-            .get(LanguageResponse.class.getSimpleName())),
+            .get(LanguageResponse.class.getSimpleName()),
+            result.getEditable().get(LanguageResponse.class.getSimpleName())),
         null,
         HttpStatus.OK.value());
   }
@@ -124,7 +131,8 @@ public class LanguageController extends AbstractController<LanguageService> {
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_LANGUAGE_SUCCESS,
             HttpStatus.OK.value(), result.getViewPoints()
-            .get(LanguageResponse.class.getSimpleName())),
+            .get(LanguageResponse.class.getSimpleName()),
+            result.getEditable().get(LanguageResponse.class.getSimpleName())),
         null,
         HttpStatus.OK.value());
   }
@@ -139,7 +147,8 @@ public class LanguageController extends AbstractController<LanguageService> {
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_LANGUAGE_SUCCESS,
             HttpStatus.OK.value(), result.getViewPoints()
-            .get(LanguageResponse.class.getSimpleName())),
+            .get(LanguageResponse.class.getSimpleName()),
+            result.getEditable().get(LanguageResponse.class.getSimpleName())),
         null,
         HttpStatus.OK.value());
   }

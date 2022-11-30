@@ -41,7 +41,8 @@ public class PermissionController extends AbstractController<PermissionService> 
     return response(service.getPermissions(allParams, keySort, page, pageSize, sortField,
             result.getLoginId()),
         LanguageMessageKey.SUCCESS, result.getViewPoints()
-            .get(PermissionResponse.class.getSimpleName()));
+            .get(PermissionResponse.class.getSimpleName()),
+        result.getEditable().get(PermissionResponse.class.getSimpleName()));
   }
 
   @SecurityRequirement(name = "Bearer Authentication")
@@ -55,14 +56,15 @@ public class PermissionController extends AbstractController<PermissionService> 
         Optional.of(filterResponse(service.getPermissionById(id,
                 result.getLoginId()).get(),
             result.getViewPoints())), LanguageMessageKey.SUCCESS, result.getViewPoints()
-            .get(PermissionResponse.class.getSimpleName()));
+            .get(PermissionResponse.class.getSimpleName()),
+        result.getEditable().get(PermissionResponse.class.getSimpleName()));
   }
 
   @SecurityRequirement(name = "Bearer Authentication")
   @GetMapping(value = "get-view-points-select")
   public ResponseEntity<CommonResponse<Map<String, List<ViewPoint>>>> getViewPointSelect() {
     return response(Optional.of(service.getViewPointSelect()), LanguageMessageKey.SUCCESS,
-        new ArrayList<>());
+        new ArrayList<>(), new ArrayList<>());
   }
 
   @SecurityRequirement(name = "Bearer Authentication")
@@ -78,7 +80,8 @@ public class PermissionController extends AbstractController<PermissionService> 
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.ADD_PERMISSION_SUCCESS,
             HttpStatus.OK.value(), result.getViewPoints()
-            .get(PermissionResponse.class.getSimpleName())),
+            .get(PermissionResponse.class.getSimpleName()),
+            result.getEditable().get(PermissionResponse.class.getSimpleName())),
         null,
         HttpStatus.OK.value());
   }
@@ -95,7 +98,8 @@ public class PermissionController extends AbstractController<PermissionService> 
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_PERMISSION_SUCCESS,
             HttpStatus.OK.value(), result.getViewPoints()
-            .get(PermissionResponse.class.getSimpleName())),
+            .get(PermissionResponse.class.getSimpleName()),
+            result.getEditable().get(PermissionResponse.class.getSimpleName())),
         null,
         HttpStatus.OK.value());
   }
@@ -110,7 +114,8 @@ public class PermissionController extends AbstractController<PermissionService> 
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.DELETE_PERMISSION_SUCCESS,
             HttpStatus.OK.value(), result.getViewPoints()
-            .get(PermissionResponse.class.getSimpleName())),
+            .get(PermissionResponse.class.getSimpleName()),
+            result.getEditable().get(PermissionResponse.class.getSimpleName())),
         null,
         HttpStatus.OK.value());
   }

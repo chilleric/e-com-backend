@@ -35,7 +35,7 @@ public class MessageController extends AbstractController<MessageService> {
     service.addOnlineUser(result.getLoginId());
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.CONNECTED_TO_CHAT,
-            HttpStatus.OK.value(), new ArrayList<>()),
+            HttpStatus.OK.value(), new ArrayList<>(), new ArrayList<>()),
         null,
         HttpStatus.OK.value());
   }
@@ -47,7 +47,7 @@ public class MessageController extends AbstractController<MessageService> {
     service.removeOnlineUser(result.getLoginId());
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.DISCONNECT_CHAT,
-            HttpStatus.OK.value(), new ArrayList<>()),
+            HttpStatus.OK.value(), new ArrayList<>(), new ArrayList<>()),
         null,
         HttpStatus.OK.value());
   }
@@ -60,7 +60,7 @@ public class MessageController extends AbstractController<MessageService> {
       HttpServletRequest request) {
     ValidationResult result = validateToken(request);
     return response(service.sendMessage(messageRequest, result.getLoginId(), receiveId),
-        LanguageMessageKey.SUCCESS, new ArrayList<>());
+        LanguageMessageKey.SUCCESS, new ArrayList<>(), new ArrayList<>());
 
   }
 
@@ -83,7 +83,7 @@ public class MessageController extends AbstractController<MessageService> {
       @RequestParam("id") String sendId, HttpServletRequest request) {
     ValidationResult result = validateToken(request);
     return response(service.getOldMessage(result.getLoginId(), sendId, page),
-        LanguageMessageKey.SUCCESS, new ArrayList<>());
+        LanguageMessageKey.SUCCESS, new ArrayList<>(), new ArrayList<>());
   }
 
   @SecurityRequirement(name = "Bearer Authentication")
@@ -93,7 +93,7 @@ public class MessageController extends AbstractController<MessageService> {
       HttpServletRequest request) {
     ValidationResult result = validateToken(request);
     return response(service.getChatroom(result.getLoginId(), page), LanguageMessageKey.SUCCESS,
-        new ArrayList<>());
+        new ArrayList<>(), new ArrayList<>());
   }
 
 }

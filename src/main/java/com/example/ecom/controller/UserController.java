@@ -39,7 +39,8 @@ public class UserController extends AbstractController<UserService> {
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.CREATE_USER_SUCCESS,
             HttpStatus.OK.value(), result.getViewPoints()
-            .get(UserResponse.class.getSimpleName())),
+            .get(UserResponse.class.getSimpleName()),
+            result.getEditable().get(UserResponse.class.getSimpleName())),
         null,
         HttpStatus.OK.value());
   }
@@ -54,11 +55,13 @@ public class UserController extends AbstractController<UserService> {
     if (id.compareTo(result.getLoginId()) == 0) {
       return response(service.findOneUserById(id), LanguageMessageKey.SUCCESS,
           result.getViewPoints()
-              .get(UserResponse.class.getSimpleName()));
+              .get(UserResponse.class.getSimpleName()),
+          result.getEditable().get(UserResponse.class.getSimpleName()));
     }
     return response(Optional.of(filterResponse(service.findOneUserById(id).get(),
-        result.getViewPoints())), LanguageMessageKey.SUCCESS, result.getViewPoints()
-        .get(UserResponse.class.getSimpleName()));
+            result.getViewPoints())), LanguageMessageKey.SUCCESS, result.getViewPoints()
+            .get(UserResponse.class.getSimpleName()),
+        result.getEditable().get(UserResponse.class.getSimpleName()));
   }
 
   @SecurityRequirement(name = "Bearer Authentication")
@@ -73,7 +76,8 @@ public class UserController extends AbstractController<UserService> {
     return response(service.getUsers(allParams, keySort, page, pageSize, "",
             result.getLoginId()), LanguageMessageKey.SUCCESS,
         result.getViewPoints()
-            .get(UserResponse.class.getSimpleName()));
+            .get(UserResponse.class.getSimpleName()),
+        result.getEditable().get(UserResponse.class.getSimpleName()));
   }
 
   @SecurityRequirement(name = "Bearer Authentication")
@@ -87,7 +91,8 @@ public class UserController extends AbstractController<UserService> {
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_USER_SUCCESS,
             HttpStatus.OK.value(), result.getViewPoints()
-            .get(UserResponse.class.getSimpleName())),
+            .get(UserResponse.class.getSimpleName()),
+            result.getEditable().get(UserResponse.class.getSimpleName())),
         null,
         HttpStatus.OK.value());
   }
@@ -102,7 +107,8 @@ public class UserController extends AbstractController<UserService> {
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.CHANGE_STATUS_USER_SUCCESS,
             HttpStatus.OK.value(), result.getViewPoints()
-            .get(UserResponse.class.getSimpleName())),
+            .get(UserResponse.class.getSimpleName()),
+            result.getEditable().get(UserResponse.class.getSimpleName())),
         null,
         HttpStatus.OK.value());
   }
