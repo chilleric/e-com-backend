@@ -85,7 +85,8 @@ public class PermissionController extends AbstractController<PermissionService> 
       HttpServletRequest request) {
     ValidationResult result = validateToken(request);
     checkAccessability(result.getLoginId(), id);
-    service.editPermission(permissionRequest, id);
+    service.editPermission(permissionRequest, id,
+        result.getEditable().get(PermissionResponse.class.getSimpleName()));
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_PERMISSION_SUCCESS,
             HttpStatus.OK.value(), result.getViewPoints()

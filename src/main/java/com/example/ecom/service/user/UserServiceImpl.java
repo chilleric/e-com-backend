@@ -12,6 +12,7 @@ import com.example.ecom.inventory.permission.PermissionInventory;
 import com.example.ecom.inventory.user.UserInventory;
 import com.example.ecom.repository.accessability.Accessability;
 import com.example.ecom.repository.accessability.AccessabilityRepository;
+import com.example.ecom.repository.common_entity.ViewPoint;
 import com.example.ecom.repository.permission.Permission;
 import com.example.ecom.repository.permission.PermissionRepository;
 import com.example.ecom.repository.user.User;
@@ -92,10 +93,11 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
   }
 
   @Override
-  public void updateUserById(String userId, UserRequest userRequest) {
-    validate(userRequest);
+  public void updateUserById(String userId, UserRequest userRequest, List<ViewPoint> viewPoints) {
     User user = userInventory.findUserById(userId)
         .orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER));
+    viewPointToRequest(userRequest, viewPoints, user);
+    validate(userRequest);
     Map<String, String> error = generateError(UserRequest.class);
     userInventory.findUserByEmail(userRequest.getEmail()).ifPresent(thisEmail -> {
       if (thisEmail.get_id().compareTo(user.get_id()) != 0) {

@@ -55,24 +55,22 @@ public abstract class AbstractController<s> {
     if (token == null) {
       throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
     }
-    return checkAuthentication(token, request.getRequestURI(), true);
+    return checkAuthentication(token);
   }
 
   protected ValidationResult validateSSE(String token) {
     if (StringUtils.hasText(token) && token.startsWith("Bearer ")) {
-      return checkAuthentication(token.substring(7), "", false);
+      return checkAuthentication(token.substring(7));
     } else {
       throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
     }
 
   }
 
-  protected ValidationResult checkAuthentication(String token, String path, boolean checkPath) {
+  protected ValidationResult checkAuthentication(String token) {
     TokenContent info = jwtValidation.getUserIdFromJwt(token);
     User user = userInventory.getActiveUserById(info.getUserId())
         .orElseThrow(() -> new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED));
-    APP_LOGGER.error("info" + info);
-    APP_LOGGER.error("user" + user);
     if (!user.getTokens().containsKey(info.getDeviceId())) {
       APP_LOGGER.error("not found deviceid authen");
       throw new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED);
@@ -103,14 +101,6 @@ public abstract class AbstractController<s> {
         new CommonResponse<>(true, response.get(), successMessage, HttpStatus.OK.value(),
             viewPoint),
         HttpStatus.OK);
-  }
-
-  protected void checkUserId(String userId, String loginId, boolean skipAccessability) {
-    if (!skipAccessability) {
-      if (loginId.compareTo(userId) == 0) {
-        throw new ForbiddenException(LanguageMessageKey.FORBIDDEN);
-      }
-    }
   }
 
   protected void checkAccessability(String loginId, String targetId) {

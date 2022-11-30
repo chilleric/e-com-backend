@@ -20,7 +20,7 @@ public interface PermissionService {
 
   void addNewPermissions(PermissionRequest permissionRequest, String loginId);
 
-  void editPermission(PermissionRequest permissionRequest, String id);
+  void editPermission(PermissionRequest permissionRequest, String id, List<ViewPoint> viewPoints);
 
   void deletePermission(String id);
 

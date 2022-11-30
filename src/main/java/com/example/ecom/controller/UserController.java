@@ -72,7 +72,8 @@ public class UserController extends AbstractController<UserService> {
       @RequestParam(required = true) String id, HttpServletRequest request) {
     ValidationResult result = validateToken(request);
     checkAccessability(result.getLoginId(), id);
-    service.updateUserById(id, userRequest);
+    service.updateUserById(id, userRequest,
+        result.getEditable().get(UserResponse.class.getSimpleName()));
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_USER_SUCCESS,
             HttpStatus.OK.value(), result.getViewPoints()
