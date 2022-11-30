@@ -75,7 +75,7 @@ public class PermissionController extends AbstractController<PermissionService> 
   public ResponseEntity<CommonResponse<Map<String, List<ViewPoint>>>> getEditableSelect(
       HttpServletRequest request) {
     ValidationResult result = validateToken(request);
-    return response(Optional.of(service.getViewPointSelect(result.getLoginId())),
+    return response(Optional.of(service.getEditableSelect(result.getLoginId())),
         LanguageMessageKey.SUCCESS,
         new ArrayList<>(), new ArrayList<>());
   }
