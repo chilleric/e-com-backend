@@ -11,6 +11,7 @@ import com.example.ecom.exception.BadSqlException;
 import com.example.ecom.exception.ForbiddenException;
 import com.example.ecom.exception.InvalidRequestException;
 import com.example.ecom.exception.ResourceNotFoundException;
+import com.example.ecom.exception.UnauthorizedException;
 import com.example.ecom.inventory.permission.PermissionInventory;
 import com.example.ecom.inventory.user.UserInventory;
 import com.example.ecom.repository.accessability.Accessability;
@@ -22,8 +23,10 @@ import com.example.ecom.repository.user.User;
 import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
 import com.example.ecom.utils.DateFormat;
+import com.example.ecom.utils.ObjectUtilities;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -184,8 +187,15 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
   }
 
   @Override
-  public Map<String, List<ViewPoint>> getViewPointSelect() {
-    return repository.getViewPointSelect();
+  public Map<String, List<ViewPoint>> getViewPointSelect(String loginId) {
+    Map<String, List<ViewPoint>> thisView = new HashMap<>();
+    repository
+        .getPermissionByUserId(loginId)
+        .orElseThrow(() -> new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED))
+        .forEach(thisPerm -> {
+          thisView.putAll(ObjectUtilities.mergePermission(thisView, thisPerm.getViewPoints()));
+        });
+    return thisView;
   }
 
   private void checkDeleteAndEdit(Permission permission) {

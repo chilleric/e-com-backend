@@ -24,6 +24,6 @@ public interface PermissionService {
 
   void deletePermission(String id);
 
-  Map<String, List<ViewPoint>> getViewPointSelect();
+  Map<String, List<ViewPoint>> getViewPointSelect(String loginId);
 
 }
