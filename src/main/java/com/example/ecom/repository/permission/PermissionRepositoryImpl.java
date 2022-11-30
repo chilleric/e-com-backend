@@ -1,7 +1,6 @@
 package com.example.ecom.repository.permission;
 
 import com.example.ecom.constant.LanguageMessageKey;
-import com.example.ecom.dto.permission.PermissionResponse;
 import com.example.ecom.dto.user.UserResponse;
 import com.example.ecom.exception.BadSqlException;
 import com.example.ecom.repository.AbstractMongoRepo;
@@ -62,7 +61,7 @@ public class PermissionRepositoryImpl extends AbstractMongoRepo implements Permi
 
   @Override
   public Map<String, List<ViewPoint>> getViewPointSelect() {
-    List<Class<?>> viewPointList = List.of(UserResponse.class, PermissionResponse.class);
+    List<Class<?>> viewPointList = List.of(UserResponse.class);
     Map<String, List<ViewPoint>> result = new HashMap<>();
     viewPointList.forEach(clazz -> {
       List<ViewPoint> attributes = new ArrayList<>();
