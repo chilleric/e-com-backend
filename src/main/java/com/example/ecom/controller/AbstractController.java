@@ -96,10 +96,10 @@ public abstract class AbstractController<s> {
   }
 
   protected <T> ResponseEntity<CommonResponse<T>> response(Optional<T> response,
-      String successMessage, List<ViewPoint> viewPoint) {
+      String successMessage, List<ViewPoint> viewPoint, List<ViewPoint> editable) {
     return new ResponseEntity<>(
         new CommonResponse<>(true, response.get(), successMessage, HttpStatus.OK.value(),
-            viewPoint),
+            viewPoint, editable),
         HttpStatus.OK);
   }
 

@@ -29,6 +29,7 @@ public class SettingsController extends AbstractController<SettingService> {
     ValidationResult result = validateToken(request);
     return response(service.getSettingsByUserId(result.getLoginId()), LanguageMessageKey.SUCCESS,
         result.getViewPoints()
+            .get(SettingsResponse.class.getSimpleName()), result.getEditable()
             .get(SettingsResponse.class.getSimpleName()));
   }
 
@@ -41,6 +42,7 @@ public class SettingsController extends AbstractController<SettingService> {
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_GENERAL_SETTINGS_SUCCESS,
             HttpStatus.OK.value(), result.getViewPoints()
+            .get(SettingsResponse.class.getSimpleName()), result.getEditable()
             .get(SettingsResponse.class.getSimpleName())),
         null,
         HttpStatus.OK.value());
@@ -55,6 +57,7 @@ public class SettingsController extends AbstractController<SettingService> {
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_ACCOUNT_SETTINGS_SUCCESS,
             HttpStatus.OK.value(), result.getViewPoints()
+            .get(SettingsResponse.class.getSimpleName()), result.getEditable()
             .get(SettingsResponse.class.getSimpleName())),
         null,
         HttpStatus.OK.value());
@@ -69,6 +72,7 @@ public class SettingsController extends AbstractController<SettingService> {
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_PASSWORD_SUCCESS,
             HttpStatus.OK.value(), result.getViewPoints()
+            .get(SettingsResponse.class.getSimpleName()), result.getEditable()
             .get(SettingsResponse.class.getSimpleName())),
         null,
         HttpStatus.OK.value());

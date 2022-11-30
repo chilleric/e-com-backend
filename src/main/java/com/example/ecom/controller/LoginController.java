@@ -26,7 +26,7 @@ public class LoginController extends AbstractController<LoginService> {
   public ResponseEntity<CommonResponse<LoginResponse>> login(@RequestBody LoginRequest loginRequest,
       HttpServletRequest request) {
     return response(service.login(loginRequest, false), LanguageMessageKey.LOGIN_SUCCESS,
-        new ArrayList<>());
+        new ArrayList<>(), new ArrayList<>());
   }
 
   @SecurityRequirement(name = "Bearer Authentication")
@@ -37,7 +37,7 @@ public class LoginController extends AbstractController<LoginService> {
     service.logout(result.getLoginId(), deviceId);
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.LOGOUT_SUCCESS,
-            HttpStatus.OK.value(), new ArrayList<>()),
+            HttpStatus.OK.value(), new ArrayList<>(), new ArrayList<>()),
         null,
         HttpStatus.OK.value());
   }
@@ -48,7 +48,7 @@ public class LoginController extends AbstractController<LoginService> {
     service.register(registerRequest);
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.SEND_VERIFY_EMAIL,
-            HttpStatus.OK.value(), new ArrayList<>()),
+            HttpStatus.OK.value(), new ArrayList<>(), new ArrayList<>()),
         null,
         HttpStatus.OK.value());
   }
@@ -60,7 +60,7 @@ public class LoginController extends AbstractController<LoginService> {
     service.verifyRegister(code, email);
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.VERIFY_EMAIL_SUCCESS,
-            HttpStatus.OK.value(), new ArrayList<>()),
+            HttpStatus.OK.value(), new ArrayList<>(), new ArrayList<>()),
         null,
         HttpStatus.OK.value());
   }
@@ -71,7 +71,7 @@ public class LoginController extends AbstractController<LoginService> {
     service.resendVerifyRegister(email);
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.RESEND_VERIFY_EMAIL,
-            HttpStatus.OK.value(), new ArrayList<>()),
+            HttpStatus.OK.value(), new ArrayList<>(), new ArrayList<>()),
         null,
         HttpStatus.OK.value());
   }
@@ -82,7 +82,7 @@ public class LoginController extends AbstractController<LoginService> {
     service.forgotPassword(email);
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.SEND_FORGOT_PASSWORD,
-            HttpStatus.OK.value(), new ArrayList<>()),
+            HttpStatus.OK.value(), new ArrayList<>(), new ArrayList<>()),
         null,
         HttpStatus.OK.value());
   }
@@ -92,7 +92,7 @@ public class LoginController extends AbstractController<LoginService> {
       @RequestParam(required = true) String email,
       @RequestParam(required = true) String code) {
     return response(service.verify2FA(email, code), LanguageMessageKey.VERIFY_2FA_SUCCESS,
-        new ArrayList<>());
+        new ArrayList<>(), new ArrayList<>());
   }
 
   @PostMapping(value = "verify-2fa/resend")
@@ -101,7 +101,7 @@ public class LoginController extends AbstractController<LoginService> {
     service.resend2FACode(email);
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.RESEND_VERIFY_EMAIL,
-            HttpStatus.OK.value(), new ArrayList<>()),
+            HttpStatus.OK.value(), new ArrayList<>(), new ArrayList<>()),
         null,
         HttpStatus.OK.value());
   }

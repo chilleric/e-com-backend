@@ -26,7 +26,7 @@ public class CustomExceptionHandler {
     APP_LOGGER.error(e.getMessage());
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(false, null, e.getMessage(),
-            HttpStatus.INTERNAL_SERVER_ERROR.value(), new ArrayList<>()),
+            HttpStatus.INTERNAL_SERVER_ERROR.value(), new ArrayList<>(), new ArrayList<>()),
         null,
         HttpStatus.OK.value());
   }
@@ -37,7 +37,7 @@ public class CustomExceptionHandler {
     APP_LOGGER.error(e.getMessage());
     return new ResponseEntity<>(
         new CommonResponse<Map<String, String>>(false, e.getResult(), e.getMessage(),
-            HttpStatus.BAD_REQUEST.value(), new ArrayList<>()),
+            HttpStatus.BAD_REQUEST.value(), new ArrayList<>(), new ArrayList<>()),
         null,
         HttpStatus.OK.value());
   }
@@ -47,7 +47,7 @@ public class CustomExceptionHandler {
     APP_LOGGER.error(e.getMessage());
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(false, null, e.getMessage(), HttpStatus.FORBIDDEN.value(),
-            new ArrayList<>()),
+            new ArrayList<>(), new ArrayList<>()),
         null,
         HttpStatus.OK.value());
   }
@@ -58,7 +58,7 @@ public class CustomExceptionHandler {
     APP_LOGGER.error(e.getMessage());
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(false, null, e.getMessage(),
-            HttpStatus.UNAUTHORIZED.value(), new ArrayList<>()),
+            HttpStatus.UNAUTHORIZED.value(), new ArrayList<>(), new ArrayList<>()),
         null,
         HttpStatus.OK.value());
   }
@@ -69,7 +69,7 @@ public class CustomExceptionHandler {
     APP_LOGGER.error(e.getMessage());
     return new ResponseEntity<>(
         new CommonResponse<String>(false, null, e.getMessage(), HttpStatus.NOT_FOUND.value(),
-            new ArrayList<>()),
+            new ArrayList<>(), new ArrayList<>()),
         null,
         HttpStatus.OK.value());
   }
