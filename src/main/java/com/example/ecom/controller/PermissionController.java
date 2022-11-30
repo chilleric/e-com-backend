@@ -6,6 +6,7 @@ import com.example.ecom.dto.common.ListWrapperResponse;
 import com.example.ecom.dto.common.ValidationResult;
 import com.example.ecom.dto.permission.PermissionRequest;
 import com.example.ecom.dto.permission.PermissionResponse;
+import com.example.ecom.exception.ForbiddenException;
 import com.example.ecom.repository.common_entity.ViewPoint;
 import com.example.ecom.service.permission.PermissionService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -69,6 +70,10 @@ public class PermissionController extends AbstractController<PermissionService> 
   public ResponseEntity<CommonResponse<String>> addNewPermission(
       @RequestBody PermissionRequest permissionRequest, HttpServletRequest request) {
     ValidationResult result = validateToken(request);
+    if (permissionRequest.getClass().getDeclaredFields().length > result.getViewPoints()
+        .get(PermissionResponse.class.getSimpleName()).size()) {
+      throw new ForbiddenException(LanguageMessageKey.FORBIDDEN);
+    }
     service.addNewPermissions(permissionRequest, result.getLoginId());
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.ADD_PERMISSION_SUCCESS,
