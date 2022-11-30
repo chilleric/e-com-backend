@@ -6,6 +6,7 @@ import com.example.ecom.dto.common.ListWrapperResponse;
 import com.example.ecom.dto.common.ValidationResult;
 import com.example.ecom.dto.user.UserRequest;
 import com.example.ecom.dto.user.UserResponse;
+import com.example.ecom.exception.ForbiddenException;
 import com.example.ecom.service.user.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import java.util.Map;
@@ -30,6 +31,10 @@ public class UserController extends AbstractController<UserService> {
   public ResponseEntity<CommonResponse<String>> addNewUser(@RequestBody UserRequest userRequest,
       HttpServletRequest request) {
     ValidationResult result = validateToken(request);
+    if (userRequest.getClass().getDeclaredFields().length > result.getViewPoints()
+        .get(UserResponse.class.getSimpleName()).size()) {
+      throw new ForbiddenException(LanguageMessageKey.FORBIDDEN);
+    }
     service.createNewUser(userRequest, result.getLoginId());
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.CREATE_USER_SUCCESS,
