@@ -198,6 +198,18 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
     return thisView;
   }
 
+  @Override
+  public Map<String, List<ViewPoint>> getEditableSelect(String loginId) {
+    Map<String, List<ViewPoint>> thisView = new HashMap<>();
+    repository
+        .getPermissionByUserId(loginId)
+        .orElseThrow(() -> new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED))
+        .forEach(thisPerm -> {
+          thisView.putAll(ObjectUtilities.mergePermission(thisView, thisPerm.getEditable()));
+        });
+    return thisView;
+  }
+
   private void checkDeleteAndEdit(Permission permission) {
     permission.getUserId().forEach(thisUser -> {
       accessabilityRepository.getListTargetId(thisUser.toString()).ifPresent(thisAccess -> {
