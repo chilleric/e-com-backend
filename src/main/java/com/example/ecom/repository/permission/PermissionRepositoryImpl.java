@@ -5,6 +5,7 @@ import com.example.ecom.dto.permission.PermissionResponse;
 import com.example.ecom.dto.user.UserResponse;
 import com.example.ecom.exception.BadSqlException;
 import com.example.ecom.repository.AbstractMongoRepo;
+import com.example.ecom.repository.common_entity.ViewPoint;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,13 +61,13 @@ public class PermissionRepositoryImpl extends AbstractMongoRepo implements Permi
   }
 
   @Override
-  public Map<String, List<String>> getViewPointSelect() {
+  public Map<String, List<ViewPoint>> getViewPointSelect() {
     List<Class<?>> viewPointList = List.of(UserResponse.class, PermissionResponse.class);
-    Map<String, List<String>> result = new HashMap<>();
+    Map<String, List<ViewPoint>> result = new HashMap<>();
     viewPointList.forEach(clazz -> {
-      List<String> attributes = new ArrayList<>();
+      List<ViewPoint> attributes = new ArrayList<>();
       for (Field field : clazz.getDeclaredFields()) {
-        attributes.add(field.getName());
+        attributes.add(new ViewPoint(field.getName(), field.getName()));
       }
       result.put(clazz.getSimpleName(), attributes);
     });
@@ -74,26 +75,12 @@ public class PermissionRepositoryImpl extends AbstractMongoRepo implements Permi
   }
 
   @Override
-  public Optional<Permission> getPermissionByUser(String userId, String featureId) {
-    try {
-      ObjectId user_id = new ObjectId(userId);
-      ObjectId feature_id = new ObjectId(featureId);
-      Query query = new Query();
-      query.addCriteria(Criteria.where("userId").in(user_id).and("featureId").in(feature_id));
-      return replaceFindOne(query, Permission.class);
-    } catch (IllegalArgumentException e) {
-      APP_LOGGER.error("wrong type user id or feature id");
-      return Optional.empty();
-    }
-  }
-
-  @Override
-  public Optional<Permission> getPermissionByUserId(String userId) {
+  public Optional<List<Permission>> getPermissionByUserId(String userId) {
     try {
       ObjectId user_id = new ObjectId(userId);
       Query query = new Query();
       query.addCriteria(Criteria.where("userId").in(user_id));
-      return replaceFindOne(query, Permission.class);
+      return replaceFind(query, Permission.class);
     } catch (IllegalArgumentException e) {
       APP_LOGGER.error("wrong type user id or feature id");
       return Optional.empty();

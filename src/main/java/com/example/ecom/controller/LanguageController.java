@@ -36,7 +36,7 @@ public class LanguageController extends AbstractController<LanguageService> {
       @RequestParam Map<String, String> allParams,
       @RequestParam(defaultValue = "asc") String keySort,
       @RequestParam(defaultValue = "modified") String sortField, HttpServletRequest request) {
-    ValidationResult result = validateToken(request, false);
+    ValidationResult result = validateToken(request);
     return response(service.getLanguages(allParams, keySort, page, pageSize, sortField),
         LanguageMessageKey.SUCCESS, result.getViewPoints()
             .get(LanguageResponse.class.getSimpleName()));
@@ -46,7 +46,7 @@ public class LanguageController extends AbstractController<LanguageService> {
   @GetMapping(value = "get-language-select-list")
   public ResponseEntity<CommonResponse<List<SelectLanguage>>> getSelectLanguages(
       HttpServletRequest request) {
-    ValidationResult result = validateToken(request, false);
+    ValidationResult result = validateToken(request);
     return response(service.getSelectLanguage(), LanguageMessageKey.SUCCESS, result.getViewPoints()
         .get(LanguageResponse.class.getSimpleName()));
   }
@@ -55,7 +55,7 @@ public class LanguageController extends AbstractController<LanguageService> {
   @GetMapping(value = "get-default-dictionary")
   public ResponseEntity<CommonResponse<Map<String, String>>> getDefaultDictionary(
       HttpServletRequest request) {
-    ValidationResult result = validateToken(request, false);
+    ValidationResult result = validateToken(request);
     return response(service.getDefaultValueSample(), LanguageMessageKey.SUCCESS,
         result.getViewPoints()
             .get(LanguageResponse.class.getSimpleName()));
@@ -73,7 +73,7 @@ public class LanguageController extends AbstractController<LanguageService> {
   public ResponseEntity<CommonResponse<String>> addNewLanguage(
       @RequestBody LanguageRequest languageRequest,
       HttpServletRequest httpServletRequest) {
-    ValidationResult result = validateToken(httpServletRequest, false);
+    ValidationResult result = validateToken(httpServletRequest);
     service.addNewLanguage(languageRequest);
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.ADD_LANGUAGE_SUCCESS,
@@ -88,7 +88,7 @@ public class LanguageController extends AbstractController<LanguageService> {
   public ResponseEntity<CommonResponse<String>> addNewDictionary(
       @RequestBody Map<String, String> payload,
       HttpServletRequest httpServletRequest) {
-    ValidationResult result = validateToken(httpServletRequest, false);
+    ValidationResult result = validateToken(httpServletRequest);
     service.addNewDictionary(payload);
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.ADD_LANGUAGE_KEY_SUCCESS,
@@ -103,7 +103,7 @@ public class LanguageController extends AbstractController<LanguageService> {
   public ResponseEntity<CommonResponse<String>> deleteKeyDictionary(
       @RequestParam("key") String keyDict,
       HttpServletRequest httpServletRequest) {
-    ValidationResult result = validateToken(httpServletRequest, false);
+    ValidationResult result = validateToken(httpServletRequest);
     service.deleteDictionaryKey(keyDict);
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.DELETE_LANGUAGE_KEY_SUCCESS,
@@ -119,7 +119,7 @@ public class LanguageController extends AbstractController<LanguageService> {
       @RequestBody LanguageRequest languageRequest,
       @RequestParam("id") String languageId,
       HttpServletRequest httpServletRequest) {
-    ValidationResult result = validateToken(httpServletRequest, false);
+    ValidationResult result = validateToken(httpServletRequest);
     service.updateLanguage(languageRequest, languageId);
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_LANGUAGE_SUCCESS,
@@ -134,7 +134,7 @@ public class LanguageController extends AbstractController<LanguageService> {
   public ResponseEntity<CommonResponse<String>> updateLanguageByList(
       @RequestBody List<LanguageFileRequest> payload,
       HttpServletRequest httpServletRequest) {
-    ValidationResult result = validateToken(httpServletRequest, false);
+    ValidationResult result = validateToken(httpServletRequest);
     service.updateDictionaryByFile(payload);
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_LANGUAGE_SUCCESS,

@@ -20,10 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "auth")
-// @CrossOrigin(origins = "http://localhost:3000/", methods = {
-// RequestMethod.OPTIONS, RequestMethod.GET,
-// RequestMethod.POST, RequestMethod.PUT,
-// RequestMethod.DELETE }, allowedHeaders = "*", allowCredentials = "true")
 public class LoginController extends AbstractController<LoginService> {
 
   @PostMapping(value = "login")
@@ -37,7 +33,7 @@ public class LoginController extends AbstractController<LoginService> {
   @PostMapping(value = "logout")
   public ResponseEntity<CommonResponse<String>> logout(HttpServletRequest request,
       @RequestParam(required = true) String deviceId) {
-    ValidationResult result = validateToken(request, false);
+    ValidationResult result = validateToken(request);
     service.logout(result.getLoginId(), deviceId);
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.LOGOUT_SUCCESS,
