@@ -16,5 +16,5 @@ public class CommonResponse<T> {
   private String message;
   private int statusCode;
   private List<ViewPoint> viewPoints;
-  private List<ViewPoint> editTable;
+  private List<ViewPoint> editable;
 }
