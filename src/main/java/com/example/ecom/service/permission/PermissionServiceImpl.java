@@ -197,8 +197,7 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
         .forEach(thisPerm -> {
           thisView.putAll(ObjectUtilities.mergePermission(thisView, thisPerm.getViewPoints()));
         });
-    Map<String, List<ViewPoint>> result = removeId(thisView);
-    return result;
+    return thisView;
   }
 
   @Override
@@ -210,18 +209,7 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
         .forEach(thisPerm -> {
           thisView.putAll(ObjectUtilities.mergePermission(thisView, thisPerm.getEditable()));
         });
-    Map<String, List<ViewPoint>> result = removeId(thisView);
-    return result;
-  }
-
-  private Map<String, List<ViewPoint>> removeId(Map<String, List<ViewPoint>> thisView) {
-    return thisView.entrySet().stream().map((key) -> {
-      List<ViewPoint> newValue = key.getValue().stream()
-          .filter(viewList -> viewList.getKey().compareTo("id") != 0).collect(
-              Collectors.toList());
-      return entry(key.getKey(), newValue);
-    }).collect(
-        Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x, y) -> y, LinkedHashMap::new));
+    return thisView;
   }
 
   private void checkDeleteAndEdit(Permission permission) {
@@ -238,5 +226,15 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
     String result = generateParamsValue(users);
     return userRepository.getUsers(Map.ofEntries(entry("_id", result.toString())), "", 0, 0, "")
         .get();
+  }
+
+  private Map<String, List<ViewPoint>> removeId(Map<String, List<ViewPoint>> thisView) {
+    return thisView.entrySet().stream().map((key) -> {
+      List<ViewPoint> newValue = key.getValue().stream()
+          .filter(viewList -> viewList.getKey().compareTo("id") != 0).collect(
+              Collectors.toList());
+      return entry(key.getKey(), newValue);
+    }).collect(
+        Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x, y) -> y, LinkedHashMap::new));
   }
 }

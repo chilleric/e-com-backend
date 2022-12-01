@@ -1,5 +1,7 @@
 package com.example.ecom.repository.permission;
 
+import static java.util.Map.entry;
+
 import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.dto.user.UserResponse;
 import com.example.ecom.exception.BadSqlException;
@@ -8,9 +10,11 @@ import com.example.ecom.repository.common_entity.ViewPoint;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -70,7 +74,17 @@ public class PermissionRepositoryImpl extends AbstractMongoRepo implements Permi
       }
       result.put(clazz.getSimpleName(), attributes);
     });
-    return result;
+    return removeId(result);
+  }
+
+  private Map<String, List<ViewPoint>> removeId(Map<String, List<ViewPoint>> thisView) {
+    return thisView.entrySet().stream().map((key) -> {
+      List<ViewPoint> newValue = key.getValue().stream()
+          .filter(viewList -> viewList.getKey().compareTo("id") != 0).collect(
+              Collectors.toList());
+      return entry(key.getKey(), newValue);
+    }).collect(
+        Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x, y) -> y, LinkedHashMap::new));
   }
 
   @Override
