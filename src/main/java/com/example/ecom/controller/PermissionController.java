@@ -9,7 +9,6 @@ import com.example.ecom.dto.permission.PermissionResponse;
 import com.example.ecom.repository.common_entity.ViewPoint;
 import com.example.ecom.service.permission.PermissionService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,8 +38,8 @@ public class PermissionController extends AbstractController<PermissionService> 
     ValidationResult result = validateToken(request);
     return response(service.getPermissions(allParams, keySort, page, pageSize, sortField,
             result.getLoginId()),
-        LanguageMessageKey.SUCCESS, new ArrayList<>(),
-        new ArrayList<>());
+        LanguageMessageKey.SUCCESS, service.getPermissionView(),
+        service.getPermissionView());
   }
 
   @SecurityRequirement(name = "Bearer Authentication")
@@ -52,8 +51,8 @@ public class PermissionController extends AbstractController<PermissionService> 
     checkAccessability(result.getLoginId(), id);
     return response(
         service.getPermissionById(id, result.getLoginId()), LanguageMessageKey.SUCCESS,
-        new ArrayList<>(),
-        new ArrayList<>());
+        service.getPermissionView(),
+        service.getPermissionView());
   }
 
   @SecurityRequirement(name = "Bearer Authentication")
@@ -63,7 +62,8 @@ public class PermissionController extends AbstractController<PermissionService> 
     ValidationResult result = validateToken(request);
     return response(Optional.of(service.getViewPointSelect(result.getLoginId())),
         LanguageMessageKey.SUCCESS,
-        new ArrayList<>(), new ArrayList<>());
+        service.getPermissionView(),
+        service.getPermissionView());
   }
 
   @SecurityRequirement(name = "Bearer Authentication")
@@ -73,7 +73,8 @@ public class PermissionController extends AbstractController<PermissionService> 
     ValidationResult result = validateToken(request);
     return response(Optional.of(service.getEditableSelect(result.getLoginId())),
         LanguageMessageKey.SUCCESS,
-        new ArrayList<>(), new ArrayList<>());
+        service.getPermissionView(),
+        service.getPermissionView());
   }
 
   @SecurityRequirement(name = "Bearer Authentication")
@@ -84,8 +85,8 @@ public class PermissionController extends AbstractController<PermissionService> 
     service.addNewPermissions(permissionRequest, result.getLoginId());
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.ADD_PERMISSION_SUCCESS,
-            HttpStatus.OK.value(), new ArrayList<>(),
-            new ArrayList<>()),
+            HttpStatus.OK.value(), service.getPermissionView(),
+            service.getPermissionView()),
         null,
         HttpStatus.OK.value());
   }
@@ -101,8 +102,8 @@ public class PermissionController extends AbstractController<PermissionService> 
         result.getEditable().get(PermissionResponse.class.getSimpleName()));
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.UPDATE_PERMISSION_SUCCESS,
-            HttpStatus.OK.value(), new ArrayList<>(),
-            new ArrayList<>()),
+            HttpStatus.OK.value(), service.getPermissionView(),
+            service.getPermissionView()),
         null,
         HttpStatus.OK.value());
   }
@@ -116,8 +117,8 @@ public class PermissionController extends AbstractController<PermissionService> 
     service.deletePermission(id);
     return new ResponseEntity<CommonResponse<String>>(
         new CommonResponse<String>(true, null, LanguageMessageKey.DELETE_PERMISSION_SUCCESS,
-            HttpStatus.OK.value(), new ArrayList<>(),
-            new ArrayList<>()),
+            HttpStatus.OK.value(), service.getPermissionView(),
+            service.getPermissionView()),
         null,
         HttpStatus.OK.value());
   }

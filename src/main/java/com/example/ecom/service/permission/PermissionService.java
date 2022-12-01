@@ -26,6 +26,8 @@ public interface PermissionService {
 
   Map<String, List<ViewPoint>> getViewPointSelect(String loginId);
 
+  List<ViewPoint> getPermissionView();
+
   Map<String, List<ViewPoint>> getEditableSelect(String loginId);
 
 }
