@@ -151,7 +151,6 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
       List<ViewPoint> viewPoints) {
     Permission permission = repository.getPermissionById(id)
         .orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.PERMISSION_NOT_FOUND));
-    viewPointToRequest(permissionRequest, viewPoints, permission);
     validate(permissionRequest);
     checkDeleteAndEdit(permission);
     Map<String, String> error = generateError(PermissionRequest.class);
