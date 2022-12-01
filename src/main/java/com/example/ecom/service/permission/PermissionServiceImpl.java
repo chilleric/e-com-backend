@@ -27,6 +27,7 @@ import com.example.ecom.utils.ObjectUtilities;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -93,8 +94,7 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
                     : new ArrayList<>(),
                 DateFormat.toDateString(permission.getCreated(), DateTime.YYYY_MM_DD),
                 DateFormat.toDateString(permission.getModified(), DateTime.YYYY_MM_DD),
-                permission.getViewPoints(),
-                permission.getEditable()))
+                removeId(permission.getViewPoints()), removeId(permission.getEditable())))
             .collect(Collectors.toList()),
         page, pageSize, repository.getTotal(allParams)));
   }
@@ -111,12 +111,14 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
             : new ArrayList<>(),
         DateFormat.toDateString(permission.getCreated(), DateTime.YYYY_MM_DD),
         DateFormat.toDateString(permission.getModified(), DateTime.YYYY_MM_DD),
-        permission.getViewPoints(), permission.getEditable()));
+        removeId(permission.getViewPoints()), removeId(permission.getEditable())));
   }
 
   @Override
   public void addNewPermissions(PermissionRequest permissionRequest, String loginId) {
     validate(permissionRequest);
+    permissionRequest.setEditable(removeId(permissionRequest.getEditable()));
+    permissionRequest.setViewPoints(removeId(permissionRequest.getViewPoints()));
     Map<String, String> error = generateError(PermissionRequest.class);
     List<Permission> permissions = repository
         .getPermissions(Map.ofEntries(entry("name", permissionRequest.getName())), "", 0, 0, "")
@@ -152,7 +154,8 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
     Permission permission = repository.getPermissionById(id)
         .orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.PERMISSION_NOT_FOUND));
     validate(permissionRequest);
-    checkDeleteAndEdit(permission);
+    permissionRequest.setEditable(removeId(permissionRequest.getEditable()));
+    permissionRequest.setViewPoints(removeId(permissionRequest.getViewPoints()));
     Map<String, String> error = generateError(PermissionRequest.class);
     permissionInventory.getPermissionByName(permissionRequest.getName()).ifPresent(perm -> {
       if (perm.get_id().compareTo(permission.get_id()) != 0) {
@@ -194,7 +197,8 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
         .forEach(thisPerm -> {
           thisView.putAll(ObjectUtilities.mergePermission(thisView, thisPerm.getViewPoints()));
         });
-    return thisView;
+    Map<String, List<ViewPoint>> result = removeId(thisView);
+    return result;
   }
 
   @Override
@@ -206,7 +210,18 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
         .forEach(thisPerm -> {
           thisView.putAll(ObjectUtilities.mergePermission(thisView, thisPerm.getEditable()));
         });
-    return thisView;
+    Map<String, List<ViewPoint>> result = removeId(thisView);
+    return result;
+  }
+
+  private Map<String, List<ViewPoint>> removeId(Map<String, List<ViewPoint>> thisView) {
+    return thisView.entrySet().stream().map((key) -> {
+      List<ViewPoint> newValue = key.getValue().stream()
+          .filter(viewList -> viewList.getKey().compareTo("id") != 0).collect(
+              Collectors.toList());
+      return entry(key.getKey(), newValue);
+    }).collect(
+        Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x, y) -> y, LinkedHashMap::new));
   }
 
   private void checkDeleteAndEdit(Permission permission) {

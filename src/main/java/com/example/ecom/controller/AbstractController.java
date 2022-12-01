@@ -122,6 +122,10 @@ public abstract class AbstractController<s> {
       try {
         boolean isExist = false;
         for (ViewPoint thisItem : compareList) {
+          if (thisItem.getKey().compareTo("id") == 0) {
+            isExist = true;
+            break;
+          }
           if (thisItem.getKey().compareTo(field.getName()) == 0) {
             isExist = true;
             break;
