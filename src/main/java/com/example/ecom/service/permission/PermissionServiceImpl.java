@@ -24,6 +24,7 @@ import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
 import com.example.ecom.utils.DateFormat;
 import com.example.ecom.utils.ObjectUtilities;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -198,6 +199,15 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
           thisView.putAll(ObjectUtilities.mergePermission(thisView, thisPerm.getViewPoints()));
         });
     return thisView;
+  }
+
+  @Override
+  public List<ViewPoint> getPermissionView() {
+    List<ViewPoint> attributes = new ArrayList<>();
+    for (Field field : PermissionResponse.class.getDeclaredFields()) {
+      attributes.add(new ViewPoint(field.getName(), field.getName()));
+    }
+    return attributes;
   }
 
   @Override
