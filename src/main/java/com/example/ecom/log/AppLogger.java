@@ -2,7 +2,6 @@ package com.example.ecom.log;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,13 +47,12 @@ public class AppLogger {
     /**
      * Create message with headerNames
      *
-     * @param msg         the message string to be logged
+     * @param msg the message string to be logged
      * @param headerNames the headers names to be logged
      * @return message created
      */
     private String prepareMessage(String msg, Object[] headerNames) {
-        return Arrays.stream(headerNames)
-                .map(p -> String.format("[%s]", p))
+        return Arrays.stream(headerNames).map(p -> String.format("[%s]", p))
                 .collect(Collectors.joining("")) + " " + msg;
     }
 }

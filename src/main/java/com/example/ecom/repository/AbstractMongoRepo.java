@@ -1,10 +1,5 @@
 package com.example.ecom.repository;
 
-import com.example.ecom.constant.LanguageMessageKey;
-import com.example.ecom.exception.BadSqlException;
-import com.example.ecom.log.AppLogger;
-import com.example.ecom.log.LoggerFactory;
-import com.example.ecom.log.LoggerType;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +12,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import com.example.ecom.constant.LanguageMessageKey;
+import com.example.ecom.exception.BadSqlException;
+import com.example.ecom.log.AppLogger;
+import com.example.ecom.log.LoggerFactory;
+import com.example.ecom.log.LoggerType;
 
 public abstract class AbstractMongoRepo {
 
@@ -28,8 +28,7 @@ public abstract class AbstractMongoRepo {
 
 
   protected Query generateQueryMongoDB(Map<String, String> allParams, Class<?> clazz,
-      String keySort,
-      String sortField, int page, int pageSize) {
+      String keySort, String sortField, int page, int pageSize) {
     Query query = new Query();
     Field[] fields = clazz.getDeclaredFields();
     List<Criteria> allCriteria = new ArrayList<>();
@@ -45,8 +44,7 @@ public abstract class AbstractMongoRepo {
           if (field.getType() == ObjectId.class) {
             for (String value : values) {
               try {
-                multipleCriteria.add(
-                    Criteria.where(items.getKey()).is(new ObjectId(value)));
+                multipleCriteria.add(Criteria.where(items.getKey()).is(new ObjectId(value)));
               } catch (IllegalArgumentException e) {
                 APP_LOGGER.error(e.getMessage());
                 throw new BadSqlException(LanguageMessageKey.SERVER_ERROR);

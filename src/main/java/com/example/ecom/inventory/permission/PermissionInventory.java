@@ -1,8 +1,7 @@
 package com.example.ecom.inventory.permission;
 
-import com.example.ecom.repository.permission.Permission;
-
 import java.util.Optional;
+import com.example.ecom.repository.permission.Permission;
 
 public interface PermissionInventory {
     Optional<Permission> getPermissionByName(String name);

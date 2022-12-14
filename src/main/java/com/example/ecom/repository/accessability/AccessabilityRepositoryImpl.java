@@ -1,18 +1,18 @@
 package com.example.ecom.repository.accessability;
 
-import com.example.ecom.repository.AbstractMongoRepo;
-import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.stereotype.Repository;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Repository;
+import com.example.ecom.repository.AbstractMongoRepo;
 
 @Repository
-public class AccessabilityRepositoryImpl extends AbstractMongoRepo implements AccessabilityRepository {
+public class AccessabilityRepositoryImpl extends AbstractMongoRepo
+        implements AccessabilityRepository {
     @Override
     public Optional<Accessability> getAccessability(String userId, String targetId) {
         try {

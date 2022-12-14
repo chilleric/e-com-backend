@@ -1,12 +1,12 @@
 package com.example.ecom.dto.permission;
 
-import com.example.ecom.constant.LanguageMessageKey;
-import com.example.ecom.repository.common_entity.ViewPoint;
 import java.util.List;
 import java.util.Map;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import com.example.ecom.constant.LanguageMessageKey;
+import com.example.ecom.repository.common_entity.ViewPoint;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

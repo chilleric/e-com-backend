@@ -1,5 +1,18 @@
 package com.example.ecom.service.user;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import com.example.ecom.constant.DateTime;
 import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.dto.common.ListWrapperResponse;
@@ -18,19 +31,6 @@ import com.example.ecom.repository.user.User;
 import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
 import com.example.ecom.utils.DateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 @Service
 public class UserServiceImpl extends AbstractService<UserRepository> implements UserService {
@@ -61,28 +61,25 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
     User user = objectMapper.convertValue(userRequest, User.class);
     ObjectId newId = new ObjectId();
     user.set_id(newId);
-    user.setPassword(
-        bCryptPasswordEncoder().encode(
-            Base64.getEncoder().encodeToString(defaultPassword.getBytes())));
+    user.setPassword(bCryptPasswordEncoder()
+        .encode(Base64.getEncoder().encodeToString(defaultPassword.getBytes())));
     user.setTokens(new HashMap<>());
     user.setCreated(currentTime);
     user.setModified(currentTime);
-    accessabilityRepository.addNewAccessability(
-        new Accessability(null, new ObjectId(loginId), newId));
+    accessabilityRepository
+        .addNewAccessability(new Accessability(null, new ObjectId(loginId), newId));
     repository.insertAndUpdate(user);
   }
 
   public Optional<UserResponse> findOneUserById(String userId) {
     User user = userInventory.findUserById(userId)
         .orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.NOT_FOUND_USER));
-    return Optional.of(
-        new UserResponse(user.get_id().toString(), user.getUsername(), user.getPassword(),
-            user.getGender(), user.getDob(), user.getAddress(), user.getFirstName(),
-            user.getLastName(), user.getEmail(), user.getPhone(), user.getTokens(),
-            DateFormat.toDateString(user.getCreated(),
-                DateTime.YYYY_MM_DD),
-            DateFormat.toDateString(user.getModified(), DateTime.YYYY_MM_DD), user.isVerified(),
-            user.isVerify2FA(), user.getDeleted()));
+    return Optional.of(new UserResponse(user.get_id().toString(), user.getUsername(),
+        user.getPassword(), user.getGender(), user.getDob(), user.getAddress(), user.getFirstName(),
+        user.getLastName(), user.getEmail(), user.getPhone(), user.getTokens(),
+        DateFormat.toDateString(user.getCreated(), DateTime.YYYY_MM_DD),
+        DateFormat.toDateString(user.getModified(), DateTime.YYYY_MM_DD), user.isVerified(),
+        user.isVerify2FA(), user.getDeleted()));
   }
 
   @Override
@@ -141,15 +138,13 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
 
   @Override
   public Optional<ListWrapperResponse<UserResponse>> getUsers(Map<String, String> allParams,
-      String keySort, int page,
-      int pageSize, String sortField,
-      String loginId) {
+      String keySort, int page, int pageSize, String sortField, String loginId) {
     List<String> targets = accessabilityRepository.getListTargetId(loginId)
         .orElseThrow(() -> new BadSqlException(LanguageMessageKey.SERVER_ERROR)).stream()
         .map(access -> access.getTargetId().toString()).collect(Collectors.toList());
     if (targets.size() == 0) {
-      return Optional.of(
-          new ListWrapperResponse<UserResponse>(new ArrayList<>(), page, pageSize, 0));
+      return Optional
+          .of(new ListWrapperResponse<UserResponse>(new ArrayList<>(), page, pageSize, 0));
     }
     if (allParams.containsKey("_id")) {
       String[] idList = allParams.get("_id").split(",");
@@ -160,8 +155,8 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
         }
       }
       if (check.size() == 0) {
-        return Optional.of(
-            new ListWrapperResponse<UserResponse>(new ArrayList<>(), page, pageSize, 0));
+        return Optional
+            .of(new ListWrapperResponse<UserResponse>(new ArrayList<>(), page, pageSize, 0));
       }
       allParams.put("_id", generateParamsValue(check));
     } else {
@@ -170,14 +165,14 @@ public class UserServiceImpl extends AbstractService<UserRepository> implements 
 
     List<User> users = repository.getUsers(allParams, "", page, pageSize, sortField).get();
     return Optional.of(new ListWrapperResponse<UserResponse>(
-        users.stream().map(user -> new UserResponse(user.get_id().toString(), user.getUsername(),
-            user.getPassword(), user.getGender(), user.getDob(), user.getAddress(),
-            user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhone(),
-            user.getTokens(), DateFormat.toDateString(user.getCreated(),
-            DateTime.YYYY_MM_DD), DateFormat.toDateString(user.getModified(), DateTime.YYYY_MM_DD),
-            user.isVerified(), user.isVerify2FA(), user.getDeleted())).collect(Collectors.toList()),
-        page,
-        pageSize,
-        repository.getTotalPage(allParams)));
+        users.stream()
+            .map(user -> new UserResponse(user.get_id().toString(), user.getUsername(),
+                user.getPassword(), user.getGender(), user.getDob(), user.getAddress(),
+                user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhone(),
+                user.getTokens(), DateFormat.toDateString(user.getCreated(), DateTime.YYYY_MM_DD),
+                DateFormat.toDateString(user.getModified(), DateTime.YYYY_MM_DD), user.isVerified(),
+                user.isVerify2FA(), user.getDeleted()))
+            .collect(Collectors.toList()),
+        page, pageSize, repository.getTotalPage(allParams)));
   }
 }

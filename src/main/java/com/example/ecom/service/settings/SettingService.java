@@ -1,7 +1,6 @@
 package com.example.ecom.service.settings;
 
 import java.util.Optional;
-
 import com.example.ecom.dto.settings.AccountSetting;
 import com.example.ecom.dto.settings.ChangePasswordRequest;
 import com.example.ecom.dto.settings.SettingsRequest;

@@ -1,7 +1,7 @@
 package com.example.ecom.inventory.user;
 
-import com.example.ecom.repository.user.User;
 import java.util.Optional;
+import com.example.ecom.repository.user.User;
 
 public interface UserInventory {
 
