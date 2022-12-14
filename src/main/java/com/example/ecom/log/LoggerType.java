@@ -1,10 +1,7 @@
 package com.example.ecom.log;
 
 public enum LoggerType {
-    REQUEST("requestLog"),
-    APPLICATION("applicationLog"),
-    API("apiLog"),
-    SQL("sqlLog");
+    REQUEST("requestLog"), APPLICATION("applicationLog"), API("apiLog"), SQL("sqlLog");
 
     private String loggerName;
 

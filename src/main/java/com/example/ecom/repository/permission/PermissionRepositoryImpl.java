@@ -1,12 +1,6 @@
 package com.example.ecom.repository.permission;
 
 import static java.util.Map.entry;
-
-import com.example.ecom.constant.LanguageMessageKey;
-import com.example.ecom.dto.user.UserResponse;
-import com.example.ecom.exception.BadSqlException;
-import com.example.ecom.repository.AbstractMongoRepo;
-import com.example.ecom.repository.common_entity.ViewPoint;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,16 +13,20 @@ import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
+import com.example.ecom.constant.LanguageMessageKey;
+import com.example.ecom.dto.user.UserResponse;
+import com.example.ecom.exception.BadSqlException;
+import com.example.ecom.repository.AbstractMongoRepo;
+import com.example.ecom.repository.common_entity.ViewPoint;
 
 @Repository
 public class PermissionRepositoryImpl extends AbstractMongoRepo implements PermissionRepository {
 
   @Override
   public Optional<List<Permission>> getPermissions(Map<String, String> allParams, String keySort,
-      int page,
-      int pageSize, String sortField) {
-    Query query = generateQueryMongoDB(allParams, Permission.class, keySort, sortField, page,
-        pageSize);
+      int page, int pageSize, String sortField) {
+    Query query =
+        generateQueryMongoDB(allParams, Permission.class, keySort, sortField, page, pageSize);
     return replaceFind(query, Permission.class);
   }
 
@@ -77,16 +75,6 @@ public class PermissionRepositoryImpl extends AbstractMongoRepo implements Permi
     return removeId(result);
   }
 
-  private Map<String, List<ViewPoint>> removeId(Map<String, List<ViewPoint>> thisView) {
-    return thisView.entrySet().stream().map((key) -> {
-      List<ViewPoint> newValue = key.getValue().stream()
-          .filter(viewList -> viewList.getKey().compareTo("id") != 0).collect(
-              Collectors.toList());
-      return entry(key.getKey(), newValue);
-    }).collect(
-        Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x, y) -> y, LinkedHashMap::new));
-  }
-
   @Override
   public Optional<List<Permission>> getPermissionByUserId(String userId) {
     try {
@@ -104,6 +92,15 @@ public class PermissionRepositoryImpl extends AbstractMongoRepo implements Permi
   public long getTotal(Map<String, String> allParams) {
     Query query = generateQueryMongoDB(allParams, Permission.class, "", "", 0, 0);
     return authenticationTemplate.count(query, Permission.class);
+  }
+
+  private Map<String, List<ViewPoint>> removeId(Map<String, List<ViewPoint>> thisView) {
+    return thisView.entrySet().stream().map((key) -> {
+      List<ViewPoint> newValue = key.getValue().stream()
+          .filter(viewList -> viewList.getKey().compareTo("id") != 0).collect(Collectors.toList());
+      return entry(key.getKey(), newValue);
+    }).collect(
+        Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x, y) -> y, LinkedHashMap::new));
   }
 
 }

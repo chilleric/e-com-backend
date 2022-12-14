@@ -1,8 +1,7 @@
 package com.example.ecom.inventory.langauge;
 
-import com.example.ecom.repository.language.Language;
-
 import java.util.Optional;
+import com.example.ecom.repository.language.Language;
 
 public interface LanguageInventory {
     Optional<Language> findLanguageById(String id);

@@ -1,7 +1,6 @@
 package com.example.ecom.log;
 
 import java.util.Map;
-
 import org.apache.logging.log4j.ThreadContext;
 
 public class LoggerFactory {
@@ -9,7 +8,8 @@ public class LoggerFactory {
         return getLogger(type, null);
     }
 
-    public static synchronized AppLogger getLogger(LoggerType type, Map<String, String> parameters) {
+    public static synchronized AppLogger getLogger(LoggerType type,
+            Map<String, String> parameters) {
         if (parameters != null) {
             ThreadContext.putAll(parameters);
         }

@@ -1,5 +1,12 @@
 package com.example.ecom.jwt;
 
+import static java.util.Map.entry;
+import java.util.Date;
+import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -12,15 +19,6 @@ import com.example.ecom.exception.UnauthorizedException;
 import com.example.ecom.log.AppLogger;
 import com.example.ecom.log.LoggerFactory;
 import com.example.ecom.log.LoggerType;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.Map;
-
-import static java.util.Map.entry;
 
 @Component
 public class JwtValidation {
@@ -37,9 +35,9 @@ public class JwtValidation {
         try {
             Algorithm algorithm = Algorithm.HMAC512(JWT_SECRET);
             String token = JWT.create()
-                    .withPayload(Map.ofEntries(entry("userId", userId), entry("deviceId", deviceId)))
-                    .withExpiresAt(expiryDate)
-                    .sign(algorithm);
+                    .withPayload(
+                            Map.ofEntries(entry("userId", userId), entry("deviceId", deviceId)))
+                    .withExpiresAt(expiryDate).sign(algorithm);
             return token;
         } catch (JWTCreationException exception) {
             return "";

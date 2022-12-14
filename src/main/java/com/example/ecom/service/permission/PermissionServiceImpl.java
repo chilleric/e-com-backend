@@ -1,7 +1,18 @@
 package com.example.ecom.service.permission;
 
 import static java.util.Map.entry;
-
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import com.example.ecom.constant.DateTime;
 import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.dto.common.ListWrapperResponse;
@@ -24,22 +35,10 @@ import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
 import com.example.ecom.utils.DateFormat;
 import com.example.ecom.utils.ObjectUtilities;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
-public class PermissionServiceImpl extends AbstractService<PermissionRepository> implements
-    PermissionService {
+public class PermissionServiceImpl extends AbstractService<PermissionRepository>
+    implements PermissionService {
 
 
   @Autowired
@@ -56,16 +55,14 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
 
   @Override
   public Optional<ListWrapperResponse<PermissionResponse>> getPermissions(
-      Map<String, String> allParams,
-      String keySort, int page, int pageSize,
-      String sortField,
+      Map<String, String> allParams, String keySort, int page, int pageSize, String sortField,
       String loginId) {
     List<String> targets = accessabilityRepository.getListTargetId(loginId)
-        .orElseThrow(() -> new BadSqlException(LanguageMessageKey.SERVER_ERROR))
-        .stream().map(access -> access.getTargetId().toString()).collect(Collectors.toList());
+        .orElseThrow(() -> new BadSqlException(LanguageMessageKey.SERVER_ERROR)).stream()
+        .map(access -> access.getTargetId().toString()).collect(Collectors.toList());
     if (targets.size() == 0) {
-      return Optional.of(
-          new ListWrapperResponse<PermissionResponse>(new ArrayList<>(), page, pageSize, 0));
+      return Optional
+          .of(new ListWrapperResponse<PermissionResponse>(new ArrayList<>(), page, pageSize, 0));
     }
     if (allParams.containsKey("_id")) {
       String[] idList = allParams.get("_id").split(",");
@@ -76,43 +73,37 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
         }
       }
       if (check.size() == 0) {
-        return Optional.of(
-            new ListWrapperResponse<PermissionResponse>(new ArrayList<>(), page, pageSize, 0));
+        return Optional
+            .of(new ListWrapperResponse<PermissionResponse>(new ArrayList<>(), page, pageSize, 0));
       }
       allParams.put("_id", generateParamsValue(check));
     } else {
       allParams.put("_id", generateParamsValue(targets));
     }
-    List<Permission> permissions = repository.getPermissions(allParams, keySort, page, pageSize,
-        sortField).get();
-    return Optional.of(new ListWrapperResponse<PermissionResponse>(
-        permissions.stream()
-            .map(permission -> new PermissionResponse(permission.get_id().toString(),
-                permission.getName(),
-                permission.getUserId().size() > 0
-                    ? permission.getUserId().stream().map(ObjectId::toString)
-                    .collect(Collectors.toList())
-                    : new ArrayList<>(),
-                DateFormat.toDateString(permission.getCreated(), DateTime.YYYY_MM_DD),
-                DateFormat.toDateString(permission.getModified(), DateTime.YYYY_MM_DD),
-                removeId(permission.getViewPoints()), removeId(permission.getEditable())))
-            .collect(Collectors.toList()),
-        page, pageSize, repository.getTotal(allParams)));
+    List<Permission> permissions =
+        repository.getPermissions(allParams, keySort, page, pageSize, sortField).get();
+    return Optional.of(new ListWrapperResponse<PermissionResponse>(permissions.stream()
+        .map(permission -> new PermissionResponse(permission.get_id().toString(),
+            permission.getName(),
+            permission.getUserId().size() > 0 ? permission.getUserId().stream()
+                .map(ObjectId::toString).collect(Collectors.toList()) : new ArrayList<>(),
+            DateFormat.toDateString(permission.getCreated(), DateTime.YYYY_MM_DD),
+            DateFormat.toDateString(permission.getModified(), DateTime.YYYY_MM_DD),
+            removeId(permission.getViewPoints()), removeId(permission.getEditable())))
+        .collect(Collectors.toList()), page, pageSize, repository.getTotal(allParams)));
   }
 
   @Override
-  public Optional<PermissionResponse> getPermissionById(String id,
-      String loginId) {
+  public Optional<PermissionResponse> getPermissionById(String id, String loginId) {
     Permission permission = permissionInventory.getPermissionById(id)
         .orElseThrow(() -> new ResourceNotFoundException(LanguageMessageKey.PERMISSION_NOT_FOUND));
-    return Optional.of(new PermissionResponse(permission.get_id().toString(), permission.getName(),
-        permission.getUserId().size() > 0
-            ? permission.getUserId().stream().map(ObjectId::toString)
-            .collect(Collectors.toList())
-            : new ArrayList<>(),
-        DateFormat.toDateString(permission.getCreated(), DateTime.YYYY_MM_DD),
-        DateFormat.toDateString(permission.getModified(), DateTime.YYYY_MM_DD),
-        removeId(permission.getViewPoints()), removeId(permission.getEditable())));
+    return Optional
+        .of(new PermissionResponse(permission.get_id().toString(), permission.getName(),
+            permission.getUserId().size() > 0 ? permission.getUserId().stream()
+                .map(ObjectId::toString).collect(Collectors.toList()) : new ArrayList<>(),
+            DateFormat.toDateString(permission.getCreated(), DateTime.YYYY_MM_DD),
+            DateFormat.toDateString(permission.getModified(), DateTime.YYYY_MM_DD),
+            removeId(permission.getViewPoints()), removeId(permission.getEditable())));
   }
 
   @Override
@@ -136,16 +127,14 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
     permission.setViewPoints(permissionRequest.getViewPoints());
     if (permissionRequest.getUserId().size() != 0) {
       List<User> userResponse = generateUserList(permissionRequest.getUserId());
-      permission
-          .setUserId(
-              userResponse.stream().map(User::get_id).collect(Collectors.toList()));
+      permission.setUserId(userResponse.stream().map(User::get_id).collect(Collectors.toList()));
     } else {
       permission.setUserId(new ArrayList<>());
     }
     permission.setEditable(permissionRequest.getEditable());
     permission.setViewPoints(permissionRequest.getViewPoints());
-    accessabilityRepository.addNewAccessability(
-        new Accessability(null, new ObjectId(loginId), newId));
+    accessabilityRepository
+        .addNewAccessability(new Accessability(null, new ObjectId(loginId), newId));
     repository.insertAndUpdate(permission);
   }
 
@@ -167,10 +156,7 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
     permission.setName(permissionRequest.getName());
     if (permissionRequest.getUserId().size() != 0) {
       List<User> userResponse = generateUserList(permissionRequest.getUserId());
-      permission
-          .setUserId(
-              userResponse.stream().map(User::get_id)
-                  .collect(Collectors.toList()));
+      permission.setUserId(userResponse.stream().map(User::get_id).collect(Collectors.toList()));
     } else {
       permission.setUserId(new ArrayList<>());
     }
@@ -192,8 +178,7 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
   @Override
   public Map<String, List<ViewPoint>> getViewPointSelect(String loginId) {
     Map<String, List<ViewPoint>> thisView = new HashMap<>();
-    repository
-        .getPermissionByUserId(loginId)
+    repository.getPermissionByUserId(loginId)
         .orElseThrow(() -> new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED))
         .forEach(thisPerm -> {
           thisView.putAll(ObjectUtilities.mergePermission(thisView, thisPerm.getViewPoints()));
@@ -213,8 +198,7 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
   @Override
   public Map<String, List<ViewPoint>> getEditableSelect(String loginId) {
     Map<String, List<ViewPoint>> thisView = new HashMap<>();
-    repository
-        .getPermissionByUserId(loginId)
+    repository.getPermissionByUserId(loginId)
         .orElseThrow(() -> new UnauthorizedException(LanguageMessageKey.UNAUTHORIZED))
         .forEach(thisPerm -> {
           thisView.putAll(ObjectUtilities.mergePermission(thisView, thisPerm.getEditable()));
@@ -241,8 +225,7 @@ public class PermissionServiceImpl extends AbstractService<PermissionRepository>
   private Map<String, List<ViewPoint>> removeId(Map<String, List<ViewPoint>> thisView) {
     return thisView.entrySet().stream().map((key) -> {
       List<ViewPoint> newValue = key.getValue().stream()
-          .filter(viewList -> viewList.getKey().compareTo("id") != 0).collect(
-              Collectors.toList());
+          .filter(viewList -> viewList.getKey().compareTo("id") != 0).collect(Collectors.toList());
       return entry(key.getKey(), newValue);
     }).collect(
         Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x, y) -> y, LinkedHashMap::new));

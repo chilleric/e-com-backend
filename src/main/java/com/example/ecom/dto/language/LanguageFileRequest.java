@@ -1,14 +1,13 @@
 package com.example.ecom.dto.language;
 
+import java.util.Map;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import com.example.ecom.constant.LanguageMessageKey;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.util.Map;
 
 @Data
 @AllArgsConstructor

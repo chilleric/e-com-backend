@@ -1,5 +1,13 @@
 package com.example.ecom.service;
 
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.constant.ResponseType;
 import com.example.ecom.exception.BadSqlException;
@@ -11,14 +19,6 @@ import com.example.ecom.repository.common_entity.ViewPoint;
 import com.example.ecom.utils.ObjectValidator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public abstract class AbstractService<r> {
 
@@ -37,8 +37,8 @@ public abstract class AbstractService<r> {
 
   @PostConstruct
   public void init() {
-    objectMapper = new ObjectMapper()
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    objectMapper =
+        new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
   }
 
   protected String generateParamsValue(List<String> list) {
@@ -58,9 +58,8 @@ public abstract class AbstractService<r> {
 
   protected <T> void validate(T request) {
     boolean isError = false;
-    Map<String, String> errors = objectValidator.validateRequestThenReturnMessage(
-        generateError(request.getClass()),
-        request);
+    Map<String, String> errors = objectValidator
+        .validateRequestThenReturnMessage(generateError(request.getClass()), request);
     for (Map.Entry<String, String> items : errors.entrySet()) {
       if (items.getValue().length() > 0) {
         isError = true;

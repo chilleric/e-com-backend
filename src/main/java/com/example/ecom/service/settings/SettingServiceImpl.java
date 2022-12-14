@@ -1,5 +1,13 @@
 package com.example.ecom.service.settings;
 
+import static java.util.Map.entry;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 import com.example.ecom.constant.LanguageMessageKey;
 import com.example.ecom.dto.settings.AccountSetting;
 import com.example.ecom.dto.settings.ChangePasswordRequest;
@@ -15,19 +23,10 @@ import com.example.ecom.repository.user.UserRepository;
 import com.example.ecom.service.AbstractService;
 import com.example.ecom.utils.DateFormat;
 import com.example.ecom.utils.PasswordValidator;
-import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.ResourceAccessException;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static java.util.Map.entry;
 
 @Service
-public class SettingServiceImpl extends AbstractService<SettingRepository> implements SettingService {
+public class SettingServiceImpl extends AbstractService<SettingRepository>
+        implements SettingService {
 
     @Autowired
     private UserRepository userRepository;
@@ -41,7 +40,8 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
 
     @Override
     public Optional<SettingsResponse> getSettingsByUserId(String userId) {
-        List<Setting> settings = repository.getSettings(Map.ofEntries(entry("userId", userId)), "", 0, 0, "").get();
+        List<Setting> settings =
+                repository.getSettings(Map.ofEntries(entry("userId", userId)), "", 0, 0, "").get();
 
         if (settings.size() == 0) {
             repository.insertAndUpdate(new Setting(null, new ObjectId(userId), false, "en"));
@@ -59,9 +59,11 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
             error.put("languageKey", LanguageMessageKey.INVALID_LANGUAGE_KEY);
             throw new InvalidRequestException(error, LanguageMessageKey.INVALID_LANGUAGE_KEY);
         });
-        List<Setting> settings = repository.getSettings(Map.ofEntries(entry("userId", userId)), "", 0, 0, "").get();
+        List<Setting> settings =
+                repository.getSettings(Map.ofEntries(entry("userId", userId)), "", 0, 0, "").get();
         if (settings.size() == 0) {
-            repository.insertAndUpdate(new Setting(null, new ObjectId(userId), settingsRequest.isDarkTheme(), "en"));
+            repository.insertAndUpdate(
+                    new Setting(null, new ObjectId(userId), settingsRequest.isDarkTheme(), "en"));
         } else {
             Setting setting = settings.get(0);
             setting.setDarkTheme(settingsRequest.isDarkTheme());
@@ -76,15 +78,18 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
         validate(changePasswordRequest);
         PasswordValidator.validatePassword(generateError(ChangePasswordRequest.class),
                 changePasswordRequest.getOldPassword(), "oldPassword");
-        User user = userInventory.findUserById(userId).orElseThrow(() -> new ResourceAccessException(LanguageMessageKey.NOT_FOUND_USER));
+        User user = userInventory.findUserById(userId)
+                .orElseThrow(() -> new ResourceAccessException(LanguageMessageKey.NOT_FOUND_USER));
         Map<String, String> error = generateError(ChangePasswordRequest.class);
-        if (!bCryptPasswordEncoder().matches(changePasswordRequest.getOldPassword(), user.getPassword())) {
+        if (!bCryptPasswordEncoder().matches(changePasswordRequest.getOldPassword(),
+                user.getPassword())) {
             error.put("oldPassword", LanguageMessageKey.OLD_PASSWORD_NOT_MATCH);
             throw new InvalidRequestException(error, LanguageMessageKey.OLD_PASSWORD_NOT_MATCH);
         }
         PasswordValidator.validateNewPassword(generateError(ChangePasswordRequest.class),
                 changePasswordRequest.getNewPassword(), "newPassword");
-        if (changePasswordRequest.getNewPassword().compareTo(changePasswordRequest.getConfirmNewPassword()) != 0) {
+        if (changePasswordRequest.getNewPassword()
+                .compareTo(changePasswordRequest.getConfirmNewPassword()) != 0) {
             error.put("newPassword", LanguageMessageKey.CONFIRM_PASSWORD_NOT_MATCH);
             error.put("confirmPassword", LanguageMessageKey.CONFIRM_PASSWORD_NOT_MATCH);
             throw new InvalidRequestException(error, LanguageMessageKey.CONFIRM_PASSWORD_NOT_MATCH);
@@ -98,7 +103,8 @@ public class SettingServiceImpl extends AbstractService<SettingRepository> imple
     public void updateAccountInformation(AccountSetting accountSetting, String userId) {
         validate(accountSetting);
         Map<String, String> error = generateError(AccountSetting.class);
-        User user = userInventory.findUserById(userId).orElseThrow(() -> new ResourceAccessException(LanguageMessageKey.NOT_FOUND_EMAIL));
+        User user = userInventory.findUserById(userId)
+                .orElseThrow(() -> new ResourceAccessException(LanguageMessageKey.NOT_FOUND_EMAIL));
         userInventory.findUserByEmail(accountSetting.getEmail()).ifPresent(thisEmail -> {
             if (thisEmail.get_id().compareTo(user.get_id()) != 0) {
                 error.put("email", LanguageMessageKey.EMAIL_TAKEN);

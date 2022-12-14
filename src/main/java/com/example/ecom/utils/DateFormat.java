@@ -1,11 +1,10 @@
 package com.example.ecom.utils;
 
-import com.example.ecom.constant.LanguageMessageKey;
-import com.example.ecom.exception.InvalidRequestException;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import com.example.ecom.constant.LanguageMessageKey;
+import com.example.ecom.exception.InvalidRequestException;
 
 public class DateFormat {
     public static Date getCurrentTime() {
@@ -21,7 +20,8 @@ public class DateFormat {
         try {
             result = sdf.format(date);
         } catch (Exception e) {
-            throw new InvalidRequestException(new HashMap<>(), LanguageMessageKey.INVALID_DATE_FORMAT);
+            throw new InvalidRequestException(new HashMap<>(),
+                    LanguageMessageKey.INVALID_DATE_FORMAT);
         }
         return result;
     }

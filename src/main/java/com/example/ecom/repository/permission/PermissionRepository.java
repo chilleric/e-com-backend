@@ -1,15 +1,14 @@
 package com.example.ecom.repository.permission;
 
-import com.example.ecom.repository.common_entity.ViewPoint;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.example.ecom.repository.common_entity.ViewPoint;
 
 public interface PermissionRepository {
 
   Optional<List<Permission>> getPermissions(Map<String, String> allParams, String keySort, int page,
-      int pageSize,
-      String sortField);
+      int pageSize, String sortField);
 
   Optional<Permission> getPermissionById(String id);
 
